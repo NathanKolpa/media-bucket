@@ -55,12 +55,14 @@ pub async fn store(
 }
 
 #[delete("/{id}")]
-pub async fn delete(session: Session, id: web::Path<u64>) -> Result<impl Responder, WebError> {
+pub async fn delete(session: Session, id: web::Path<(u64, u64)>) -> Result<impl Responder, WebError> {
+    let id = id.into_inner().1;
+
     let tag = session
         .bucket()
         .data_source()
         .tags()
-        .get_by_id(*id)
+        .get_by_id(id)
         .await?
         .ok_or(WebError::ResourceNotFound)?;
 

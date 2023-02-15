@@ -28,22 +28,10 @@ impl FromRequest for Session {
         let params = web::Query::<QueryParams>::from_query(req.query_string())
             .map_err(|e| WebError::ParseError);
 
-        // lol
         let bucket_id = req
-            .headers()
-            .get("x-bucket-id")
-            .map(|h| {
-                h.to_str()
-                    .map_err(|_| WebError::ParseError)
-                    .map(|s| s.parse::<u64>().map_err(|_| WebError::ParseError))
-            })
-            .or_else(|| {
-                params
-                    .as_ref()
-                    .ok()
-                    .map(|p| Ok(p.bucket_id.ok_or(WebError::MissingBucketId)))
-            })
-            .ok_or(WebError::MissingBucketId);
+            .match_info().get("bucket_id")
+            .ok_or(WebError::MissingBucketId)
+            .and_then(|id| id.parse().map_err(|_| WebError::ParseError));
 
         let token = req
             .headers()
@@ -64,7 +52,7 @@ impl FromRequest for Session {
             .ok_or(WebError::MissingAuthToken);
 
         Box::pin(async move {
-            let bucket_id = bucket_id???;
+            let bucket_id = bucket_id?;
             let token = token??;
 
             let instance = instances
