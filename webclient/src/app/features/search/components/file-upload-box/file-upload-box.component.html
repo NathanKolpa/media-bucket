@@ -1,0 +1,15 @@
+<div class="mat-elevation-z6 file-upload d-flex align-items-center justify-content-center"
+     [ngClass]="highlighted ? 'active': ''"
+     (dragenter)="dragEnter($event)"
+     (dragleave)="dragLeave($event)" (dragover)="dragOver($event)" (drop)="drop($event)"
+>
+  <input #input (change)="fileSelectChange()" class="d-none" multiple type="file">
+
+  <div class="text-center p-4">
+    <mat-icon>cloud_upload</mat-icon>
+
+    <h1>Drag and drop files here</h1>
+    <p><small>or</small></p>
+    <button color="accent" mat-flat-button (click)="selectFiles()">Browse files</button>
+  </div>
+</div>

@@ -1,0 +1,33 @@
+<mat-toolbar color="primary" *ngIf="bucket as bucket" class="mat-elevation-z6 position-relative" style="z-index: 1000">
+
+  <a mat-button [routerLink]="['/buckets', bucket.id]">
+     <span>
+      {{ bucket.name }}
+    </span>
+
+    <mat-icon *ngIf="bucket.encrypted" style="vertical-align: middle">
+      lock
+    </mat-icon>
+  </a>
+
+  <div class="spacer"></div>
+
+  <button mat-icon-button [matMenuTriggerFor]="menu">
+    <mat-icon>menu</mat-icon>
+  </button>
+
+  <mat-menu #menu="matMenu">
+
+    <a mat-menu-item routerLink="/">
+      <mat-icon>compare_arrows</mat-icon>
+      <span>Switch bucket</span>
+    </a>
+
+    <button mat-menu-item (click)="logout.emit()">
+      <mat-icon>logout</mat-icon>
+      <span>Logout</span>
+    </button>
+  </mat-menu>
+
+
+</mat-toolbar>

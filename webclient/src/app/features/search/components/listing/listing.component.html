@@ -1,0 +1,35 @@
+<div [ngStyle]="{ height: height + 'px' }" *ngIf="post as post">
+
+  <mat-card class="h-100 m-4" appearance="outlined" matRipple [matRippleDisabled]="disableCardRipple" (click)="showDetail.emit(post)">
+
+    <img mat-card-image [src]="post.thumbnail?.url" alt="Thumbnail" class="thumbnail">
+
+    <mat-card-footer class="p-2 d-flex align-items-center user-select-none">
+      <mat-icon color="accent" *ngIf="post.containsVideos; else movingImage">movie</mat-icon>
+
+      <ng-template #movingImage>
+        <mat-icon color="accent" *ngIf="post.containsMovingImages; else image">gif_box</mat-icon>
+      </ng-template>
+
+      <ng-template #image>
+        <mat-icon color="accent" *ngIf="post.containsImages">image</mat-icon>
+      </ng-template>
+
+      <span class="ms-3" *ngIf="post.itemCount > 1">{{ post.itemCount }} items</span>
+      <span class="ms-3" *ngIf="post.duration as duration">{{ duration | duration }}</span>
+      <span class="ms-3" *ngIf="post.title as title">{{ title }}</span>
+
+      <div class="spacer"></div>
+
+      <button mat-icon-button
+              (click)="$event.stopImmediatePropagation(); showInfo.emit(post)"
+              (mouseenter)="disableCardRipple=true"
+              (mouseleave)="disableCardRipple=false">
+        <mat-icon>info</mat-icon>
+      </button>
+
+    </mat-card-footer>
+  </mat-card>
+
+
+</div>

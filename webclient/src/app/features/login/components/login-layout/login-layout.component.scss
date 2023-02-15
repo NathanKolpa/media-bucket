@@ -1,0 +1,25 @@
+@import 'bootstrap/scss/functions.scss';
+@import 'bootstrap/scss/variables.scss';
+@import 'bootstrap/scss/mixins.scss';
+
+
+.height {
+  height: 100vh;
+  min-height: 500px;
+
+  @include media-breakpoint-up(sm) {
+    margin-top: 5vh;
+    height: 90vh;
+  }
+
+  @include media-breakpoint-up(md) {
+    margin-top: 100px;
+    height: 60vh;
+  }
+}
+
+
+.bg {
+  background: rgb(113,79,252);
+  background: linear-gradient(222deg, rgba(113,79,252,1) 0%, rgba(56,0,108,1) 53%, rgba(37,2,118,1) 100%);
+}

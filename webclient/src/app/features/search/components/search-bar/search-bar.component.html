@@ -1,0 +1,43 @@
+<div class="ms-4 me-4 mt-4">
+  <div class="row">
+    <mat-form-field appearance="fill" class="col">
+      <mat-label>Search query</mat-label>
+
+      <mat-chip-grid #chips>
+
+        <mat-chip-row *ngFor="let item of _query?.items; let i = index" (removed)="removeIndex(i)">
+
+          {{ item.tag.name }}
+
+          <button matChipRemove>
+            <mat-icon>cancel</mat-icon>
+          </button>
+        </mat-chip-row>
+
+        <input
+          matInput
+          #input
+          autocomplete="off"
+          [matChipInputFor]="chips"
+          placeholder="Add search criteria"
+          [matAutocomplete]="auto" (focus)="searchTextChange.emit(input.value == '' ? null : input.value)"
+          (input)="searchTextChange.emit(input.value == '' ? null : input.value)">
+
+      </mat-chip-grid>
+
+      <mat-autocomplete autoActiveFirstOption #auto>
+        <mat-option *ngFor="let tag of tags"
+                    (onSelectionChange)="addTag(tag)">
+          Tag: {{ tag.name }}
+        </mat-option>
+      </mat-autocomplete>
+
+    </mat-form-field>
+  </div>
+
+  <button mat-flat-button color="primary" (click)="submit()">
+    Search
+  </button>
+</div>
+
+

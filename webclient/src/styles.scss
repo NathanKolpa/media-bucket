@@ -1,0 +1,24 @@
+@import "@angular/material/prebuilt-themes/pink-bluegrey.css";
+
+@import "bootstrap/scss/bootstrap-grid.scss";
+@import "bootstrap/scss/bootstrap-utilities.scss";
+@import "bootstrap/scss/forms";
+
+html, body {
+  min-height: 100vh;
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+.backdrop {
+  background-color: rgba(6, 6, 7, 0.9);
+}
+
+.spacer {
+  flex: 1 1 auto;
+}

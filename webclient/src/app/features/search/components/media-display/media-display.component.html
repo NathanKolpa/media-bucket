@@ -1,0 +1,36 @@
+<ng-container *ngIf="media as media" [ngSwitch]="media.mediaType">
+
+  <img *ngSwitchCase="'image'" [src]="media.url" [width]="media.dimensions?.width" [height]="media.dimensions?.height"
+       [className]="className"/>
+
+  <app-video-player
+    *ngSwitchCase="'video'"
+    [className]="className"
+    (nextVideo)="nextItem.emit()"
+    [media]="media">
+  </app-video-player>
+
+  <ng-container *ngSwitchCase="'document'">
+
+    <ng-container *ngIf="media.documentData as documentData">
+      <ng2-pdfjs-viewer
+        cursor="select"
+        [className]="className"
+        [ngStyle]="{ 'min-width': '600px', 'max-width': '90vw', 'display': 'block', 'width': documentData.pageSize.width + 'px', 'height': documentData.pages * documentData.pageSize.height + 'px' }"
+        *ngIf="media.mime.endsWith('/pdf')"
+        [pdfSrc]="encodeURIComponent(media.url)">
+      </ng2-pdfjs-viewer>
+    </ng-container>
+
+
+  </ng-container>
+
+  <p *ngSwitchDefault>
+    Unsupported media type: "{{ media.mediaType }}"
+  </p>
+
+  <p *ngSwitchCase="'unknown'">
+    Unknown media type
+  </p>
+
+</ng-container>

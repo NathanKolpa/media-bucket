@@ -1,0 +1,30 @@
+<div class="dialog-container">
+  <h2 mat-dialog-title>Create a new post</h2>
+  <mat-dialog-content class="p-3">
+    <app-create-post-form
+                          [bucket]="bucket$ | async"
+                          [uploads]="job.uploads"
+                          [(tags)]="tags"
+                          [(description)]="description"
+                          [(title)]="title"
+                          [(source)]="source"
+                          [(flatten)]="flatten"
+                          (deleteIndexes)="deleteUploads($event)"
+                          (swapUploads)="swapUploads($event)"
+                          (filesAdded)="addFiles($event)">
+    </app-create-post-form>
+  </mat-dialog-content>
+
+  <mat-dialog-actions class="w-100">
+    <div class="w-100 d-flex justify-content-between">
+      <div>
+        <mat-checkbox [checked]="createAnother" (change)="createAnother = $event.checked">Create another</mat-checkbox>
+      </div>
+
+      <div *ngIf="(bucket$ | async) as bucket">
+        <button mat-raised-button color="primary" [disabled]="job.isEmpty()" (click)="submit(bucket)">Start</button>
+        <button mat-button [mat-dialog-close]="true">Cancel</button>
+      </div>
+    </div>
+  </mat-dialog-actions>
+</div>

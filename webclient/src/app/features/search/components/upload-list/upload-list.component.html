@@ -1,0 +1,74 @@
+<div class="actions d-flex">
+
+  <button mat-icon-button
+          (click)="deleteIndexes.emit(mapUploadsToIndexes(list.selectedOptions.selected))"
+          [disabled]="list.selectedOptions.isEmpty()">
+    <mat-icon>delete</mat-icon>
+  </button>
+
+  <div class="spacer"></div>
+
+  <mat-checkbox
+    [checked]="list.selectedOptions.selected.length >= sortedUploads.length && !list.selectedOptions.isEmpty()"
+    (change)="$event.checked ? list.selectAll() : list.deselectAll()" style="margin-right: 8px">
+  </mat-checkbox>
+</div>
+
+<mat-selection-list #list cdkDropList (cdkDropListDropped)="drop($event)">
+
+  <ng-container *ngFor="let item of sortedUploads; let isLast = last;">
+    <mat-list-option cdkDrag #option
+                     [value]="item"
+                     (cdkDragStarted)="option.disabled = true"
+                     (cdkDragEnded)="option.disabled = false">
+
+      <img *ngIf="item.upload.thumbnail as thumb; else icon" matListItemAvatar [src]="thumb.url"
+           [width]="thumb.dimensions?.width" [height]="thumb.dimensions?.height">
+
+      <ng-template #icon>
+        <mat-icon matListItemIcon>upload_file</mat-icon>
+      </ng-template>
+
+      <div matListItemTitle>
+        {{ item.upload.file.name }}
+      </div>
+      <div matListItemLine>
+        {{ item.upload.file.size | bytes }}
+      </div>
+
+      <div matListItemLine *ngIf="item.upload.state == 'error'">
+        Error occurred: {{ item.upload.failure?.message }}
+      </div>
+
+      <div matListItemLine
+           class="d-flex align-items-center"
+           *ngIf="item.upload.state == 'done' || item.upload.state == 'uploading'">
+        <mat-progress-bar
+          mode="determinate"
+          [value]="item.upload.progress"
+          color="accent">
+        </mat-progress-bar>
+
+        <span class="ps-4" *ngIf="item.upload.state == 'uploading'">
+          <ng-container *ngIf="item.upload.progress == 100; else progressDetail">
+            Processing
+          </ng-container>
+          <ng-template #progressDetail>
+            {{ item.upload.progress |  number:'1.2-2' }}%
+          </ng-template>
+        </span>
+
+        <span class="ps-4" *ngIf="item.upload.state == 'done'">
+          Done
+        </span>
+
+        <span class="ps-4" style="white-space: nowrap">
+            {{ item.upload.uploadedBytes | bytes }} of {{ item.upload.file.size | bytes }}
+        </span>
+      </div>
+    </mat-list-option>
+    <mat-divider *ngIf="!isLast"></mat-divider>
+  </ng-container>
+
+
+</mat-selection-list>

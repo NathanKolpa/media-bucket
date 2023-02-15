@@ -1,0 +1,27 @@
+<cdk-virtual-scroll-viewport  #viewport [itemSize]="250" class="h-100 d-block" (scrolledIndexChange)="scrolledIndexChange()">
+
+  <ng-content>
+  </ng-content>
+
+  <div class="row mb-4" [ngClass]="containerClass">
+    <ng-container *cdkVirtualFor="let row of rows; trackBy: trackById; templateCacheSize: 0">
+      <app-listing
+        *ngFor="let index of row"
+        [height]="250"
+        (showInfo)="showInfo.emit($event)"
+        (showDetail)="showDetail.emit($event)"
+        [post]="posts[index]">
+      </app-listing>
+    </ng-container>
+  </div>
+
+  <app-loadable-content (loadAgain)="requestNextData.emit()" [loadingState]="nextLoadingState" class="h-100 d-block">
+  </app-loadable-content>
+
+</cdk-virtual-scroll-viewport>
+
+<div class="up-container" [hidden]="((viewport.scrolledIndexChange | async) || 0) <= 0">
+  <button mat-fab color="accent" class="up" (click)="viewport.scrollToIndex(0, 'smooth')">
+    <mat-icon>keyboard_arrow_up</mat-icon>
+  </button>
+</div>

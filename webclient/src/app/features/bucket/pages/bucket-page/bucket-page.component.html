@@ -1,0 +1,29 @@
+<div class="content">
+  <app-loadable-content (loadAgain)="reload()" [loadingState]="bucketLoadingState$ | async">
+
+    <app-not-authenticated *ngIf="!(isAuthenticated$ | async); else content">
+    </app-not-authenticated>
+
+    <ng-template #content>
+      <ng-container *ngIf="bucket$ | async as bucket">
+
+        <div class="d-flex flex-column h-100">
+          <app-header
+            (logout)="logout(bucket.auth!)"
+            [bucket]="bucket.bucket">
+          </app-header>
+
+          <div class="flex-grow-1">
+            <router-outlet></router-outlet>
+          </div>
+        </div>
+
+
+      </ng-container>
+    </ng-template>
+
+
+  </app-loadable-content>
+</div>
+
+

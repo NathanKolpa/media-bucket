@@ -1,0 +1,6 @@
+.gitignore
+target/
+.idea/
+.vim/
+Dockerfile
+.dockerignore

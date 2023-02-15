@@ -1,0 +1,38 @@
+<mat-sidenav-container class="h-100 d-block">
+  <mat-sidenav mode="side" position="end" [opened]="open">
+
+    <mat-tab-group>
+      <mat-tab label="Info">
+        <ng-template matTabContent>
+
+          <app-loadable-content [loadingState]="loadingState">
+            <app-post-info [post]="post" (searchForTag)="searchForTag.emit($event)">
+            </app-post-info>
+          </app-loadable-content>
+
+        </ng-template>
+      </mat-tab>
+      <mat-tab label="Edit">
+        <ng-template matTabContent>
+
+          <form class="m-4" [formGroup]="form">
+            <app-post-info-form-fields
+              [title]="form.controls.title"
+              [source]="form.controls.source"
+              [description]="form.controls.description">
+            </app-post-info-form-fields>
+
+            <button mat-flat-button color="primary">Save</button>
+          </form>
+
+
+        </ng-template>
+      </mat-tab>
+    </mat-tab-group>
+
+
+  </mat-sidenav>
+
+  <ng-content></ng-content>
+
+</mat-sidenav-container>

@@ -1,0 +1,7 @@
+# qt creator build dirs
+build-*
+
+# ide
+.idea/
+.vim
+.vscode/

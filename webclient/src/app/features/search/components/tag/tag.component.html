@@ -1,0 +1,7 @@
+<mat-chip-row *ngIf="tag as tag" (removed)="removeTag.emit()" (click)="clicked.emit()">
+  {{ tag.name }}
+
+  <button matChipRemove *ngIf="showDelete">
+    <mat-icon>cancel</mat-icon>
+  </button>
+</mat-chip-row>

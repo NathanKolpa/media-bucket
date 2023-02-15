@@ -1,0 +1,85 @@
+[package]
+name = "libmb"
+version = "0.1.0"
+edition = "2021"
+
+[features]
+http-client = []
+
+http-server = [
+    "actix-web",
+    "env_logger",
+    "actix-cors",
+    "toml",
+    "log",
+    "futures-core",
+    "pin-project-lite",
+    "http-range",
+]
+
+http-server-spec = ["http-server"]
+
+local = [
+    "libsqlite3-sys",
+    "sqlx",
+    "md5",
+    "sha-1",
+    "sha2",
+    "rand",
+    "futures",
+]
+encryption = [
+    "local",
+    "libsqlite3-sys/bundled-sqlcipher",
+    "chacha20",
+    "chacha20poly1305",
+    "serde_json",
+    "hex",
+    "pin-utils",
+]
+
+full = [
+    "local",
+    "encryption",
+    "http-server",
+    "http-server-spec",
+    "http-client",
+]
+
+[dependencies]
+thiserror = "1.0.38"
+uuid = { version = "1.1.2", features = ["v4", "serde"] }
+serde = { version = "1.0.140", features = ["derive"] }
+mediatype = { version = "0.19.11", features = ["serde"] }
+url = { version = "2.3.1", features = ["serde"] }
+chrono = { version = "0.4.19", features = ["serde"] }
+tokio = { version = "1.23.0", features = ["full"] }
+async-trait = "0.1.60"
+
+serde_json = { version = "1.0.79", optional = true }
+
+# Local
+libsqlite3-sys = { version = "0.24.1", features = ["bundled"], optional = true }
+sqlx = { version = "0.6.2", features = ["runtime-async-std-native-tls", "sqlite", "chrono", "migrate"], optional = true }
+hex = { version = "0.4.3", optional = true }
+pin-utils = { version = "0.1.0", optional = true  }
+futures = { version = "0.3.25", optional = true }
+
+md5 = { version = "0.7.0", optional = true }
+sha2 = { version = "0.10.1", optional = true }
+sha-1 = { version = "0.10.0", optional = true }
+
+chacha20 = { version = "0.9.0", optional = true }
+chacha20poly1305 = { version = "0.9.1", optional = true }
+
+rand = { version = "0.8.5", optional = true }
+
+# Server
+actix-web = { version = "4.2.1", optional = true }
+actix-cors = { version = "0.6.4", optional = true }
+toml = { version = "0.5.10", features = ["preserve_order"], optional = true }
+env_logger = { version = "0.10.0", optional = true }
+log = { version = "0.4.17", optional = true }
+futures-core = { version = "0.3.25", optional = true }
+pin-project-lite =  { version ="0.2.9", optional = true }
+http-range =  { version ="0.1.5", optional = true }

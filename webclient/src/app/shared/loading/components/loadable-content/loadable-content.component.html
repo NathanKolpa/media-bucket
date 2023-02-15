@@ -1,0 +1,31 @@
+<ng-container *ngIf="loadingState as loadingState">
+
+  <ng-container *ngIf="loadingState.isLoading && showLoading">
+    <div #loading>
+      <ng-content select="[loading]"></ng-content>
+    </div>
+
+    <app-loading-spinner *ngIf="!loading.hasChildNodes()">
+    </app-loading-spinner>
+
+  </ng-container>
+
+
+  <ng-container *ngIf="loadingState.failure as failure">
+    <div #fail>
+      <ng-content select="[failure]"></ng-content>
+    </div>
+
+    <app-loading-error
+      [failure]="failure"
+      (loadAgain)="loadAgain.emit()"
+      *ngIf="!fail.hasChildNodes()">
+    </app-loading-error>
+
+  </ng-container>
+
+  <ng-container *ngIf="loadingState.isSuccess">
+    <ng-content></ng-content>
+  </ng-container>
+
+</ng-container>

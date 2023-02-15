@@ -1,0 +1,10 @@
+@import 'bootstrap/scss/functions.scss';
+@import 'bootstrap/scss/variables.scss';
+@import 'bootstrap/scss/mixins.scss';
+
+.height {
+
+  @include media-breakpoint-up(md) {
+    height: 100%;
+  }
+}

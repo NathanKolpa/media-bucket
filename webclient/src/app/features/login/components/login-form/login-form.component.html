@@ -1,0 +1,71 @@
+<div class="row h-100" *ngIf="buckets as buckets">
+  <app-bucket-select
+    class="col-md-4 height"
+    [buckets]="buckets"
+    (selectedIdChange)="setSelectedId($event)"
+    [selectedId]="selectedId">
+  </app-bucket-select>
+
+  <div class="col-md-8 height mt-4 mt-md-0">
+    <ng-container *ngIf="selectedBucket as bucket; else elseBlock">
+
+      <form *ngIf="!bucket.auth" [formGroup]="form">
+
+        <div class="row mb-3">
+          <mat-form-field appearance="outline">
+            <mat-label>Password</mat-label>
+
+            <input matInput
+                   formControlName="password"
+                   placeholder="Enter your password"
+                   [type]="hidePassword ? 'password' : 'text'">
+
+            <mat-error *ngIf="form.controls.password.invalid">
+              This field is required
+            </mat-error>
+
+            <button mat-icon-button
+                    type="button"
+                    [disabled]="!bucket.bucket.passwordProtected"
+                    matSuffix
+                    (click)="togglePasswordVisibility()"
+                    [attr.aria-label]="'Hide password'"
+                    [attr.aria-pressed]="hidePassword">
+
+              <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+            </button>
+          </mat-form-field>
+
+          <mat-error *ngIf="loginLoading?.failure as failure">
+            Failed to login: {{ failure.message }}
+          </mat-error>
+        </div>
+
+        <button mat-flat-button color="primary"
+                [disabled]="form.invalid || loginLoading?.isLoading"
+                (click)="loginClick()">
+          Login
+        </button>
+      </form>
+
+      <ng-container *ngIf="bucket.auth">
+        <div class="w-100 d-flex justify-content-center h-100 align-items-center">
+          <button mat-flat-button color="primary" (click)="selectClick()">
+            Go
+          </button>
+
+          <button mat-stroked-button (click)="logoutClick()">
+            Logout
+          </button>
+        </div>
+      </ng-container>
+
+    </ng-container>
+
+    <ng-template #elseBlock>
+      No bucket selected
+    </ng-template>
+
+  </div>
+</div>
+

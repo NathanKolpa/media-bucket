@@ -1,0 +1,5 @@
+.content {
+  min-height: 100vh;
+  display: block;
+  height: 1px; // https://stackoverflow.com/questions/8468066/child-inside-parent-with-min-height-100-not-inheriting-height
+}

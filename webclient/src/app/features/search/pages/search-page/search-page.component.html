@@ -1,0 +1,37 @@
+<main class="d-flex flex-column h-100" *ngIf="bucket$ | async as bucket">
+  <app-action-ribbon
+    (showUploadProgress)="showUploadProgress()"
+    (uploadFiles)="showUploadDialog()"
+    [activeJobs]="(activeJobs$ | async) || 0"
+    [showPostActions]="((showSidebar$ | async) || false)"
+    [selectedPost]="sidebarPost$ | async"
+    (deleteSelected)="deletePost(bucket, $event)"
+    (toggleInfo)="toggleInfo()">
+  </app-action-ribbon>
+
+  <app-post-detail-sidebar
+    class="flex-grow-1"
+    (searchForTag)="addTagToSearchQuery(bucket, $event)"
+    [post]="sidebarPost$ | async"
+    [loadingState]="sidebarPostLoadingState$ | async"
+    [open]="(showSidebar$ | async) || false">
+
+    <app-search-results
+      [nextLoadingState]="postsLoadingState$ | async"
+      [posts]="(posts$ | async) || []"
+      (showInfo)="showSidebar(bucket, $event)"
+      (showDetail)="showPost(bucket, $event)"
+      (requestNextData)="loadNext(bucket)">
+
+      <app-search-bar
+        [tags]="(searchTags$ | async) || []"
+        [query]="(searchQuery$ | async) || null"
+        (queryChange)="queryChange(bucket, $event)"
+        (searchTextChange)="searchTextChange(bucket, $event)">
+      </app-search-bar>
+
+    </app-search-results>
+
+
+  </app-post-detail-sidebar>
+</main>

@@ -1,0 +1,19 @@
+<div *ngIf="post as post" class="p-3">
+
+  <h3>Source</h3>
+  <p *ngIf="post.source"><a [href]="post.source" target="_blank">{{ post.source }}</a></p>
+  <p *ngIf="!post.source"><i>No source url</i></p>
+
+  <h3>Title</h3>
+  <p *ngIf="post.title">{{ post.title }}</p>
+  <p *ngIf="!post.title"><i>No title</i></p>
+
+  <h3>Description</h3>
+  <p *ngIf="post.description">{{ post.description }}</p>
+  <p *ngIf="!post.description"><i>No description</i></p>
+
+  <h3>Tags</h3>
+  <app-tag-list *ngIf="post.tags.length > 0" [tags]="post.tags" (clickTag)="searchForTag.emit($event)">
+  </app-tag-list>
+  <p *ngIf="post.tags.length <= 0"><i>No tags</i></p>
+</div>

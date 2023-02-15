@@ -1,0 +1,19 @@
+<div class="row">
+  <mat-form-field appearance="outline" class="mb-2" *ngIf="source as source">
+    <mat-label>Source URL</mat-label>
+    <input matInput [formControl]="source">
+    <mat-hint>Must start with http:// or https://</mat-hint>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="mb-2" *ngIf="title as title">
+    <mat-label>Title</mat-label>
+    <input matInput [formControl]="title">
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="mb-2" *ngIf="description as description">
+    <mat-label>Description</mat-label>
+    <textarea matInput rows="5" [formControl]="description"></textarea>
+  </mat-form-field>
+</div>
+
+

@@ -1,0 +1,19 @@
+<mat-form-field appearance="outline">
+  <mat-label>Add tag</mat-label>
+  <input #input matInput [formControl]="searchField" [matAutocomplete]="auto">
+
+  <mat-autocomplete autoActiveFirstOption #auto>
+    <mat-option *ngFor="let searchTag of searchTags"
+                (onSelectionChange)="addTag(searchTag)"
+                [disabled]="tagSelected(searchTag)">
+      {{ searchTag.name }}
+    </mat-option>
+
+    <mat-option *ngIf="showCreateTag()" (onSelectionChange)="createTag()">
+      Create tag '{{ input.value }}'
+    </mat-option>
+  </mat-autocomplete>
+</mat-form-field>
+
+<app-tag-list [tags]="tags" [showDelete]="true" class="mb-2 d-block" (removeTag)="removeTag($event)">
+</app-tag-list>

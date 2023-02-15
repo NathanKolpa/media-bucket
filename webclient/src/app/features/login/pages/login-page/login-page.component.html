@@ -1,0 +1,20 @@
+<app-login-layout>
+  <app-login-tile>
+
+    <app-loadable-content
+      [loadingState]="bucketsLoadingState$ | async"
+      (loadAgain)="load()">
+
+      <app-login-form
+        (logout)="logout($event)"
+        (selectBucket)="select($event)"
+        (login)="login($event)"
+        [loginLoading]="loginLoadingState$ | async"
+        [buckets]="buckets$ | async">
+      </app-login-form>
+
+    </app-loadable-content>
+
+
+  </app-login-tile>
+</app-login-layout>

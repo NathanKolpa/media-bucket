@@ -1,0 +1,11 @@
+<app-loading-layout>
+  <div class="text-center">
+    <h2>An error occurred</h2>
+    <p *ngIf="failure as failure">{{ failure.message }}</p>
+
+    <button mat-raised-button color="primary" (click)="clickLoadAgain()" [disabled]="loadAgainClicked">
+      Refresh
+    </button>
+  </div>
+
+</app-loading-layout>

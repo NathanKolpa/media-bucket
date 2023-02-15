@@ -1,0 +1,50 @@
+<form [formGroup]="form">
+  <div class="row mb-3">
+    <app-file-upload-box class="mb-3" (filesAdded)="filesAdded.emit($event)">
+    </app-file-upload-box>
+
+    <mat-accordion>
+      <mat-expansion-panel hideToggle #panel>
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            Click to {{ panel.expanded ? 'hide' : 'expand' }} files
+          </mat-panel-title>
+          <mat-panel-description>
+              <span *ngIf="activeUploads.length > 0">
+              {{ activeUploads.length }} File(s) - {{ uploadSize | bytes }}
+              </span>
+            <i *ngIf="activeUploads.length <= 0">
+              No files
+            </i>
+          </mat-panel-description>
+        </mat-expansion-panel-header>
+
+        <ng-template matExpansionPanelContent>
+          <app-upload-list class=""
+                           (deleteIndexes)="deleteIndexes.emit($event)"
+                           [uploads]="uploads"
+                           (swapUploads)="swapUploads.emit($event)">
+          </app-upload-list>
+        </ng-template>
+
+      </mat-expansion-panel>
+    </mat-accordion>
+  </div>
+  <div class="row">
+
+    <app-post-info-form-fields
+      [title]="form.controls.title"
+      [source]="form.controls.source"
+      [description]="form.controls.description">
+    </app-post-info-form-fields>
+
+    <app-tag-edit [tags]="tags" (tagsChange)="tagsChange.emit($event)" [bucket]="bucket">
+    </app-tag-edit>
+
+    <mat-radio-group formControlName="flatten">
+      <mat-radio-button [value]="false">All files in single post</mat-radio-button>
+      <mat-radio-button [value]="true">Each file in a separate post</mat-radio-button>
+    </mat-radio-group>
+
+  </div>
+</form>
