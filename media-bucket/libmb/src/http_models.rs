@@ -22,7 +22,7 @@ pub struct AuthResponse {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ErrorResponse {
     pub status: u16,
-    pub status_text: &'static str,
+    pub status_text: String,
     pub message: String,
     pub inner_error: Option<String>,
 }

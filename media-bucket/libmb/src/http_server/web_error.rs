@@ -152,7 +152,7 @@ impl actix_web::error::ResponseError for WebError {
 
         HttpResponse::build(status).json(ErrorResponse {
             status: status.as_u16(),
-            status_text: status.canonical_reason().unwrap_or("Unknown"),
+            status_text: status.canonical_reason().unwrap_or("Unknown").to_string(),
             message: format!("{self}"),
             inner_error: self.inner_error().map(|e| format!("{e:?}")),
         })
