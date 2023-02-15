@@ -4,7 +4,9 @@ version = "0.1.0"
 edition = "2021"
 
 [features]
-http-client = []
+http-client = [
+    "reqwest"
+]
 
 http-server = [
     "actix-web",
@@ -83,3 +85,5 @@ log = { version = "0.4.17", optional = true }
 futures-core = { version = "0.3.25", optional = true }
 pin-project-lite =  { version ="0.2.9", optional = true }
 http-range =  { version ="0.1.5", optional = true }
+
+reqwest = { version = "0.11.14", features = ["json", "serde_json"], optional = true }

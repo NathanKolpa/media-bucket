@@ -5,20 +5,12 @@ use actix_web::error::PayloadError;
 use actix_web::http::StatusCode;
 use actix_web::HttpResponse;
 use log::{log, Level};
-use serde::Serialize;
 use thiserror::Error;
 
 use crate::data_source::{DataSourceError, MediaImportError};
 use crate::http_server::instance::LoginError;
 use crate::BucketError;
-
-#[derive(Serialize)]
-struct ErrorResponse {
-    pub status: u16,
-    pub status_text: &'static str,
-    pub message: String,
-    pub inner_error: Option<String>,
-}
+use crate::http_models::{ErrorResponse};
 
 #[derive(Debug, Error)]
 pub enum WebError {
@@ -77,6 +69,17 @@ pub enum WebError {
     UnexpectedProgramOutput,
 }
 
+impl From<DataSourceError> for WebError {
+    fn from(value: DataSourceError) -> Self {
+        match value {
+            DataSourceError::Duplicate => Self::Duplicate,
+            DataSourceError::NotFound => Self::ResourceNotFound,
+
+            e => Self::InternalDataSourceError(e),
+        }
+    }
+}
+
 impl WebError {
     pub fn inner_error(&self) -> Option<&dyn Error> {
         match self {
@@ -97,17 +100,6 @@ impl From<MediaImportError> for WebError {
             MediaImportError::UnexpectedOutput => Self::UnexpectedProgramOutput,
             MediaImportError::DataSourceError(e) => Self::InternalDataSourceError(e),
             MediaImportError::IOError(e) => Self::IOError(e),
-        }
-    }
-}
-
-impl From<DataSourceError> for WebError {
-    fn from(value: DataSourceError) -> Self {
-        match value {
-            DataSourceError::Duplicate => Self::Duplicate,
-            DataSourceError::NotFound => Self::ResourceNotFound,
-
-            e => Self::InternalDataSourceError(e),
         }
     }
 }

@@ -3,20 +3,12 @@ use std::ops::Deref;
 use actix_web::web::Data;
 use actix_web::{get, post, web, HttpRequest, Responder};
 use log::info;
-use serde::{Deserialize, Serialize};
+use crate::http_models::{AuthRequest, AuthResponse, BucketInfo};
 
 use crate::http_server::instance::{InstanceDataSource, ServerBucketInstance, Session};
 use crate::http_server::web_error::WebError;
 
-#[derive(Serialize)]
-struct BucketResponse {
-    id: u64,
-    name: String,
-    password_protected: bool,
-    encrypted: bool,
-}
-
-impl From<&ServerBucketInstance> for BucketResponse {
+impl From<&ServerBucketInstance> for BucketInfo {
     fn from(value: &ServerBucketInstance) -> Self {
         Self {
             id: value.id(),
@@ -29,10 +21,10 @@ impl From<&ServerBucketInstance> for BucketResponse {
 
 #[get("")]
 pub async fn index(buckets: Data<InstanceDataSource>) -> impl Responder {
-    let instances: Vec<BucketResponse> = buckets
+    let instances: Vec<BucketInfo> = buckets
         .all_sorted()
         .into_iter()
-        .map(|i| BucketResponse::from(i.deref()))
+        .map(|i| BucketInfo::from(i.deref()))
         .collect();
 
     web::Json(instances)
@@ -45,19 +37,9 @@ pub async fn show(
 ) -> Result<impl Responder, WebError> {
     let instance = buckets.get_by_id(*id).ok_or(WebError::ResourceNotFound)?;
 
-    Ok(web::Json(BucketResponse::from(instance.deref())))
+    Ok(web::Json(BucketInfo::from(instance.deref())))
 }
 
-#[derive(Deserialize)]
-pub struct AuthRequest {
-    password: Option<String>,
-}
-
-#[derive(Serialize)]
-pub struct AuthResponse {
-    token: String,
-    active_tokens: usize,
-}
 
 #[post("/{id}/auth")]
 pub async fn auth(

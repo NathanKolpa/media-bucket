@@ -4,8 +4,8 @@ use std::pin::Pin;
 use actix_web::dev::Payload;
 use actix_web::{web, FromRequest, HttpRequest};
 use serde::Deserialize;
-
 use crate::http_server::web_error::WebError;
+
 use crate::model::PostSearchQuery;
 
 #[derive(Deserialize)]

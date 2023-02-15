@@ -1,5 +1,4 @@
 use actix_web::{web, HttpResponse, Responder, Scope};
-
 use crate::http_server::web_error::WebError;
 
 mod buckets;
