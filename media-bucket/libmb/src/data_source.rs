@@ -40,6 +40,10 @@ pub enum DataSourceError {
     #[cfg(feature = "local")]
     #[error("SQL error: {0}")]
     SQLError(#[from] sqlx::Error),
+
+    #[cfg(feature = "http-client")]
+    #[error("HTTP error: {0}")]
+    HttpError(#[from] reqwest::Error),
 }
 
 /// A struct representing pagination parameters.
@@ -55,10 +59,7 @@ pub struct PageParams {
 impl PageParams {
     /// Create a new instance of a page.
     pub fn new(page_size: usize, offset: usize) -> Self {
-        Self {
-            page_size,
-            offset,
-        }
+        Self { page_size, offset }
     }
 
     /// Get the number of maximum items on each page.
@@ -173,7 +174,12 @@ pub trait TagDataSource: Sync + Send {
     async fn add(&self, value: &mut Tag) -> Result<(), DataSourceError>;
     async fn delete(&self, tag_id: u64) -> Result<(), DataSourceError>;
     async fn get_by_id(&self, id: u64) -> Result<Option<Tag>, DataSourceError>;
-    async fn search(&self, page: &PageParams, query: &str) -> Result<Page<Tag>, DataSourceError>;
+    async fn search(
+        &self,
+        page: &PageParams,
+        query: &str,
+        exact: bool,
+    ) -> Result<Page<Tag>, DataSourceError>;
     async fn get_all_from_post(&self, post_id: u64) -> Result<Vec<Tag>, DataSourceError>;
     async fn add_tag_to_post(&self, tag_id: u64, post_id: u64) -> Result<(), DataSourceError>;
     async fn remove_tag_to_post(&self, tag_id: u64, post_id: u64) -> Result<(), DataSourceError>;
@@ -225,7 +231,11 @@ pub trait MediaImportDataSource: Sync + Send {
 #[async_trait]
 pub trait CrossDataSource: Sync + Send {
     async fn get_post_detail(&self, post_id: u64) -> Result<Option<PostDetail>, DataSourceError>;
-    async fn search(&self, query: &PostSearchQuery, page: &PageParams) -> Result<Page<SearchPost>, DataSourceError>;
+    async fn search(
+        &self,
+        query: &PostSearchQuery,
+        page: &PageParams,
+    ) -> Result<Page<SearchPost>, DataSourceError>;
     async fn search_items(
         &self,
         post_id: u64,

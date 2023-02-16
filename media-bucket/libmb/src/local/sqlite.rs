@@ -571,7 +571,12 @@ impl TagDataSource for SqliteIndex {
         }
     }
 
-    async fn search(&self, page: &PageParams, query: &str) -> Result<Page<Tag>, DataSourceError> {
+    async fn search(
+        &self,
+        page: &PageParams,
+        query: &str,
+        exact: bool,
+    ) -> Result<Page<Tag>, DataSourceError> {
         let mut conn = self.pool.acquire().await?;
 
         let total_row_count: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM tags")
@@ -580,10 +585,14 @@ impl TagDataSource for SqliteIndex {
 
         let query_is_empty = query.len() < 3;
 
-        let where_clause = if query_is_empty {
-            " WHERE name LIKE ?"
+        let where_clause = if exact {
+            " WHERE name = ?"
         } else {
-            "(?)"
+            if query_is_empty {
+                " WHERE name LIKE ?"
+            } else {
+                "(?)"
+            }
         };
 
         let query_str =
@@ -591,17 +600,21 @@ impl TagDataSource for SqliteIndex {
 
         let mut sql_query = sqlx::query(query_str.as_str());
 
-        if !query_is_empty {
-            let value = query
-                .trim()
-                .split(' ')
-                .collect::<Vec<&str>>()
-                .join(" OR ");
+        if exact {
+            sql_query = sql_query.bind(query);
+        } else {
+            if !query_is_empty {
+                let value = query
+                    .trim()
+                    .split(' ')
+                    .map(|word| format!("\"{word}\""))
+                    .collect::<Vec<String>>()
+                    .join(" OR ");
 
-            sql_query = sql_query.bind(value);
-        }
-        else {
-            sql_query = sql_query.bind(format!("%{query}%"))
+                sql_query = sql_query.bind(value);
+            } else {
+                sql_query = sql_query.bind(format!("%{query}%"))
+            }
         }
 
         let rows = sql_query
@@ -797,6 +810,7 @@ impl CrossDataSource for SqliteIndex {
         let batch = ImportBatch {
             id: batch_id as u64,
         };
+
         let mut posts = Vec::with_capacity(data.items.len());
 
         for content_id in data.items.iter() {

@@ -203,7 +203,10 @@ impl<FileStorage: BlobDataSource, Passwords: PasswordDataSource> MediaImportData
         let thumb_id = Uuid::new_v4();
         let thumb_writer = self.blobs().add(&thumb_id).await?;
 
-        let MediaImportOutput { mut content, mut thumbnail }  = import_file_with_thumbnail(
+        let MediaImportOutput {
+            mut content,
+            mut thumbnail,
+        } = import_file_with_thumbnail(
             path,
             mime,
             media_id,

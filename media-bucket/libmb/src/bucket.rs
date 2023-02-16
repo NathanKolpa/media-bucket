@@ -1,6 +1,7 @@
 use std::path::Path;
 
 use thiserror::Error;
+use url::Url;
 
 use crate::data_source::DataSource;
 
@@ -21,6 +22,10 @@ pub enum BucketError {
     #[cfg(feature = "local")]
     #[error("{0}")]
     LocalDataSourceError(crate::local::LocalDataSourceError),
+
+    #[cfg(feature = "http-client")]
+    #[error("{0}")]
+    HttpDataSourceError(crate::http_client::HttpDataSourceError),
 }
 
 #[cfg(feature = "local")]
@@ -29,6 +34,16 @@ impl From<crate::local::LocalDataSourceError> for BucketError {
         match value {
             crate::local::LocalDataSourceError::InvalidPassword => Self::InvalidPassword,
             e => Self::LocalDataSourceError(e),
+        }
+    }
+}
+
+#[cfg(feature = "http-client")]
+impl From<crate::http_client::HttpDataSourceError> for BucketError {
+    fn from(value: crate::http_client::HttpDataSourceError) -> Self {
+        match value {
+            crate::http_client::HttpDataSourceError::InvalidPassword => Self::InvalidPassword,
+            e => Self::HttpDataSourceError(e),
         }
     }
 }
@@ -62,7 +77,7 @@ impl Bucket {
     /// * `BucketError::PasswordRequired` - A password is required to open the bucket, but none was provided.
     pub async fn open(location: &str, password: Option<&str>) -> Result<Self, BucketError> {
         if location.starts_with("http://") || location.starts_with("https://") {
-            todo!()
+            return Ok(Self::open_http_client(location.parse().unwrap(), password).await?);
         }
 
         match password {
@@ -83,6 +98,18 @@ impl Bucket {
     #[cfg(feature = "local")]
     pub async fn is_dir_encrypted_bucket(path: &Path) -> bool {
         todo!()
+    }
+
+    #[cfg(feature = "http-client")]
+    pub async fn open_http_client(base: Url, password: Option<&str>) -> Result<Self, BucketError> {
+        use crate::http_client::HttpDataSource;
+
+        let data_source = HttpDataSource::open(base, password).await?;
+
+        Ok(Self {
+            is_encrypted: data_source.is_encrypted(),
+            data_source: Box::new(data_source),
+        })
     }
 
     /// This method opens an encrypted bucket at the specified `path`, using the given `password`.

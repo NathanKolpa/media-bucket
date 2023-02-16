@@ -316,7 +316,7 @@ export class ApiService {
   }
 
   private authenticatedGet(auth: Auth, url: string): Observable<any> {
-    return this.get(url, this.authRequestOptions(auth));
+    return this.get(`/buckets/${auth.bucketId}${url}`, this.authRequestOptions(auth));
   }
 
   private post(url: string, data: any, options?: any): Observable<any> {
@@ -324,11 +324,11 @@ export class ApiService {
   }
 
   private authenticatedPost(auth: Auth, url: string, data: any, options?: any): Observable<any> {
-    return this.post(url, data, {...this.authRequestOptions(auth), ...options});
+    return this.post(`/buckets/${auth.bucketId}${url}`, data, {...this.authRequestOptions(auth), ...options});
   }
 
   private authenticatedDelete(auth: Auth, url: string, options?: any): Observable<any> {
-    return this.delete(url, {...this.authRequestOptions(auth), ...options});
+    return this.delete(`/buckets/${auth.bucketId}${url}`, {...this.authRequestOptions(auth), ...options});
   }
 
   private put(url: string, data: any): Observable<any> {
@@ -343,7 +343,6 @@ export class ApiService {
     return {
       headers: {
         'Authorization': auth.token + '',
-        'x-bucket-id': auth.bucketId + ''
       }
     }
   }
@@ -422,7 +421,7 @@ export class ApiService {
 
     let token = '';
     if (auth.token) {
-      token = `&token=${encodeURIComponent(auth.token)}`;
+      token = `token=${encodeURIComponent(auth.token)}`;
     }
 
     return new Media(
@@ -437,7 +436,7 @@ export class ApiService {
       json.mime,
       documentData,
       mediaType,
-      `${environment.api}/media/${json.id}/file?bucket=${encodeURIComponent(auth.bucketId)}${token}`
+      `${environment.api}/buckets/${auth.bucketId}/media/${json.id}/file?${token}`
     );
   }
 

@@ -1,5 +1,6 @@
 use std::env;
 
+use crate::http_server::web_error::WebError;
 use actix_web::{post, web, HttpMessage, HttpRequest, Responder};
 use futures::StreamExt;
 use log::info;
@@ -9,7 +10,6 @@ use tokio::io::AsyncWriteExt;
 use uuid::Uuid;
 
 use crate::http_server::instance::Session;
-use crate::http_server::web_error::WebError;
 
 #[post("")]
 pub async fn store(

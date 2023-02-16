@@ -189,11 +189,7 @@ where
         match self.method {
             ThumbnailMethod::ImageMagick { path, mime } => {
                 let mut command = Command::new("convert")
-                    .arg(format!(
-                        "{}:{}[0]",
-                        mime,
-                        path.display()
-                    ))
+                    .arg(format!("{}:{}[0]", mime.subty, path.display()))
                     .arg("-strip")
                     .arg("-quality")
                     .arg("50")

@@ -4,6 +4,7 @@ use log::info;
 use serde::Deserialize;
 
 use crate::data_source::PageParams;
+use crate::http_models::CreateTagRequest;
 use crate::http_server::instance::Session;
 use crate::http_server::web_error::WebError;
 use crate::model::Tag;
@@ -11,6 +12,7 @@ use crate::model::Tag;
 #[derive(Deserialize)]
 pub struct SearchParams {
     query: Option<String>,
+    exact: Option<bool>,
 }
 
 #[get("")]
@@ -23,16 +25,14 @@ pub async fn index(
         .bucket()
         .data_source()
         .tags()
-        .search(&page, params.query.as_deref().unwrap_or(""))
+        .search(
+            &page,
+            params.query.as_deref().unwrap_or(""),
+            params.exact.unwrap_or(false),
+        )
         .await?;
 
     Ok(web::Json(tags))
-}
-
-#[derive(Deserialize)]
-pub struct CreateTagRequest {
-    name: String,
-    group: Option<u64>,
 }
 
 #[post("")]
@@ -55,12 +55,17 @@ pub async fn store(
 }
 
 #[delete("/{id}")]
-pub async fn delete(session: Session, id: web::Path<u64>) -> Result<impl Responder, WebError> {
+pub async fn delete(
+    session: Session,
+    id: web::Path<(u64, u64)>,
+) -> Result<impl Responder, WebError> {
+    let id = id.into_inner().1;
+
     let tag = session
         .bucket()
         .data_source()
         .tags()
-        .get_by_id(*id)
+        .get_by_id(id)
         .await?
         .ok_or(WebError::ResourceNotFound)?;
 

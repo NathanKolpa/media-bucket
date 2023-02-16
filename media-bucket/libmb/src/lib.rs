@@ -20,3 +20,5 @@ pub mod model;
 
 #[cfg(feature = "local")]
 mod media_import;
+
+mod http_models;

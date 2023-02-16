@@ -8,12 +8,14 @@ use crate::http_server::stream_file::new_chunked_read;
 use crate::http_server::web_error::WebError;
 
 #[get("/{id}")]
-pub async fn show(session: Session, id: web::Path<u64>) -> Result<impl Responder, WebError> {
+pub async fn show(session: Session, id: web::Path<(u64, u64)>) -> Result<impl Responder, WebError> {
+    let id = id.into_inner().1;
+
     let media = session
         .bucket()
         .data_source()
         .media()
-        .get_by_id(id.into_inner())
+        .get_by_id(id)
         .await?
         .ok_or(WebError::ResourceNotFound)?;
 
@@ -23,14 +25,16 @@ pub async fn show(session: Session, id: web::Path<u64>) -> Result<impl Responder
 #[get("/{id}/file")]
 pub async fn file(
     session: Session,
-    id: web::Path<u64>,
+    id: web::Path<(u64, u64)>,
     req: HttpRequest,
 ) -> Result<impl Responder, WebError> {
+    let id = id.into_inner().1;
+
     let media = session
         .bucket()
         .data_source()
         .media()
-        .get_by_id(id.into_inner())
+        .get_by_id(id)
         .await?
         .ok_or(WebError::ResourceNotFound)?;
 
