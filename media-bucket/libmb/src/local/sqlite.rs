@@ -595,7 +595,8 @@ impl TagDataSource for SqliteIndex {
             let value = query
                 .trim()
                 .split(' ')
-                .collect::<Vec<&str>>()
+                .map(|word| format!("\"{word}\""))
+                .collect::<Vec<String>>()
                 .join(" OR ");
 
             sql_query = sql_query.bind(value);
@@ -783,7 +784,7 @@ impl CrossDataSource for SqliteIndex {
 
     async fn add_full_post(
         &self,
-        data: CreateFullPost,
+        mut data: CreateFullPost,
     ) -> Result<(ImportBatch, Vec<Post>), DataSourceError> {
         let created_at = data.created_at.unwrap_or_else(Utc::now);
 
@@ -797,6 +798,7 @@ impl CrossDataSource for SqliteIndex {
         let batch = ImportBatch {
             id: batch_id as u64,
         };
+
         let mut posts = Vec::with_capacity(data.items.len());
 
         for content_id in data.items.iter() {
@@ -874,6 +876,9 @@ impl CrossDataSource for SqliteIndex {
 
             query.execute(&mut tx).await?;
         }
+
+        data.tag_ids.sort();
+        data.tag_ids.dedup();
 
         if !data.tag_ids.is_empty() {
             let insert_str = "INSERT INTO tags_posts(tag_id, post_id) VALUES \n";
