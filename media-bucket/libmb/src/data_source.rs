@@ -40,6 +40,10 @@ pub enum DataSourceError {
     #[cfg(feature = "local")]
     #[error("SQL error: {0}")]
     SQLError(#[from] sqlx::Error),
+
+    #[cfg(feature = "http-client")]
+    #[error("HTTP error: {0}")]
+    HttpError(#[from] reqwest::Error),
 }
 
 /// A struct representing pagination parameters.

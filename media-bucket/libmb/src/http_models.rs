@@ -1,4 +1,5 @@
 use serde::{Serialize, Deserialize};
+use crate::model::*;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct BucketInfo {
@@ -25,4 +26,16 @@ pub struct ErrorResponse {
     pub status_text: String,
     pub message: String,
     pub inner_error: Option<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct CreateFullPostResponse {
+    pub batch: ImportBatch,
+    pub posts: Vec<Post>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct CreateTagRequest {
+    pub name: String,
+    pub group: Option<u64>,
 }

@@ -30,6 +30,15 @@ impl ManyToOne<u64, Media> {
     }
 }
 
+impl ManyToOne<u64, TagGroup> {
+    pub fn id(&self) -> u64 {
+        match self {
+            Self::Id(id) => *id,
+            Self::Obj(obj) => obj.id,
+        }
+    }
+}
+
 /// A struct representing a paginated collection of data.
 ///
 /// The `Page` struct is used to represent a collection of data that has been divided into pages.
@@ -167,7 +176,7 @@ impl ManyToOne<u64, Content> {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Default, Debug, Serialize, Deserialize, Clone)]
 pub struct UploadMetadata {
     pub original_filename: Option<String>,
     pub original_directory: Option<String>,
@@ -203,6 +212,7 @@ impl ManyToOne<u64, Post> {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct TagGroup {
+    pub id: u64,
     pub name: String,
 }
 

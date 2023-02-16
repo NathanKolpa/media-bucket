@@ -1,12 +1,13 @@
 use actix_web::{delete, get, post, put, Responder, web};
 use log::info;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize};
 use url::Url;
 
 use crate::data_source::PageParams;
+use crate::http_models::CreateFullPostResponse;
 use crate::http_server::instance::Session;
 use crate::http_server::web_error::WebError;
-use crate::model::{CreateFullPost, ImportBatch, Post, PostSearchQuery};
+use crate::model::{CreateFullPost, PostSearchQuery};
 
 #[get("")]
 pub async fn index(session: Session, query: PostSearchQuery, page: PageParams) -> Result<impl Responder, WebError> {
@@ -125,12 +126,6 @@ pub async fn store_tags(
     }
 
     Ok(web::Json(()))
-}
-
-#[derive(Serialize)]
-pub struct CreateFullPostResponse {
-    batch: ImportBatch,
-    posts: Vec<Post>,
 }
 
 #[post("")]

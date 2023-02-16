@@ -2,16 +2,18 @@ use std::path::Path;
 
 use async_trait::async_trait;
 use mediatype::MediaTypeBuf;
-use reqwest::header::{HeaderMap, AUTHORIZATION};
+use reqwest::header::{HeaderMap, AUTHORIZATION, CONTENT_TYPE};
 use reqwest::{Client, RequestBuilder};
 use serde::de::DeserializeOwned;
-use serde::{Deserialize, Serialize};
 use thiserror::Error;
+use tokio::fs::File;
 use url::Url;
 use uuid::Uuid;
 
 use crate::data_source::*;
-use crate::http_models::{AuthRequest, AuthResponse, BucketInfo, ErrorResponse};
+use crate::http_models::{
+    AuthRequest, AuthResponse, BucketInfo, CreateFullPostResponse, CreateTagRequest, ErrorResponse,
+};
 use crate::model::{
     Content, CreateFullPost, ImportBatch, Media, Page, Post, PostDetail, PostItem, PostSearchQuery,
     SearchPost, SearchPostItem, Tag,
@@ -38,6 +40,9 @@ pub enum HttpDataSourceError {
 
     #[error("Api error")]
     ApiError(ErrorResponse),
+
+    #[error("Json response error")]
+    JsonResponseError(reqwest::Error),
 }
 
 pub struct HttpDataSource {
@@ -264,7 +269,21 @@ impl ImportBatchDataSource for HttpDataSource {
 #[async_trait]
 impl TagDataSource for HttpDataSource {
     async fn add(&self, value: &mut Tag) -> Result<(), DataSourceError> {
-        todo!()
+        let res = self
+            .client
+            .post(format!("{}/tags", self.base))
+            .json(&CreateTagRequest {
+                name: value.name.clone(),
+                group: value.group.as_ref().map(|g| g.id()),
+            })
+            .send()
+            .await?;
+
+        let new_tag = res.json::<Tag>().await?;
+
+        value.id = new_tag.id;
+
+        Ok(())
     }
 
     async fn delete(&self, tag_id: u64) -> Result<(), DataSourceError> {
@@ -330,7 +349,18 @@ impl MediaImportDataSource for HttpDataSource {
         mime: MediaTypeBuf,
         stream: &Path,
     ) -> Result<Content, MediaImportError> {
-        todo!()
+        let file = File::open(stream).await?;
+
+        self.client
+            .post(format!("{}/content", self.base))
+            .header(CONTENT_TYPE, mime.as_str())
+            .body(file)
+            .send()
+            .await
+            .map_err(|e| MediaImportError::DataSourceError(e.into()))?
+            .json::<Content>()
+            .await
+            .map_err(|e| MediaImportError::DataSourceError(e.into()))
     }
 }
 
@@ -368,7 +398,16 @@ impl CrossDataSource for HttpDataSource {
         &self,
         new_post: CreateFullPost,
     ) -> Result<(ImportBatch, Vec<Post>), DataSourceError> {
-        todo!()
+        let res = self
+            .client
+            .post(format!("{}/posts", self.base))
+            .json(&new_post)
+            .send()
+            .await?;
+
+        let body = res.json::<CreateFullPostResponse>().await?;
+
+        Ok((body.batch, body.posts))
     }
 
     async fn cascade_delete_post(&self, id: u64) -> Result<(), DataSourceError> {
