@@ -148,7 +148,7 @@ impl actix_web::error::ResponseError for WebError {
             ("Server", Level::Error)
         };
 
-        log!(level, "{target} error: {self}",);
+        log!(level, "{target} error: {self} -> {:?}", self.inner_error());
 
         HttpResponse::build(status).json(ErrorResponse {
             status: status.as_u16(),
