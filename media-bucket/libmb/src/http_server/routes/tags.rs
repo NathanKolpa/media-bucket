@@ -12,7 +12,7 @@ use crate::model::Tag;
 #[derive(Deserialize)]
 pub struct SearchParams {
     query: Option<String>,
-    exact: Option<bool>
+    exact: Option<bool>,
 }
 
 #[get("")]
@@ -25,7 +25,11 @@ pub async fn index(
         .bucket()
         .data_source()
         .tags()
-        .search(&page, params.query.as_deref().unwrap_or(""), params.exact.unwrap_or(false))
+        .search(
+            &page,
+            params.query.as_deref().unwrap_or(""),
+            params.exact.unwrap_or(false),
+        )
         .await?;
 
     Ok(web::Json(tags))
@@ -51,7 +55,10 @@ pub async fn store(
 }
 
 #[delete("/{id}")]
-pub async fn delete(session: Session, id: web::Path<(u64, u64)>) -> Result<impl Responder, WebError> {
+pub async fn delete(
+    session: Session,
+    id: web::Path<(u64, u64)>,
+) -> Result<impl Responder, WebError> {
     let id = id.into_inner().1;
 
     let tag = session

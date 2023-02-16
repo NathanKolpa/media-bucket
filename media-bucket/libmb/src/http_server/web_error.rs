@@ -8,9 +8,9 @@ use log::{log, Level};
 use thiserror::Error;
 
 use crate::data_source::{DataSourceError, MediaImportError};
+use crate::http_models::ErrorResponse;
 use crate::http_server::instance::LoginError;
 use crate::BucketError;
-use crate::http_models::{ErrorResponse};
 
 #[derive(Debug, Error)]
 pub enum WebError {

@@ -1,9 +1,9 @@
 use std::ops::Deref;
 
+use crate::http_models::{AuthRequest, AuthResponse, BucketInfo};
 use actix_web::web::Data;
 use actix_web::{get, post, web, HttpRequest, Responder};
 use log::info;
-use crate::http_models::{AuthRequest, AuthResponse, BucketInfo};
 
 use crate::http_server::instance::{InstanceDataSource, ServerBucketInstance, Session};
 use crate::http_server::web_error::WebError;
@@ -39,7 +39,6 @@ pub async fn show(
 
     Ok(web::Json(BucketInfo::from(instance.deref())))
 }
-
 
 #[post("/{id}/auth")]
 pub async fn auth(

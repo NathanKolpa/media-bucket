@@ -1,6 +1,6 @@
-use actix_web::{delete, get, post, put, Responder, web};
+use actix_web::{delete, get, post, put, web, Responder};
 use log::info;
-use serde::{Deserialize};
+use serde::Deserialize;
 use url::Url;
 
 use crate::data_source::PageParams;
@@ -10,8 +10,17 @@ use crate::http_server::web_error::WebError;
 use crate::model::{CreateFullPost, PostSearchQuery};
 
 #[get("")]
-pub async fn index(session: Session, query: PostSearchQuery, page: PageParams) -> Result<impl Responder, WebError> {
-    let posts = session.bucket().data_source().cross().search(&query, &page).await?;
+pub async fn index(
+    session: Session,
+    query: PostSearchQuery,
+    page: PageParams,
+) -> Result<impl Responder, WebError> {
+    let posts = session
+        .bucket()
+        .data_source()
+        .cross()
+        .search(&query, &page)
+        .await?;
 
     Ok(web::Json(posts))
 }
@@ -32,7 +41,10 @@ pub async fn show(session: Session, id: web::Path<(u64, u64)>) -> Result<impl Re
 }
 
 #[delete("/{id}")]
-pub async fn delete(session: Session, id: web::Path<(u64, u64)>) -> Result<impl Responder, WebError> {
+pub async fn delete(
+    session: Session,
+    id: web::Path<(u64, u64)>,
+) -> Result<impl Responder, WebError> {
     let id = id.into_inner().1;
 
     session

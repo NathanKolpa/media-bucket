@@ -104,8 +104,7 @@ impl Bucket {
     pub async fn open_http_client(base: Url, password: Option<&str>) -> Result<Self, BucketError> {
         use crate::http_client::HttpDataSource;
 
-        let data_source = HttpDataSource::open(base, password)
-            .await?;
+        let data_source = HttpDataSource::open(base, password).await?;
 
         Ok(Self {
             is_encrypted: data_source.is_encrypted(),

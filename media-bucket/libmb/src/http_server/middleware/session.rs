@@ -1,10 +1,10 @@
 use std::future::Future;
 use std::pin::Pin;
 
+use crate::http_server::web_error::WebError;
 use actix_web::dev::Payload;
 use actix_web::{web, FromRequest, HttpRequest};
 use serde::Deserialize;
-use crate::http_server::web_error::WebError;
 
 use crate::http_server::instance::{InstanceDataSource, Session};
 
@@ -29,7 +29,8 @@ impl FromRequest for Session {
             .map_err(|e| WebError::ParseError);
 
         let bucket_id = req
-            .match_info().get("bucket_id")
+            .match_info()
+            .get("bucket_id")
             .ok_or(WebError::MissingBucketId)
             .and_then(|id| id.parse().map_err(|_| WebError::ParseError));
 

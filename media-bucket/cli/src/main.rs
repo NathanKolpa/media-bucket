@@ -45,8 +45,8 @@ enum Commands {
         location: String,
 
         #[clap(value_parser, short, long, default_value = None)]
-        password: Option<String>
-    }
+        password: Option<String>,
+    },
 }
 
 #[derive(Parser)]
@@ -85,10 +85,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
             }
 
             Bucket::create_encrypted(&path, &password).await?;
-        },
+        }
         Commands::Open { location, password } => {
-            let _bucket = Bucket::open(&location, password.as_deref())
-                .await?;
+            let _bucket = Bucket::open(&location, password.as_deref()).await?;
         }
     }
 
