@@ -275,8 +275,29 @@ impl TagDataSource for HttpDataSource {
         todo!()
     }
 
-    async fn search(&self, page: &PageParams, query: &str) -> Result<Page<Tag>, DataSourceError> {
-        todo!()
+    async fn search(
+        &self,
+        page: &PageParams,
+        query: &str,
+        exact: bool,
+    ) -> Result<Page<Tag>, DataSourceError> {
+        let mut url = format!("{}/tags", self.base)
+            .parse::<Url>()
+            .expect("Cannot parse url");
+
+        url.query_pairs_mut()
+            .append_pair("offset", page.offset().to_string().as_str())
+            .append_pair("size", page.page_size().to_string().as_str())
+            .append_pair("exact", if exact { "true" } else { "false" })
+            .append_pair("query", query);
+
+        Ok(self
+            .client
+            .get(url)
+            .send()
+            .await?
+            .json::<Page<Tag>>()
+            .await?)
     }
 
     async fn get_all_from_post(&self, post_id: u64) -> Result<Vec<Tag>, DataSourceError> {

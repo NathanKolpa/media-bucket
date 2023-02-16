@@ -173,7 +173,7 @@ pub trait TagDataSource: Sync + Send {
     async fn add(&self, value: &mut Tag) -> Result<(), DataSourceError>;
     async fn delete(&self, tag_id: u64) -> Result<(), DataSourceError>;
     async fn get_by_id(&self, id: u64) -> Result<Option<Tag>, DataSourceError>;
-    async fn search(&self, page: &PageParams, query: &str) -> Result<Page<Tag>, DataSourceError>;
+    async fn search(&self, page: &PageParams, query: &str, exact: bool) -> Result<Page<Tag>, DataSourceError>;
     async fn get_all_from_post(&self, post_id: u64) -> Result<Vec<Tag>, DataSourceError>;
     async fn add_tag_to_post(&self, tag_id: u64, post_id: u64) -> Result<(), DataSourceError>;
     async fn remove_tag_to_post(&self, tag_id: u64, post_id: u64) -> Result<(), DataSourceError>;

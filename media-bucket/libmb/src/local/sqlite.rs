@@ -571,7 +571,12 @@ impl TagDataSource for SqliteIndex {
         }
     }
 
-    async fn search(&self, page: &PageParams, query: &str) -> Result<Page<Tag>, DataSourceError> {
+    async fn search(
+        &self,
+        page: &PageParams,
+        query: &str,
+        exact: bool,
+    ) -> Result<Page<Tag>, DataSourceError> {
         let mut conn = self.pool.acquire().await?;
 
         let total_row_count: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM tags")
@@ -580,10 +585,14 @@ impl TagDataSource for SqliteIndex {
 
         let query_is_empty = query.len() < 3;
 
-        let where_clause = if query_is_empty {
-            " WHERE name LIKE ?"
+        let where_clause = if exact {
+            " WHERE name = ?"
         } else {
-            "(?)"
+            if query_is_empty {
+                " WHERE name LIKE ?"
+            } else {
+                "(?)"
+            }
         };
 
         let query_str =
@@ -591,18 +600,21 @@ impl TagDataSource for SqliteIndex {
 
         let mut sql_query = sqlx::query(query_str.as_str());
 
-        if !query_is_empty {
-            let value = query
-                .trim()
-                .split(' ')
-                .map(|word| format!("\"{word}\""))
-                .collect::<Vec<String>>()
-                .join(" OR ");
+        if exact {
+            sql_query = sql_query.bind(query);
+        } else {
+            if !query_is_empty {
+                let value = query
+                    .trim()
+                    .split(' ')
+                    .map(|word| format!("\"{word}\""))
+                    .collect::<Vec<String>>()
+                    .join(" OR ");
 
-            sql_query = sql_query.bind(value);
-        }
-        else {
-            sql_query = sql_query.bind(format!("%{query}%"))
+                sql_query = sql_query.bind(value);
+            } else {
+                sql_query = sql_query.bind(format!("%{query}%"))
+            }
         }
 
         let rows = sql_query
@@ -784,7 +796,7 @@ impl CrossDataSource for SqliteIndex {
 
     async fn add_full_post(
         &self,
-        mut data: CreateFullPost,
+        data: CreateFullPost,
     ) -> Result<(ImportBatch, Vec<Post>), DataSourceError> {
         let created_at = data.created_at.unwrap_or_else(Utc::now);
 
@@ -876,9 +888,6 @@ impl CrossDataSource for SqliteIndex {
 
             query.execute(&mut tx).await?;
         }
-
-        data.tag_ids.sort();
-        data.tag_ids.dedup();
 
         if !data.tag_ids.is_empty() {
             let insert_str = "INSERT INTO tags_posts(tag_id, post_id) VALUES \n";
