@@ -17,8 +17,4 @@ export class MediaDisplayComponent {
 
   @Input()
   public className: string | null = null;
-
-  encodeURIComponent(string: string): string {
-    return encodeURIComponent(string);
-  }
 }

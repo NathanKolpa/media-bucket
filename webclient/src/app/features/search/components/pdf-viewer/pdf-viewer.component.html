@@ -1,0 +1,12 @@
+<ng-container *ngIf="_media as media">
+  <ng-container *ngIf="media.documentData as documentData">
+    <ng2-pdfjs-viewer
+      #pdfViewer
+      cursor="select"
+      [className]="className"
+      [ngStyle]="{ 'min-width': '600px', 'max-width': '90vw', 'display': 'block', 'width': documentData.pageSize.width + 'px', 'height': documentData.pages * documentData.pageSize.height + 'px' }">
+    </ng2-pdfjs-viewer>
+  </ng-container>
+</ng-container>
+
+
