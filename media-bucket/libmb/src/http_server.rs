@@ -5,12 +5,11 @@ use std::sync::Arc;
 use actix_cors::Cors;
 use actix_web::middleware::NormalizePath;
 use actix_web::{web, App, HttpServer};
-use actix_files::Files;
 
 pub use config_file::ConfigError;
 
 use crate::http_server::instance::{InstanceDataSource, ServerBucketInstance};
-use crate::http_server::routes::routes;
+use crate::http_server::routes::{routes, routes_with_static};
 
 mod config_file;
 mod instance;
@@ -58,14 +57,12 @@ impl ServerConfig {
             static_files: config.server.as_ref().and_then(|s| {
                 if !s.serve_ui.unwrap_or(false) {
                     None
-                }
-                else {
+                } else {
                     Some(StaticFilesConfig {
                         index_file: s.index_file.clone(),
-                        file_root: s.static_files.clone()
+                        file_root: s.static_files.clone(),
                     })
                 }
-
             }),
             instances: config
                 .buckets
@@ -132,16 +129,12 @@ pub async fn start_server(config: ServerConfig) -> std::io::Result<()> {
     let factory_config = config.clone();
 
     HttpServer::new(move || {
-        let mut app_routes = routes();
+        let app_routes = if let Some(files) = &factory_config.static_files {
+            routes_with_static(files.file_root().to_path_buf(), files.index_file().to_string())
+        } else {
+            routes()
+        };
 
-        if let Some(files) = &factory_config.static_files {
-            app_routes = web::scope("")
-                .service(web::scope("/api")
-                    .service(app_routes))
-                .service(Files::new("", files.file_root())
-                    .prefer_utf8(true)
-                    .index_file(files.index_file()));
-        }
 
         let cors = Cors::default()
             .allow_any_origin()

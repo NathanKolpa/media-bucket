@@ -1,5 +1,11 @@
+use std::path::PathBuf;
+use std::sync::Arc;
+use actix_files::{Files, NamedFile};
 use crate::http_server::web_error::WebError;
 use actix_web::{web, HttpResponse, Responder, Scope};
+use actix_web::dev::{fn_service, ServiceRequest, ServiceResponse};
+use actix_web::http::header::ACCEPT;
+use thiserror::__private::PathAsDisplay;
 
 mod buckets;
 mod content;
@@ -9,6 +15,36 @@ mod tags;
 
 async fn not_found() -> impl Responder {
     HttpResponse::from_error(WebError::EndpointNotFound)
+}
+
+pub fn routes_with_static(file_root: PathBuf, index_file: String) -> Scope {
+    let index_file = Arc::new(index_file);
+    let file_root = Arc::new(file_root);
+
+    web::scope("")
+        .service(web::scope("/api")
+            .service(routes()))
+        .service(Files::new("", file_root.as_os_str())
+            .index_file(index_file.as_str())
+            .prefer_utf8(true)
+            .default_handler(fn_service(move |req: ServiceRequest| {
+                let index_file = index_file.clone();
+                let file_root = file_root.clone();
+
+                async move {
+                    if let Some(accept) = req.headers().get(ACCEPT) {
+                        if accept.to_str().ok().and_then(|s| s.split(",").find(|s| s == &"text/html")).is_none() {
+                            return Ok(ServiceResponse::new(req.into_parts().0, HttpResponse::from_error(WebError::EndpointNotFound)));
+                        }
+                    }
+
+
+                    let (req, _) = req.into_parts();
+                    let file = NamedFile::open_async(format!("{}/{index_file}", file_root.as_display())).await?;
+                    let res = file.into_response(&req);
+                    Ok(ServiceResponse::new(req, res))
+                }
+            })))
 }
 
 pub fn routes() -> Scope {
