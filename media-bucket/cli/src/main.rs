@@ -39,6 +39,20 @@ enum Commands {
         /// Overrides the value in the config file.
         #[clap(value_parser, short, long, default_value = None)]
         port: Option<u16>,
+
+        /// Serve static files and mount the api at "/api"
+        #[clap(value_parser, short, long, default_value_t = false)]
+        ui: bool,
+
+        /// The location of the static files.
+        /// The "ui" flag must be set for this to have effect.
+        #[clap(value_parser, long, default_value = None)]
+        static_files: Option<PathBuf>,
+
+        /// The name of the default file to serve
+        /// The "ui" flag must be set for this to have effect.
+        #[clap(value_parser, long, default_value = None)]
+        index_file: Option<String>,
     },
 
     Open {
@@ -66,6 +80,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
             config,
             address,
             port,
+            ui,
+            static_files,
+            index_file
         } => {
             let mut config = ServerConfig::from_file(&config).await?;
 
@@ -75,6 +92,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
             if let Some(port) = port {
                 config.port(port);
+            }
+
+            if ui {
+                config.static_files(static_files, index_file);
             }
 
             start_server(config).await?;
