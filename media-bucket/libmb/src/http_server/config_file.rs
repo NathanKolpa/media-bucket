@@ -1,5 +1,5 @@
 use std::net::IpAddr;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use serde::Deserialize;
 use thiserror::Error;
@@ -23,6 +23,10 @@ pub struct InstanceConfigSection {
 pub struct ServerConfigSection {
     pub address: Option<IpAddr>,
     pub port: Option<u16>,
+
+    pub serve_ui: Option<bool>,
+    pub static_files: Option<PathBuf>,
+    pub index_file: Option<String>
 }
 
 #[derive(Deserialize)]

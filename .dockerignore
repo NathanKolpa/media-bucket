@@ -1,0 +1,8 @@
+.gitignore
+media-bucket/target/
+webclient/dist/
+webclient/node_modules/
+.idea/
+.vim/
+Dockerfile
+.dockerignore
