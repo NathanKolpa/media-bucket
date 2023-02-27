@@ -50,6 +50,7 @@ import {ConfirmGuard} from "@core/services";
 import { SearchBarComponent } from './components/search-bar/search-bar.component';
 import { TagComponent } from './components/tag/tag.component';
 import { PostItemListComponent } from './components/post-item-list/post-item-list.component';
+import { PdfViewerComponent } from './components/pdf-viewer/pdf-viewer.component';
 
 const routes: Routes = [
   {
@@ -82,6 +83,7 @@ const routes: Routes = [
     SearchBarComponent,
     TagComponent,
     PostItemListComponent,
+    PdfViewerComponent,
   ],
   exports: [
     SearchPageComponent

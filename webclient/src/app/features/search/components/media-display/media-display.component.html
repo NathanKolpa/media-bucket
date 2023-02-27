@@ -11,18 +11,11 @@
   </app-video-player>
 
   <ng-container *ngSwitchCase="'document'">
-
-    <ng-container *ngIf="media.documentData as documentData">
-      <ng2-pdfjs-viewer
-        cursor="select"
-        [className]="className"
-        [ngStyle]="{ 'min-width': '600px', 'max-width': '90vw', 'display': 'block', 'width': documentData.pageSize.width + 'px', 'height': documentData.pages * documentData.pageSize.height + 'px' }"
-        *ngIf="media.mime.endsWith('/pdf')"
-        [pdfSrc]="encodeURIComponent(media.url)">
-      </ng2-pdfjs-viewer>
-    </ng-container>
-
-
+    <app-pdf-viewer
+      *ngIf="media.mime.endsWith('/pdf')"
+      [className]="className"
+      [media]="media">
+    </app-pdf-viewer>
   </ng-container>
 
   <p *ngSwitchDefault>
