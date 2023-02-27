@@ -121,8 +121,10 @@ export class CreatePostData {
 }
 
 export class UploadJob {
+  private static idAutoIncrement = 0;
   public static newPostUpload(uploads: Upload[], data: CreatePostData) {
-    return new UploadJob(crypto.randomUUID(), uploads, 'createPost', null, data);
+    this.idAutoIncrement++;
+    return new UploadJob(this.idAutoIncrement + '', uploads, 'createPost', null, data);
   }
 
   private constructor(private _id: string, private _uploads: Upload[], private _type: UploadJobType, private _failure: Failure | null, private _createPostData: CreatePostData) {
