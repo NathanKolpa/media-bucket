@@ -1,12 +1,22 @@
-import {Component, ElementRef, EventEmitter, Input, Output, ViewChild} from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  Output,
+  ViewChild
+} from '@angular/core';
 import {Media} from "@core/models";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-pdf-viewer',
   templateUrl: './pdf-viewer.component.html',
   styleUrls: ['./pdf-viewer.component.scss']
 })
-export class PdfViewerComponent {
+export class PdfViewerComponent implements AfterViewInit {
   @ViewChild('pdfViewer', {static: false})
   public pdfViewer?: PdfViewerComponent;
 
@@ -23,7 +33,6 @@ export class PdfViewerComponent {
 
   @Input()
   public className: string | null = null;
-
 
   ngAfterViewInit(): void {
     this.updateViewer();

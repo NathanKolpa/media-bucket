@@ -3,6 +3,7 @@
     <ng2-pdfjs-viewer
       #pdfViewer
       cursor="select"
+      [pdfSrc]="media.url"
       [className]="className"
       [ngStyle]="{ 'min-width': '600px', 'max-width': '90vw', 'display': 'block', 'width': documentData.pageSize.width + 'px', 'height': documentData.pages * documentData.pageSize.height + 'px' }">
     </ng2-pdfjs-viewer>
