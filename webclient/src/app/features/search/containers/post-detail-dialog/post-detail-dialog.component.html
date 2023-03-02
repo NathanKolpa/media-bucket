@@ -60,6 +60,7 @@
             <app-media-display
               (nextItem)="item.position < post.itemCount - 1 ? loadItem(bucket, item.postId, item.position + 1) : 0"
               [media]="item.content"
+              style="z-index: 9999; position: relative"
               className="media">
             </app-media-display>
           </ng-container>
