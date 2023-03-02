@@ -5,7 +5,7 @@
       cursor="select"
       [pdfSrc]="media.url"
       [className]="className"
-      [ngStyle]="{ 'min-width': '600px', 'max-width': '90vw', 'display': 'block', 'width': documentData.pageSize.width + 'px', 'height': documentData.pages * documentData.pageSize.height + 'px' }">
+      [ngStyle]="{ 'width': documentData.pageSize.width * 2 + 'px', 'height': documentData.pages * documentData.pageSize.height * 2 + 'px' }">
     </ng2-pdfjs-viewer>
   </ng-container>
 </ng-container>

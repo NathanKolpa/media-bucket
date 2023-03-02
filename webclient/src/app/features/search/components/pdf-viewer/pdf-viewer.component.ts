@@ -22,6 +22,8 @@ export class PdfViewerComponent implements AfterViewInit {
 
   public _media: Media | null = null;
 
+  public zoom = 100;
+
   @Input()
   public set media(value: Media | null) {
     this._media = value;
