@@ -8,16 +8,16 @@ use serde::{Deserialize, Serialize};
 use url::Url;
 use uuid::Uuid;
 
+pub use chrono;
 pub use mediatype;
 pub use url;
 pub use uuid;
-pub use chrono;
 
 /// An enum representing a many-to-one relationship.
 ///
 /// The `ManyToOne` enum is used to represent a many-to-one relationship between two types of objects.
 /// It can be either an `Id` variant, containing an identifier for the related object, or an `Obj` variant, containing the related object itself.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum ManyToOne<I, T> {
     #[serde(rename = "id")]
     Id(I),
@@ -215,13 +215,13 @@ impl ManyToOne<u64, Post> {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct TagGroup {
     pub id: u64,
     pub name: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Tag {
     pub id: u64,
     pub name: String,
