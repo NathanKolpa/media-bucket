@@ -5,6 +5,7 @@ import {Store} from "@ngrx/store";
 import {fromSearch, searchActions} from '@features/search/store';
 import {fromBucket} from '@features/bucket/store';
 import {Post, SelectedBucket} from "@core/models";
+import {AppTitleService} from "@core/services";
 
 @Component({
   encapsulation: ViewEncapsulation.None,
@@ -27,18 +28,29 @@ export class PostDetailDialogComponent implements OnDestroy {
   private currentBucket: SelectedBucket | null = null;
   private currentPostId: number | null = null;
   private currentPosition: number = 0;
+  private titleIndex: number | null = null;
 
   private postSubscription: Subscription;
   private bucketSubscription: Subscription;
   private itemSubscription: Subscription;
 
-  constructor(public dialogRef: MatDialogRef<PostDetailDialogComponent>, private store: Store) {
+  constructor(public dialogRef: MatDialogRef<PostDetailDialogComponent>, private store: Store, private title: AppTitleService) {
     dialogRef.afterOpened().pipe(first(), delay(0)).subscribe(() => this.open = true);
 
     this.postSubscription = this.post$.subscribe(post => {
       if (post) {
         this.currentPostId = post.id;
       }
+
+      if (post !== null && post.title !== null) {
+        if (this.titleIndex !== null) {
+          this.title.set(this.titleIndex, post.title);
+        }
+        else {
+          this.titleIndex = this.title.push(post.title);
+        }
+      }
+
     });
 
     this.bucketSubscription = this.bucket$.subscribe(bucket => {
@@ -58,6 +70,10 @@ export class PostDetailDialogComponent implements OnDestroy {
     this.postSubscription.unsubscribe();
     this.itemSubscription.unsubscribe();
     this.bucketSubscription.unsubscribe();
+
+    if (this.titleIndex !== null) {
+      this.title.pop();
+    }
   }
 
   reloadItem() {
