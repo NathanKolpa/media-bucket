@@ -21,6 +21,7 @@
           [matChipInputFor]="chips"
           placeholder="Add search criteria"
           [matAutocomplete]="auto" (focus)="searchTextChange.emit(input.value == '' ? null : input.value)"
+          (keydown.enter)="submit()"
           (input)="searchTextChange.emit(input.value == '' ? null : input.value)">
 
       </mat-chip-grid>
