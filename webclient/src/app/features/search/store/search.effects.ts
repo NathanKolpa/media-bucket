@@ -143,6 +143,21 @@ export class SearchEffects {
     ))
   ));
 
+  updatePost$ = createEffect(() => this.actions$.pipe(
+    ofType(searchActions.updatePost),
+    switchMap(({
+                 postId,
+                 source,
+                 description,
+                 title,
+                 tags,
+                 bucket
+               }) => this.api.updatePost(bucket.auth, postId, title, description, source, tags.map(x => x.id)).pipe(
+      map((post) => searchActions.updatePostSuccess({post, tags})),
+      catchError(async failure => searchActions.updatePostFailure({failure}))
+    ))
+  ));
+
   deletePost$ = createEffect(() => this.actions$.pipe(
     ofType(searchActions.deletePost),
     switchMap(({postId, bucket}) => this.api.deletePost(bucket.auth, postId).pipe(

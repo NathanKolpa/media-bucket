@@ -410,6 +410,10 @@ impl CrossDataSource for HttpDataSource {
         Ok((body.batch, body.posts))
     }
 
+    async fn update_full_post(&self, value: &Post, tags: &[u64]) -> Result<(), DataSourceError> {
+        todo!()
+    }
+
     async fn cascade_delete_post(&self, id: u64) -> Result<(), DataSourceError> {
         todo!()
     }

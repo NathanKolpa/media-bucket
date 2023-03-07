@@ -69,3 +69,7 @@ export const togglePostDetailViewMode = createAction('[Search] toggle post detai
 export const loadNextPostItemList = createAction('[Search] load next post item', props<{ bucket: SelectedBucket, postId: number }>());
 export const loadNextPostItemListSuccess = createAction('[Search] load next post item success', props<{ items: SearchPostItem[] }>());
 export const loadNextPostItemListFailure = createAction('[Search] load next post item failure', props<{ failure: Failure }>());
+
+export const updatePost = createAction('[Search] update post', props<{ bucket: SelectedBucket, postId: number, title: string | null, description: string | null, source: string | null, tags: Tag[] }>());
+export const updatePostSuccess = createAction('[Search] update post success', props<{ post: Post, tags: Tag[] }>());
+export const updatePostFailure = createAction('[Search] update post failure', props<{ failure: Failure }>());

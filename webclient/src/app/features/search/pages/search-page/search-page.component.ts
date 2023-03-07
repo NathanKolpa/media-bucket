@@ -6,6 +6,7 @@ import {fromBucket} from '@features/bucket/store';
 import {MatDialog} from "@angular/material/dialog";
 import {ConfirmComponent} from "@core/services/confirm/confirm.guard";
 import {Subscription} from "rxjs";
+import {EditPostRequest} from "@features/search/components/post-detail-sidebar/post-detail-sidebar.component";
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -100,4 +101,14 @@ export class SearchPageComponent implements OnDestroy, ConfirmComponent {
     this.store.dispatch(searchActions.addTagToSearchQuery({ bucket, tag }));
   }
 
+  editPost(bucket: SelectedBucket, req: EditPostRequest) {
+    this.store.dispatch(searchActions.updatePost({
+      bucket,
+      title: req.title,
+      description: req.description,
+      source: req.source,
+      postId: req.postId,
+      tags: req.tags
+    }))
+  }
 }

@@ -1,13 +1,5 @@
 import {createFeature, createReducer, on} from "@ngrx/store";
-import {
-  LoadingState,
-  PostDetail,
-  PostItemDetail,
-  SearchPost,
-  SearchPostItem,
-  Tag,
-  UploadJob
-} from "@core/models";
+import {LoadingState, PostDetail, PostItemDetail, SearchPost, SearchPostItem, Tag, UploadJob} from "@core/models";
 import {createEntityAdapter, EntityState} from "@ngrx/entity";
 import * as searchActions from "./search.actions";
 import {PostSearchQuery} from "@core/models/searchQuery";
@@ -145,7 +137,7 @@ const feature = createFeature({
       ...state,
       uploadJobs: uploadJobAdapter.addOne(job, state.uploadJobs)
     })),
-    on(searchActions.uploadJobFailure, (state, {jobId, failure}) =>  {
+    on(searchActions.uploadJobFailure, (state, {jobId, failure}) => {
       let job = state.uploadJobs.entities[jobId]?.error(failure)
 
       if (!job) {
@@ -253,12 +245,12 @@ const feature = createFeature({
       ...state,
       searchTags: tagAdapter.setAll(tags, state.searchTags)
     })),
-    on(searchActions.searchQueryChange, (state, { query }) => ({
+    on(searchActions.searchQueryChange, (state, {query}) => ({
       ...state,
       searchQuery: query,
       posts: []
     })),
-    on(searchActions.addTagToSearchQuery, (state, { tag }) => ({
+    on(searchActions.addTagToSearchQuery, (state, {tag}) => ({
       ...state,
       searchQuery: state.searchQuery.addTag(tag),
       posts: []
@@ -283,6 +275,19 @@ const feature = createFeature({
       ...state,
       itemListLoadingState: state.itemListLoadingState.fail(failure)
     })),
+
+    on(searchActions.updatePostSuccess, (state, {post, tags}) => ({
+      ...state,
+      sidebarPost: state.sidebarPost?.id == post.id ?
+        new PostDetail(state.sidebarPost.id, post.source, post.title, post.description, post.createdAt, state.sidebarPost.itemCount, tags) : state.sidebarPost,
+      posts: state.posts.map(searchPost => {
+        if (searchPost.id != post.id) {
+          return searchPost
+        }
+
+        return new SearchPost(searchPost.id, post.source, post.title, post.description, post.createdAt, searchPost.itemCount, searchPost.containsImages, searchPost.containsVideos, searchPost.containsMovingImages, searchPost.duration, searchPost.thumbnail)
+      })
+    }))
   )
 });
 

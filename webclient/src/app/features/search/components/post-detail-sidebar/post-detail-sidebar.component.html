@@ -22,7 +22,11 @@
               [description]="form.controls.description">
             </app-post-info-form-fields>
 
-            <button mat-flat-button color="primary">Save</button>
+            <app-tag-edit [bucket]="bucket" [(tags)]="postTags">
+
+            </app-tag-edit>
+
+            <button mat-flat-button color="primary" (click)="submit()">Save</button>
           </form>
 
 

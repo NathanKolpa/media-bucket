@@ -1,5 +1,6 @@
 use crate::model::*;
 use serde::{Deserialize, Serialize};
+use url::Url;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct BucketInfo {
@@ -38,4 +39,12 @@ pub struct CreateFullPostResponse {
 pub struct CreateTagRequest {
     pub name: String,
     pub group: Option<u64>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct UpdatePostRequest {
+    pub title: Option<String>,
+    pub description: Option<String>,
+    pub source: Option<Url>,
+    pub tag_ids: Vec<u64>
 }

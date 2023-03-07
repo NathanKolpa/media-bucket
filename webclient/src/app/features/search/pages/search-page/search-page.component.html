@@ -11,6 +11,8 @@
 
   <app-post-detail-sidebar
     class="flex-grow-1"
+    [bucket]="bucket"
+    (postEditSubmit)="editPost(bucket, $event)"
     (searchForTag)="addTagToSearchQuery(bucket, $event)"
     [post]="sidebarPost$ | async"
     [loadingState]="sidebarPostLoadingState$ | async"

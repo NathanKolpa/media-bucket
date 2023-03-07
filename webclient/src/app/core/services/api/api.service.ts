@@ -158,6 +158,17 @@ export class ApiService {
     )
   }
 
+  public updatePost(auth: Auth, postId: number, title: string | null, description: string | null, source: string | null, tagIds: number[]): Observable<Post> {
+    return this.authenticatedPut(auth, `/posts/${encodeURIComponent(postId)}`, {
+      title,
+      description,
+      source,
+      tag_ids: tagIds
+    }).pipe(
+      map((json) => this.mapPost(json))
+    )
+  }
+
   public createPost(auth: Auth, postInfo: CreatePostData, files: Upload[]): Observable<{ batchId: number, posts: Post[] }> {
     return this.authenticatedPost(auth, '/posts', {
       title: postInfo.title,
@@ -191,6 +202,7 @@ export class ApiService {
       })
     )
   }
+
 
   public logout(auth: Auth): Observable<any> {
     return this.authenticatedPost(auth, '/buckets/logout', {});
@@ -327,12 +339,16 @@ export class ApiService {
     return this.post(`/buckets/${auth.bucketId}${url}`, data, {...this.authRequestOptions(auth), ...options});
   }
 
+  private authenticatedPut(auth: Auth, url: string, data: any, options?: any): Observable<any> {
+    return this.put(`/buckets/${auth.bucketId}${url}`, data, {...this.authRequestOptions(auth), ...options});
+  }
+
   private authenticatedDelete(auth: Auth, url: string, options?: any): Observable<any> {
     return this.delete(`/buckets/${auth.bucketId}${url}`, {...this.authRequestOptions(auth), ...options});
   }
 
-  private put(url: string, data: any): Observable<any> {
-    return this.pipeRequest(this.client.put(`${environment.api}${url}`, data));
+  private put(url: string, data: any, options?: any): Observable<any> {
+    return this.pipeRequest(this.client.put(`${environment.api}${url}`, data, options));
   }
 
   private delete(url: string, options?: any): Observable<any> {

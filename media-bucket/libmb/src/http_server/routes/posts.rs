@@ -1,10 +1,9 @@
 use actix_web::{delete, get, post, put, web, Responder};
 use log::info;
 use serde::Deserialize;
-use url::Url;
 
 use crate::data_source::PageParams;
-use crate::http_models::CreateFullPostResponse;
+use crate::http_models::{CreateFullPostResponse, UpdatePostRequest};
 use crate::http_server::instance::Session;
 use crate::http_server::web_error::WebError;
 use crate::model::{CreateFullPost, PostSearchQuery};
@@ -157,13 +156,6 @@ pub async fn store(
     Ok(web::Json(CreateFullPostResponse { posts, batch }))
 }
 
-#[derive(Deserialize)]
-pub struct UpdatePostRequest {
-    title: Option<String>,
-    description: Option<String>,
-    source: Option<Url>,
-}
-
 #[put("/{id}")]
 pub async fn update(
     session: Session,
@@ -182,7 +174,7 @@ pub async fn update(
     post.description = req.description.clone();
     post.source = req.source.clone();
 
-    session.bucket().data_source().posts().update(&post).await?;
+    session.bucket().data_source().cross().update_full_post(&post, &req.tag_ids).await?;
 
     Ok(web::Json(post))
 }

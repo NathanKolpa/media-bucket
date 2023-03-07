@@ -251,5 +251,7 @@ pub trait CrossDataSource: Sync + Send {
         new_post: CreateFullPost,
     ) -> Result<(ImportBatch, Vec<Post>), DataSourceError>;
 
+    async fn update_full_post(&self, value: &Post, tags: &[u64]) -> Result<(), DataSourceError>;
+
     async fn cascade_delete_post(&self, id: u64) -> Result<(), DataSourceError>;
 }
