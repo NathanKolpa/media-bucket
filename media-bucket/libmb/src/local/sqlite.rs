@@ -1,11 +1,12 @@
 use std::path::Path;
 use std::str::FromStr;
+use std::time::Duration;
 
 use async_trait::async_trait;
 use chrono::Utc;
 use futures::TryStreamExt;
 use mediatype::MediaTypeBuf;
-use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions, SqliteRow};
+use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode, SqlitePoolOptions, SqliteRow, SqliteSynchronous};
 use sqlx::{ConnectOptions, Executor, Row, Sqlite, SqlitePool};
 use thiserror::Error;
 use uuid::Uuid;
@@ -79,7 +80,10 @@ impl SqliteIndex {
         let mut connect_options =
             SqliteConnectOptions::from_str(path.to_str().ok_or(SqliteError::InvalidPath)?)?
                 .create_if_missing(create)
-                .pragma("key", key);
+                .pragma("key", key)
+                .journal_mode(SqliteJournalMode::Wal)
+                .synchronous(SqliteSynchronous::Full)
+                .busy_timeout(Duration::from_secs(10));
 
         connect_options.disable_statement_logging();
 
