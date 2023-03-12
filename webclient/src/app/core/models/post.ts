@@ -43,7 +43,8 @@ export class SearchPost extends Post {
     private _containsVideos: boolean,
     private _containsMovingImages: boolean,
     private _duration: number | null,
-    private _thumbnail: Media | null) {
+    private _thumbnail: Media | null,
+    private _filename: string | null) {
     super(id, source, title, description, createdAt);
   }
 
@@ -69,6 +70,10 @@ export class SearchPost extends Post {
 
   get thumbnail(): Media | null {
     return this._thumbnail;
+  }
+
+  get filename(): string | null {
+    return this._filename;
   }
 }
 

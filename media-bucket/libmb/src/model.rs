@@ -247,6 +247,7 @@ pub struct SearchPost {
     pub item_count: usize,
     pub duration: Option<i32>,
     pub thumbnail: Option<Media>,
+    pub file_name: Option<String>
 }
 
 #[derive(Debug, Serialize, Deserialize)]

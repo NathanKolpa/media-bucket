@@ -198,6 +198,7 @@ impl SqliteIndex {
             item_count: row.try_get::<'_, i64, _>("item_count")? as usize,
             duration: row.try_get("total_duration")?,
             thumbnail,
+            file_name: row.try_get("original_name")?,
         })
     }
 
@@ -712,7 +713,7 @@ impl CrossDataSource for SqliteIndex {
             .fetch_one(&mut conn)
             .await?;
 
-        let query_str = SqliteIndex::create_search_query_str(query, "SELECT p.*, m.*,
+        let query_str = SqliteIndex::create_search_query_str(query, "SELECT p.*, m.*, pi.original_name,
         (SELECT COUNT(*) FROM post_items pi WHERE pi.post_id = p.post_id) as 'item_count',
         (SELECT SUM(c.duration) FROM post_items pi JOIN media c ON pi.content_id = c.media_id WHERE pi.post_id = p.post_id) as 'total_duration',
         (SELECT COUNT(*) FROM media WHERE media_id IN (SELECT content_id FROM post_items WHERE post_id = p.post_id) AND mime_type = 'image' AND mime_sub_type != 'gif') as 'contains_image',

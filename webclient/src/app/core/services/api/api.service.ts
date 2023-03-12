@@ -403,6 +403,7 @@ export class ApiService {
       json.contains_moving_image,
       json.duration,
       json.thumbnail == null ? null : this.mapMedia(auth, json.thumbnail),
+      json.file_name
     )
   }
 

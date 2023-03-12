@@ -5,19 +5,24 @@
     <img mat-card-image [src]="post.thumbnail?.url" alt="Thumbnail" class="thumbnail">
 
     <mat-card-footer class="p-2 d-flex align-items-center user-select-none">
-      <mat-icon color="accent" *ngIf="post.containsVideos; else movingImage">movie</mat-icon>
 
-      <ng-template #movingImage>
-        <mat-icon color="accent" *ngIf="post.containsMovingImages; else image">gif_box</mat-icon>
-      </ng-template>
+      <div>
+        <mat-icon color="accent" *ngIf="post.containsVideos; else movingImage">movie</mat-icon>
 
-      <ng-template #image>
-        <mat-icon color="accent" *ngIf="post.containsImages">image</mat-icon>
-      </ng-template>
+        <ng-template #movingImage>
+          <mat-icon color="accent" *ngIf="post.containsMovingImages; else image">gif_box</mat-icon>
+        </ng-template>
+
+        <ng-template #image>
+          <mat-icon color="accent" *ngIf="post.containsImages">image</mat-icon>
+        </ng-template>
+      </div>
+
 
       <span class="ms-3" *ngIf="post.itemCount > 1">{{ post.itemCount }} items</span>
       <span class="ms-3" *ngIf="post.duration as duration">{{ duration | duration }}</span>
-      <span class="ms-3" *ngIf="post.title as title">{{ title }}</span>
+      <span class="ms-3" *ngIf="post.title as title; else filename">{{ title }}</span>
+      <ng-template #filename><i class="text-truncate ms-3">{{ post.filename }}</i></ng-template>
 
       <div class="spacer"></div>
 
