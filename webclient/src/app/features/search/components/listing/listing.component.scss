@@ -8,3 +8,28 @@
 mat-card {
   cursor: pointer;
 }
+
+.wrapper {
+  position: relative;
+}
+
+.overlay {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  left: 10px;
+}
+
+.contrast {
+  background: rgba(1, 1, 1, 0.6);
+  border-radius: 3px;
+
+  padding-top: 5px;
+  padding-left: 6px;
+  padding-right: 6px;
+  text-align: center;
+
+  mat-icon {
+
+  }
+}

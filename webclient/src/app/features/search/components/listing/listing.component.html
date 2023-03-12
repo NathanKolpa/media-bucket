@@ -1,28 +1,17 @@
-<div [ngStyle]="{ height: height + 'px' }" *ngIf="post as post">
+<div [ngStyle]="{ height: height + 'px' }" *ngIf="post as post" class="wrapper m-4">
+  <mat-card class="h-100" appearance="outlined" matRipple [matRippleDisabled]="disableCardRipple"
+            (click)="showDetail.emit(post)">
 
-  <mat-card class="h-100 m-4" appearance="outlined" matRipple [matRippleDisabled]="disableCardRipple" (click)="showDetail.emit(post)">
-
-    <img mat-card-image [src]="post.thumbnail?.url" alt="Thumbnail" class="thumbnail">
+    <img [src]="post.thumbnail?.url" alt="Thumbnail" class="thumbnail">
 
     <mat-card-footer class="p-2 d-flex align-items-center user-select-none">
 
-      <div>
-        <mat-icon color="accent" *ngIf="post.containsVideos; else movingImage">movie</mat-icon>
-
-        <ng-template #movingImage>
-          <mat-icon color="accent" *ngIf="post.containsMovingImages; else image">gif_box</mat-icon>
-        </ng-template>
-
-        <ng-template #image>
-          <mat-icon color="accent" *ngIf="post.containsImages">image</mat-icon>
-        </ng-template>
+      <div class="ms-3" style="word-break: break-all">
+              <span [title]="post.title"
+                    *ngIf="post.title as title; else filename">{{ title | slice:0:100 }}</span>
+        <ng-template #filename><i [title]="post.filename">{{ post.filename | slice:0:100 }}</i></ng-template>
       </div>
 
-
-      <span class="ms-3" *ngIf="post.itemCount > 1">{{ post.itemCount }} items</span>
-      <span class="ms-3" *ngIf="post.duration as duration">{{ duration | duration }}</span>
-      <span class="ms-3" *ngIf="post.title as title; else filename">{{ title }}</span>
-      <ng-template #filename><i class="text-truncate ms-3">{{ post.filename }}</i></ng-template>
 
       <div class="spacer"></div>
 
@@ -36,5 +25,28 @@
     </mat-card-footer>
   </mat-card>
 
+  <div class="overlay">
+    <p class="contrast mat-elevation-z6 d-inline-block">
+      <mat-icon color="accent" *ngIf="post.containsVideos; else document">movie</mat-icon>
+
+      <ng-template #document>
+        <mat-icon color="accent" *ngIf="post.containsDocument; else movingImage">description</mat-icon>
+      </ng-template>
+
+      <ng-template #movingImage>
+        <mat-icon color="accent" *ngIf="post.containsMovingImages; else image">gif_box</mat-icon>
+      </ng-template>
+
+      <ng-template #image>
+        <mat-icon color="accent" *ngIf="post.containsImages">image</mat-icon>
+      </ng-template>
+    </p>
+
+    <div class="float-end">
+      <p class="contrast mat-elevation-z6" *ngIf="post.itemCount > 1">{{ post.itemCount }} items</p>
+      <p class="contrast mat-elevation-z6" *ngIf="post.duration as duration">{{ duration | duration }}</p>
+    </div>
+
+  </div>
 
 </div>

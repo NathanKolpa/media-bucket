@@ -398,6 +398,7 @@ export class ApiService {
       json.post.description,
       new Date(json.post.created_at),
       json.item_count,
+      json.contains_document,
       json.contains_image,
       json.contains_video,
       json.contains_moving_image,

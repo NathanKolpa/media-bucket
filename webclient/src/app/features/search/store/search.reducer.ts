@@ -285,7 +285,7 @@ const feature = createFeature({
           return searchPost
         }
 
-        return new SearchPost(searchPost.id, post.source, post.title, post.description, post.createdAt, searchPost.itemCount, searchPost.containsImages, searchPost.containsVideos, searchPost.containsMovingImages, searchPost.duration, searchPost.thumbnail, searchPost.filename)
+        return new SearchPost(searchPost.id, post.source, post.title, post.description, post.createdAt, searchPost.itemCount, searchPost.containsDocument, searchPost.containsImages, searchPost.containsVideos, searchPost.containsMovingImages, searchPost.duration, searchPost.thumbnail, searchPost.filename)
       })
     }))
   )

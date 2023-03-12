@@ -39,6 +39,7 @@ export class SearchPost extends Post {
     description: string | null,
     createdAt: Date,
     private _itemCount: number,
+    private _containsDocument: boolean,
     private _containsImages: boolean,
     private _containsVideos: boolean,
     private _containsMovingImages: boolean,
@@ -74,6 +75,10 @@ export class SearchPost extends Post {
 
   get filename(): string | null {
     return this._filename;
+  }
+
+  get containsDocument(): boolean {
+    return this._containsDocument;
   }
 }
 

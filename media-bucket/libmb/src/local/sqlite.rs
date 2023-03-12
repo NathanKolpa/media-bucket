@@ -194,6 +194,7 @@ impl SqliteIndex {
             post: Self::map_post(row)?,
             contains_image: row.try_get("contains_image")?,
             contains_video: row.try_get("contains_video")?,
+            contains_document: row.try_get("contains_document")?,
             contains_moving_image: row.try_get("contains_moving_image")?,
             item_count: row.try_get::<'_, i64, _>("item_count")? as usize,
             duration: row.try_get("total_duration")?,
@@ -718,6 +719,7 @@ impl CrossDataSource for SqliteIndex {
         (SELECT SUM(c.duration) FROM post_items pi JOIN media c ON pi.content_id = c.media_id WHERE pi.post_id = p.post_id) as 'total_duration',
         (SELECT COUNT(*) FROM media WHERE media_id IN (SELECT content_id FROM post_items WHERE post_id = p.post_id) AND mime_type = 'image' AND mime_sub_type != 'gif') as 'contains_image',
         (SELECT COUNT(*) FROM media WHERE media_id IN (SELECT content_id FROM post_items WHERE post_id = p.post_id) AND mime_type = 'video') as 'contains_video',
+        (SELECT COUNT(*) FROM media WHERE media_id IN (SELECT content_id FROM post_items WHERE post_id = p.post_id) AND mime_type = 'application' AND mime_sub_type != 'pdf') as 'contains_document',
         (SELECT COUNT(*) FROM media WHERE media_id IN (SELECT content_id FROM post_items WHERE post_id = p.post_id) AND mime_type = 'image' AND mime_sub_type = 'gif') as 'contains_moving_image'
         FROM posts p
         LEFT JOIN (SELECT * FROM post_items ORDER BY item_order ASC) pi ON pi.post_id = p.post_id AND pi.item_order = 0
