@@ -1,11 +1,12 @@
-<cdk-virtual-scroll-viewport  #viewport [itemSize]="250" class="h-100 d-block" (scrolledIndexChange)="scrolledIndexChange()">
+<cdk-virtual-scroll-viewport  #viewport appendOnly [itemSize]="250" class="h-100 d-block" (scrolledIndexChange)="scrolledIndexChange()">
 
   <ng-content>
   </ng-content>
 
-  <div class="row mb-4" [ngClass]="containerClass">
-    <ng-container *cdkVirtualFor="let row of rows; trackBy: trackById; templateCacheSize: 0">
+  <div class="row" [ngClass]="containerClass">
+    <ng-container *cdkVirtualFor="let row of rows; trackBy: trackById">
       <app-listing
+        class="d-block"
         *ngFor="let index of row"
         [height]="250"
         (showInfo)="showInfo.emit($event)"
@@ -15,7 +16,7 @@
     </ng-container>
   </div>
 
-  <app-loadable-content (loadAgain)="requestNextData.emit()" [loadingState]="nextLoadingState" class="h-100 d-block">
+  <app-loadable-content (loadAgain)="requestNextData.emit()" [loadingState]="nextLoadingState" class="h-100 d-block mt-4">
   </app-loadable-content>
 
 </cdk-virtual-scroll-viewport>
