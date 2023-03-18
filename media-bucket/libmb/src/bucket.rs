@@ -80,10 +80,13 @@ impl Bucket {
             return Ok(Self::open_http_client(location.parse().unwrap(), password).await?);
         }
 
-        match password {
+        #[cfg(feature = "local")]
+        return match password {
             None => Err(BucketError::PasswordRequired),
             Some(password) => Self::open_encrypted(Path::new(location), password).await,
-        }
+        };
+
+        return Err(BucketError::MissingFeature("local"))
     }
 
     pub async fn password_protected(location: &str) -> std::io::Result<bool> {
