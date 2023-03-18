@@ -1,9 +1,11 @@
 use std::ops::Deref;
+use std::time::Duration;
 
 use crate::http_models::{AuthRequest, AuthResponse, BucketInfo};
 use actix_web::web::Data;
 use actix_web::{get, post, web, HttpRequest, Responder};
 use log::info;
+use tokio::time::sleep;
 
 use crate::http_server::instance::{InstanceDataSource, ServerBucketInstance, Session};
 use crate::http_server::web_error::WebError;
@@ -60,7 +62,10 @@ pub async fn auth(
 
     match &login_result {
         Ok(_) => info!("Successful login from {ip} for {instance}"),
-        Err(e) => info!("Failed attempt to login from {ip} for {instance}: {e}"),
+        Err(e) => {
+            info!("Failed attempt to login from {ip} for {instance}: {e}");
+            sleep(Duration::from_millis(2000)).await
+        },
     }
 
     let login_token = login_result?;
