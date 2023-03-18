@@ -32,8 +32,7 @@ impl FromRequest for Session {
         let bucket_id = req
             .match_info()
             .get("bucket_id")
-            .ok_or(WebError::MissingBucketId)
-            .and_then(|id| id.parse().map_err(|_| WebError::ParseError));
+            .and_then(|id| id.parse().ok());
 
         let token = req
             .headers()
@@ -42,6 +41,13 @@ impl FromRequest for Session {
                 h.to_str()
                     .map_err(|_| WebError::ParseError)
                     .map(|s| s.to_string())
+            })
+            .or_else(|| {
+                bucket_id.map(|id| {
+                    req.cookie(&format!("bucket_{id}"))
+                        .map(|e| e.value().to_string())
+                        .ok_or(WebError::MissingAuthToken)
+                })
             })
             .or_else(|| {
                 params.as_ref().ok().map(|p| {
@@ -57,10 +63,10 @@ impl FromRequest for Session {
             .connection_info()
             .realip_remote_addr()
             .ok_or(WebError::InstanceNotFound)
-            .and_then(|ip|  ip.parse::<IpAddr>().map_err(|_| WebError::ParseError));
+            .and_then(|ip| ip.parse::<IpAddr>().map_err(|_| WebError::ParseError));
 
         Box::pin(async move {
-            let bucket_id = bucket_id?;
+            let bucket_id = bucket_id.ok_or(WebError::MissingBucketId)?;
             let token = token??;
             let ip = ip?;
 
