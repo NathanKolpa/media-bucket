@@ -5,7 +5,10 @@ const STORAGE_KEY = 'auth';
 
 interface SavedAuth {
   id: number;
-  token: string | null;
+  domain: string;
+  path: string;
+  port: string | null;
+  protocol: string;
 }
 
 @Injectable({
@@ -34,6 +37,8 @@ export class AuthCacheService {
       this.storage.push(auth);
       this.saveStorage();
     }
+
+    this.saveCookie(auth);
   }
 
   private loadDriver(driver: Storage, privateSession: boolean): Auth[] {
@@ -45,7 +50,7 @@ export class AuthCacheService {
 
     let stored: SavedAuth[] = JSON.parse(storedStr);
 
-    return stored.map(x => new Auth(x.id, x.token, privateSession));
+    return stored.map(x => new Auth(x.id, null, privateSession, x.domain, x.path, x.protocol, x.port));
   }
 
   public remove(auth: Auth) {
@@ -56,6 +61,8 @@ export class AuthCacheService {
       this.storage = this.storage.filter(x => x.bucketId != auth.bucketId);
       this.saveStorage();
     }
+
+    this.removeCookie(auth);
   }
 
   private saveSession() {
@@ -68,12 +75,24 @@ export class AuthCacheService {
 
   private saveDriver(driver: Storage, array: Auth[]) {
     let savedAuth: SavedAuth[] = array.map(auth => ({
-      token: auth.token,
-      id: auth.bucketId
+      id: auth.bucketId,
+      domain: auth.domain,
+      path: auth.path,
+      port: auth.port,
+      protocol: auth.protocol
     }));
 
     let json = JSON.stringify(savedAuth);
 
     driver.setItem(STORAGE_KEY, json);
   }
+
+  private saveCookie(auth: Auth) {
+    document.cookie =  `bucket_${auth.bucketId}=${auth.token}; domain=${auth.domain}; path=${auth.path}; Max-Age=259200; SameSite=Strict; ${auth.protocol == 'https:' ? 'Secure;' : ''}`
+  }
+
+  private removeCookie(auth: Auth) {
+    document.cookie =  `bucket_${auth.bucketId}=; Max-Age=0; SameSite=None`
+  }
+
 }

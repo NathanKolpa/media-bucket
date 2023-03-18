@@ -3,9 +3,10 @@ use std::fmt::{Display, Formatter};
 use std::net::IpAddr;
 use std::ops::Deref;
 use std::sync::{Arc, RwLock};
-use std::time::Instant;
+use std::sync::atomic::{AtomicI64, Ordering};
 
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, Duration, Utc};
+use dashmap::DashMap;
 use rand::distributions::Alphanumeric;
 use rand::{thread_rng, Rng};
 use thiserror::Error;
@@ -13,6 +14,7 @@ use thiserror::Error;
 use crate::data_source::DataSourceError;
 use crate::http_server::instance::LoginError::LoadingError;
 use crate::{Bucket, BucketError};
+use crate::http_server::token::AuthToken;
 
 #[derive(Error, Debug)]
 pub enum LoginError {
@@ -46,9 +48,10 @@ struct SessionData {
 }
 
 pub struct Session {
-    token: String,
+    id: i64,
     parent: Arc<ServerBucketInstance>,
     bucket: Arc<Bucket>,
+    ip: IpAddr
 }
 
 impl Session {
@@ -60,24 +63,14 @@ impl Session {
         self.parent.deref()
     }
 
-    pub fn created_at(&self) -> DateTime<Utc> {
-        self.parent
-            .get_session_data(self.token.as_str())
-            .unwrap()
-            .created_at
-    }
-
     pub fn ip(&self) -> IpAddr {
-        self.parent
-            .get_session_data(self.token.as_str())
-            .unwrap()
-            .ip
+        self.ip
     }
 
     pub fn get_session_count() {}
 
     pub fn logout(&self) {
-        self.parent.logout(self.token.as_str())
+        self.parent.logout(self.id)
     }
 }
 
@@ -87,8 +80,9 @@ pub struct ServerBucketInstance {
     name: String,
     password_protected: bool,
     instance: RwLock<Option<Arc<Bucket>>>,
-    sessions: RwLock<HashMap<String, SessionData>>,
-    last_activity: RwLock<Instant>,
+    sessions: DashMap<i64, SessionData>,
+    session_ai: AtomicI64,
+    token_secret: [u8; 32]
 }
 
 impl ServerBucketInstance {
@@ -100,36 +94,25 @@ impl ServerBucketInstance {
             name,
             instance: Default::default(),
             sessions: Default::default(),
-            last_activity: RwLock::new(Instant::now()),
+            token_secret: thread_rng().gen(),
+            session_ai: Default::default()
         })
-    }
-
-    fn get_session_data(&self, token: &str) -> Option<SessionData> {
-        let sessions = self.sessions.read().unwrap();
-        sessions.get(token).cloned()
     }
 
     pub fn password_protected(&self) -> bool {
         self.password_protected
     }
 
-    pub fn get_session_by_token(self: Arc<Self>, token: String) -> Option<Session> {
-        let valid_token = self.sessions.read().unwrap().contains_key(token.as_str());
-        let bucket = self.instance.read().unwrap().clone();
+    pub fn authorize_token(self: Arc<Self>, token: &str, ip: IpAddr) -> Option<Session> {
+        let auth_token = AuthToken::from_token(token, &self.token_secret, &ip)?;
+        let bucket = self.instance.read().unwrap().clone()?;
 
-        if let Some(bucket) = bucket {
-            if valid_token {
-                Some(Session {
-                    token,
-                    bucket,
-                    parent: self,
-                })
-            } else {
-                None
-            }
-        } else {
-            None
-        }
+        Some(Session {
+            id: auth_token.session_id(),
+            bucket,
+            parent: self,
+            ip
+        })
     }
 
     pub fn id(&self) -> u64 {
@@ -165,22 +148,29 @@ impl ServerBucketInstance {
             }
         }
 
-        let new_token: String = Self::random_token();
-
-        let session_data = SessionData {
-            ip,
-            created_at: Utc::now(),
-        };
-
-        let mut sessions = self.sessions.write().unwrap();
-        sessions.insert(new_token.clone(), session_data);
-
+        let new_token = self.new_session(ip).to_token(&self.token_secret);
         Ok(new_token)
     }
 
-    pub fn logout(&self, token: &str) {
-        let mut sessions = self.sessions.write().unwrap();
-        sessions.remove(token);
+    fn new_session(&self, ip: IpAddr) -> AuthToken {
+        let session_id = self.session_ai.fetch_add(1, Ordering::SeqCst);
+        let now = Utc::now();
+        let lifetime = Duration::days(3);
+
+        let token = AuthToken::new(session_id, ip, now.clone(), lifetime);
+
+        let session_data = SessionData {
+            ip,
+            created_at: now,
+        };
+
+        self.sessions.insert(session_id, session_data);
+
+        token
+    }
+
+    pub fn logout(&self, session_id: i64) {
+        self.sessions.remove(&session_id);
     }
 
     fn random_token() -> String {

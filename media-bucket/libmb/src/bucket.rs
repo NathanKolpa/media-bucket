@@ -86,6 +86,7 @@ impl Bucket {
             Some(password) => Self::open_encrypted(Path::new(location), password).await,
         };
 
+        #[cfg(not(feature = "local"))]
         return Err(BucketError::MissingFeature("local"))
     }
 

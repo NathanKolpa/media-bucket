@@ -17,6 +17,7 @@ mod middleware;
 mod routes;
 mod stream_file;
 mod web_error;
+mod token;
 
 struct InstanceConfig {
     id: u64,
@@ -140,6 +141,7 @@ pub async fn start_server(config: ServerConfig) -> std::io::Result<()> {
             .allow_any_origin()
             .allow_any_method()
             .allow_any_header()
+            .supports_credentials()
             .max_age(3600);
 
         App::new()

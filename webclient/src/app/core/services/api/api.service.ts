@@ -1,18 +1,6 @@
 import {Injectable} from '@angular/core';
 import {HttpClient, HttpErrorResponse, HttpEventType} from "@angular/common/http";
-import {
-  audit,
-  catchError,
-  first,
-  interval,
-  map,
-  Observable,
-  of,
-  Subject,
-  Subscription,
-  switchMap,
-  takeUntil
-} from "rxjs";
+import {audit, catchError, first, interval, map, Observable, Subject, Subscription, takeUntil} from "rxjs";
 import {
   ApiFailure,
   Auth,
@@ -26,8 +14,10 @@ import {
   PageParams,
   Post,
   PostDetail,
-  PostItemDetail, PostSearchQuery,
-  SearchPost, SearchPostItem,
+  PostItemDetail,
+  PostSearchQuery,
+  SearchPost,
+  SearchPostItem,
   Tag,
   Upload
 } from "@core/models";
@@ -328,7 +318,7 @@ export class ApiService {
   }
 
   private authenticatedGet(auth: Auth, url: string): Observable<any> {
-    return this.get(`/buckets/${auth.bucketId}${url}`, this.authRequestOptions(auth));
+    return this.pipeRequest(this.client.get(`${auth.base}${url}`, this.authRequestOptions(auth)));
   }
 
   private post(url: string, data: any, options?: any): Observable<any> {
@@ -336,30 +326,20 @@ export class ApiService {
   }
 
   private authenticatedPost(auth: Auth, url: string, data: any, options?: any): Observable<any> {
-    return this.post(`/buckets/${auth.bucketId}${url}`, data, {...this.authRequestOptions(auth), ...options});
+    return this.pipeRequest(this.client.post(`${auth.base}${url}`, data, {...this.authRequestOptions(auth), ...options}));
   }
 
   private authenticatedPut(auth: Auth, url: string, data: any, options?: any): Observable<any> {
-    return this.put(`/buckets/${auth.bucketId}${url}`, data, {...this.authRequestOptions(auth), ...options});
+    return this.pipeRequest(this.client.put(`${auth.base}${url}`, data, {...this.authRequestOptions(auth), ...options}));
   }
 
   private authenticatedDelete(auth: Auth, url: string, options?: any): Observable<any> {
-    return this.delete(`/buckets/${auth.bucketId}${url}`, {...this.authRequestOptions(auth), ...options});
+    return this.pipeRequest(this.client.delete(`${auth.base}${url}`, {...this.authRequestOptions(auth), ...options}));
   }
 
-  private put(url: string, data: any, options?: any): Observable<any> {
-    return this.pipeRequest(this.client.put(`${environment.api}${url}`, data, options));
-  }
-
-  private delete(url: string, options?: any): Observable<any> {
-    return this.pipeRequest(this.client.delete(`${environment.api}${url}`, options));
-  }
-
-  private authRequestOptions(auth: Auth): any {
+  private authRequestOptions(_auth: Auth): any {
     return {
-      headers: {
-        'Authorization': auth.token + '',
-      }
+      withCredentials: true
     }
   }
 
@@ -380,7 +360,8 @@ export class ApiService {
   }
 
   private mapAuth(bucketId: number, privateSession: boolean, json: any): Auth {
-    return new Auth(bucketId, json.token, privateSession);
+    let url = new URL(environment.api + "/buckets/" + bucketId);
+    return new Auth(bucketId, json.token, privateSession, url.hostname, url.pathname, url.protocol, url.port == '' ? null : url.port);
   }
 
   private mapPage(json: any): Page {
@@ -437,11 +418,6 @@ export class ApiService {
       mediaType = 'document';
     }
 
-    let token = '';
-    if (auth.token) {
-      token = `token=${encodeURIComponent(auth.token)}`;
-    }
-
     return new Media(
       json.id,
       videoEncoding,
@@ -454,7 +430,7 @@ export class ApiService {
       json.mime,
       documentData,
       mediaType,
-      `${environment.api}/buckets/${auth.bucketId}/media/${json.id}/file?${token}`
+      `${auth.base}/media/${json.id}/file`
     );
   }
 
