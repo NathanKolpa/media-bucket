@@ -17,6 +17,7 @@ mod middleware;
 mod routes;
 mod stream_file;
 mod web_error;
+mod token;
 
 struct InstanceConfig {
     id: u64,

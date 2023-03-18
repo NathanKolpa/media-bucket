@@ -1,12 +1,13 @@
 use std::future::Future;
+use std::net::IpAddr;
 use std::pin::Pin;
 
-use crate::http_server::web_error::WebError;
 use actix_web::dev::Payload;
 use actix_web::{web, FromRequest, HttpRequest};
 use serde::Deserialize;
 
 use crate::http_server::instance::{InstanceDataSource, Session};
+use crate::http_server::web_error::WebError;
 
 #[derive(Deserialize)]
 struct QueryParams {
@@ -52,16 +53,23 @@ impl FromRequest for Session {
             })
             .ok_or(WebError::MissingAuthToken);
 
+        let ip = req
+            .connection_info()
+            .realip_remote_addr()
+            .ok_or(WebError::InstanceNotFound)
+            .and_then(|ip|  ip.parse::<IpAddr>().map_err(|_| WebError::ParseError));
+
         Box::pin(async move {
             let bucket_id = bucket_id?;
             let token = token??;
+            let ip = ip?;
 
             let instance = instances
                 .get_by_id(bucket_id)
                 .ok_or(WebError::InstanceNotFound)?;
 
             let session = instance
-                .get_session_by_token(token)
+                .authorize_token(&token, ip)
                 .ok_or(WebError::InvalidAuthToken)?;
 
             Ok(session)
