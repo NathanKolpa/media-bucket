@@ -259,10 +259,6 @@ impl SqliteIndex {
             }
 
             if let Some(tag_ids) = query.tags.as_ref() {
-                if is_first {
-                    where_clause.push_str("WHERE");
-                }
-
                 for tag_id in tag_ids.iter() {
                     if !is_first {
                         where_clause.push_str(" AND")
