@@ -11,6 +11,7 @@ interface State {
   nextPageLoadingState: LoadingState,
   pageSize: number,
   posts: SearchPost[], // use an array instead of entity state because order is important
+  postCount: null | number,
 
   showSidebar: boolean,
   sidebarPostLoadingState: LoadingState,
@@ -38,6 +39,7 @@ const initialState: State = {
   nextPageLoadingState: LoadingState.initial(),
   pageSize: 100,
   posts: [],
+  postCount: null,
 
   showSidebar: false,
   sidebarPostLoadingState: LoadingState.initial(),
@@ -62,10 +64,11 @@ const feature = createFeature({
       ...state,
       nextPageLoadingState: state.nextPageLoadingState.loading()
     })),
-    on(searchActions.loadNextSuccess, (state, {posts}) => ({
+    on(searchActions.loadNextSuccess, (state, {posts, page}) => ({
       ...state,
       nextPageLoadingState: state.nextPageLoadingState.success(),
       posts: [...state.posts, ...posts],
+      postCount: page.totalRows
     })),
     on(searchActions.loadNextFailure, (state, {failure}) => ({
       ...state,
@@ -307,6 +310,7 @@ export const {
   selectItemList,
   selectViewedPostMode,
   selectSearchQuery,
+  selectPostCount,
   selectItemListLoadingState
 } = feature;
 

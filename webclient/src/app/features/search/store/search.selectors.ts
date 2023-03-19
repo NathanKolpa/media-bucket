@@ -87,5 +87,6 @@ export {
   selectSearchQuery,
   selectViewedPostMode,
   selectItemList,
+  selectPostCount,
   selectItemListLoadingState
 } from './search.reducer'

@@ -60,6 +60,9 @@ export class SearchResultsComponent implements OnDestroy {
   @Input()
   public nextLoadingState: LoadingState | null = null;
 
+  @Input()
+  public resultCount: number | null = null;
+
   private breakpointSubscription: Subscription;
 
   constructor(private breakpointObserver: BreakpointObserver) {

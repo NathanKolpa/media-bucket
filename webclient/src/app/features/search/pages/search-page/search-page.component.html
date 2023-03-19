@@ -23,6 +23,7 @@
       [posts]="(posts$ | async) || []"
       (showInfo)="showSidebar(bucket, $event)"
       (showDetail)="showPost(bucket, $event)"
+      [resultCount]="postCount$ | async"
       (requestNextData)="loadNext(bucket)">
 
       <app-search-bar

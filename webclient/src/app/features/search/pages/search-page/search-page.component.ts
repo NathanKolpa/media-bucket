@@ -22,6 +22,7 @@ export class SearchPageComponent implements OnDestroy, ConfirmComponent {
   public bucket$ = this.store.select(fromBucket.selectBucket);
 
   posts$ = this.store.select(fromSearch.selectPosts);
+  postCount$ = this.store.select(fromSearch.selectPostCount);
   postsLoadingState$ = this.store.select(fromSearch.selectNextPageLoadingState);
   showSidebar$ = this.store.select(fromSearch.selectShowSidebar);
   activeJobs$ = this.store.select(fromSearch.selectActiveUploadJobs);

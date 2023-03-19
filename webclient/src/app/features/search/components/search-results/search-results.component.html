@@ -3,6 +3,10 @@
   <ng-content>
   </ng-content>
 
+  <p class="ms-4 mt-2 mb-0" *ngIf="resultCount as resultCount">
+    <i>Results: {{ resultCount }}</i>
+  </p>
+
   <div class="row" [ngClass]="containerClass">
     <ng-container *cdkVirtualFor="let row of rows; trackBy: trackById">
       <app-listing

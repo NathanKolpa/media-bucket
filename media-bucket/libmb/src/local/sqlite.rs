@@ -710,7 +710,11 @@ impl CrossDataSource for SqliteIndex {
     ) -> Result<Page<SearchPost>, DataSourceError> {
         let mut conn = self.pool.acquire().await?;
 
-        let total_row_count: (i64, ) = sqlx::query_as("SELECT COUNT(*) FROM posts")
+        let query_row_count_str = SqliteIndex::create_search_query_str(query, "SELECT COUNT(*) FROM posts_vtab p", "");
+        let query_row_count = SqliteIndex::add_search_query_values(query, &query_row_count_str);
+
+        let total_row_count: i64 = query_row_count
+            .map(|r| r.get(0))
             .fetch_one(&mut conn)
             .await?;
 
@@ -721,7 +725,7 @@ impl CrossDataSource for SqliteIndex {
         (SELECT COUNT(*) FROM media WHERE media_id IN (SELECT content_id FROM post_items WHERE post_id = p.post_id) AND mime_type = 'video') as 'contains_video',
         (SELECT COUNT(*) FROM media WHERE media_id IN (SELECT content_id FROM post_items WHERE post_id = p.post_id) AND mime_type = 'application' AND mime_sub_type != 'pdf') as 'contains_document',
         (SELECT COUNT(*) FROM media WHERE media_id IN (SELECT content_id FROM post_items WHERE post_id = p.post_id) AND mime_type = 'image' AND mime_sub_type = 'gif') as 'contains_moving_image'
-        FROM posts p
+        FROM posts_vtab p
         LEFT JOIN (SELECT * FROM post_items ORDER BY item_order ASC) pi ON pi.post_id = p.post_id AND pi.item_order = 0
         LEFT JOIN content c ON pi.content_id = c.content_id
         LEFT JOIN media m ON c.thumbnail_id = m.media_id",
@@ -740,7 +744,7 @@ impl CrossDataSource for SqliteIndex {
         Ok(Page {
             page_size: page.page_size(),
             page_number: page.offset(),
-            total_row_count: total_row_count.0 as usize,
+            total_row_count: total_row_count as usize,
             data: rows.into_iter().filter_map(|x| x.ok()).collect(),
         })
     }
