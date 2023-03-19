@@ -5,9 +5,20 @@
 
       <mat-chip-grid #chips>
 
+        <mat-chip-row (removed)="removeText()" *ngIf="_query?.text != null">
+
+          "{{ _query?.text }}"
+
+          <button matChipRemove>
+            <mat-icon>cancel</mat-icon>
+          </button>
+        </mat-chip-row>
+
         <mat-chip-row *ngFor="let item of _query?.items; let i = index" (removed)="removeIndex(i)">
 
-          {{ item.tag.name }}
+          <ng-template [ngIf]="item.type == 'tag'">
+            {{ item.tag.name }}
+          </ng-template>
 
           <button matChipRemove>
             <mat-icon>cancel</mat-icon>
@@ -21,7 +32,7 @@
           [matChipInputFor]="chips"
           placeholder="Add search criteria"
           [matAutocomplete]="auto" (focus)="searchTextChange.emit(input.value == '' ? null : input.value)"
-          (keydown.enter)="submit()"
+          (keydown.enter)="auto.closed && submit()"
           (input)="searchTextChange.emit(input.value == '' ? null : input.value)">
 
       </mat-chip-grid>
@@ -30,6 +41,10 @@
         <mat-option *ngFor="let tag of tags"
                     (onSelectionChange)="addTag(tag)">
           Tag: {{ tag.name }}
+        </mat-option>
+
+        <mat-option *ngIf="input.value != ''" (onSelectionChange)="addText(input.value)">
+          Text: "{{ input.value }}"
         </mat-option>
       </mat-autocomplete>
 

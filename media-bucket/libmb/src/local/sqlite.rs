@@ -6,7 +6,9 @@ use async_trait::async_trait;
 use chrono::Utc;
 use futures::TryStreamExt;
 use mediatype::MediaTypeBuf;
-use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode, SqlitePoolOptions, SqliteRow, SqliteSynchronous};
+use sqlx::sqlite::{
+    SqliteConnectOptions, SqliteJournalMode, SqlitePoolOptions, SqliteRow, SqliteSynchronous,
+};
 use sqlx::{ConnectOptions, Executor, Row, Sqlite, SqlitePool};
 use thiserror::Error;
 use uuid::Uuid;
@@ -239,10 +241,28 @@ impl SqliteIndex {
         let mut where_clause = String::new();
 
         if query.has_criteria() {
+            let mut is_first = true;
+
             where_clause.push_str("WHERE");
 
+            if let Some(text) = query.text.as_deref() {
+                let query_is_empty = text.len() < 3;
+
+                if query_is_empty {
+                    where_clause.push_str(" (p.source LIKE ? OR p.title LIKE ? OR p.description LIKE ?)");
+                }
+                else {
+                    where_clause.push_str(" posts_vtab MATCH (?)")
+                }
+
+                is_first = false;
+            }
+
             if let Some(tag_ids) = query.tags.as_ref() {
-                let mut is_first = true;
+                if is_first {
+                    where_clause.push_str("WHERE");
+                }
+
                 for tag_id in tag_ids.iter() {
                     if !is_first {
                         where_clause.push_str(" AND")
@@ -266,6 +286,25 @@ impl SqliteIndex {
     ) -> sqlx::query::Query<'a, sqlx::Sqlite, sqlx::sqlite::SqliteArguments<'a>> {
         let mut query = sqlx::query(str);
 
+        if let Some(text) = query_values.text.as_deref() {
+            let query_is_empty = text.len() < 3;
+
+            if !query_is_empty {
+                let value = text
+                    .trim()
+                    .split(' ')
+                    .map(|word| format!("{{title description source}}: \"{word}\""))
+                    .collect::<Vec<String>>()
+                    .join(" OR ");
+
+                query = query.bind(value);
+            } else {
+                query = query.bind(format!("%{text}%"));
+                query = query.bind(format!("%{text}%"));
+                query = query.bind(format!("%{text}%"));
+            }
+        }
+
         if let Some(tag_ids) = query_values.tags.as_ref() {
             for tag in tag_ids {
                 query = query.bind(*tag as i64);
@@ -275,7 +314,11 @@ impl SqliteIndex {
         query
     }
 
-    async fn post_update<'a, E: Executor<'a, Database=Sqlite>>(&self, value: &Post, executor: E) -> Result<(), DataSourceError> {
+    async fn post_update<'a, E: Executor<'a, Database = Sqlite>>(
+        &self,
+        value: &Post,
+        executor: E,
+    ) -> Result<(), DataSourceError> {
         sqlx::query("UPDATE posts SET source = ?, title = ?, description = ?, created_at = ?, import_batch_id = ? WHERE post_id = ?")
             .bind(value.source.as_ref().map(|url| url.as_str()))
             .bind(value.title.as_deref())
@@ -393,7 +436,7 @@ impl PostItemDataSource for SqliteIndex {
     ) -> Result<Page<PostItem>, DataSourceError> {
         let mut conn = self.pool.acquire().await?;
 
-        let total_row_count: (i64, ) =
+        let total_row_count: (i64,) =
             sqlx::query_as("SELECT COUNT(*) FROM post_items WHERE post_id = ?")
                 .bind(post_id as i64)
                 .fetch_one(&mut conn)
@@ -402,12 +445,12 @@ impl PostItemDataSource for SqliteIndex {
         let rows = sqlx::query(
             "SELECT * FROM post_items WHERE post_id = ? ORDER BY item_order ASC LIMIT ? OFFSET ?",
         )
-            .bind(post_id as i64)
-            .bind(page.page_size() as i64)
-            .bind(page.offset() as i64)
-            .map(|r| Self::map_post_item(&r))
-            .fetch_all(&mut conn)
-            .await?;
+        .bind(post_id as i64)
+        .bind(page.page_size() as i64)
+        .bind(page.offset() as i64)
+        .map(|r| Self::map_post_item(&r))
+        .fetch_all(&mut conn)
+        .await?;
 
         Ok(Page {
             page_size: page.page_size(),
@@ -457,7 +500,7 @@ impl PostDataSource for SqliteIndex {
     async fn get_page(&self, page: PageParams) -> Result<Page<Post>, DataSourceError> {
         let mut conn = self.pool.acquire().await?;
 
-        let total_row_count: (i64, ) = sqlx::query_as("SELECT COUNT(*) FROM posts")
+        let total_row_count: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM posts")
             .fetch_one(&mut conn)
             .await?;
 
@@ -483,11 +526,11 @@ impl ContentDataSource for SqliteIndex {
         sqlx::query(
             "INSERT INTO content(content_id, thumbnail_id, compatibility_content_id) VALUES(?,?,?)",
         )
-            .bind(value.content.id() as i64)
-            .bind(value.thumbnail.id() as i64)
-            .bind(Option::<i64>::None)
-            .execute(&self.pool)
-            .await?;
+        .bind(value.content.id() as i64)
+        .bind(value.thumbnail.id() as i64)
+        .bind(Option::<i64>::None)
+        .execute(&self.pool)
+        .await?;
 
         Ok(())
     }
@@ -590,7 +633,7 @@ impl TagDataSource for SqliteIndex {
     ) -> Result<Page<Tag>, DataSourceError> {
         let mut conn = self.pool.acquire().await?;
 
-        let total_row_count: (i64, ) = sqlx::query_as("SELECT COUNT(*) FROM tags")
+        let total_row_count: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM tags")
             .fetch_one(&mut conn)
             .await?;
 
@@ -647,10 +690,10 @@ impl TagDataSource for SqliteIndex {
         let rows = sqlx::query(
             "SELECT * FROM tags_posts tp JOIN tags t ON t.tag_id = tp.tag_id WHERE post_id = ?",
         )
-            .bind(post_id as i64)
-            .map(|r| Self::map_tag(&r))
-            .fetch_all(&self.pool)
-            .await?;
+        .bind(post_id as i64)
+        .map(|r| Self::map_tag(&r))
+        .fetch_all(&self.pool)
+        .await?;
 
         Ok(rows.into_iter().filter_map(|x| x.ok()).collect())
     }
@@ -710,15 +753,7 @@ impl CrossDataSource for SqliteIndex {
     ) -> Result<Page<SearchPost>, DataSourceError> {
         let mut conn = self.pool.acquire().await?;
 
-        let query_row_count_str = SqliteIndex::create_search_query_str(query, "SELECT COUNT(*) FROM posts_vtab p", "");
-        let query_row_count = SqliteIndex::add_search_query_values(query, &query_row_count_str);
-
-        let total_row_count: i64 = query_row_count
-            .map(|r| r.get(0))
-            .fetch_one(&mut conn)
-            .await?;
-
-        let query_str = SqliteIndex::create_search_query_str(query, "SELECT p.*, m.*, pi.original_name,
+        let search_query_str = SqliteIndex::create_search_query_str(query, "SELECT p.*, m.*, pi.original_name,
         (SELECT COUNT(*) FROM post_items pi WHERE pi.post_id = p.post_id) as 'item_count',
         (SELECT SUM(c.duration) FROM post_items pi JOIN media c ON pi.content_id = c.media_id WHERE pi.post_id = p.post_id) as 'total_duration',
         (SELECT COUNT(*) FROM media WHERE media_id IN (SELECT content_id FROM post_items WHERE post_id = p.post_id) AND mime_type = 'image' AND mime_sub_type != 'gif') as 'contains_image',
@@ -729,16 +764,25 @@ impl CrossDataSource for SqliteIndex {
         LEFT JOIN (SELECT * FROM post_items ORDER BY item_order ASC) pi ON pi.post_id = p.post_id AND pi.item_order = 0
         LEFT JOIN content c ON pi.content_id = c.content_id
         LEFT JOIN media m ON c.thumbnail_id = m.media_id",
-                                                             "ORDER BY p.created_at DESC
+                                                             "ORDER BY rank DESC, p.created_at DESC
         LIMIT ? OFFSET ?");
 
-        let query = SqliteIndex::add_search_query_values(query, query_str.as_str());
+        let search_query = SqliteIndex::add_search_query_values(query, search_query_str.as_str());
 
-        let rows = query
+        let rows = search_query
             .bind(page.page_size() as i64)
             .bind(page.offset() as i64)
             .map(|r| Self::map_search_post(&r))
             .fetch_all(&mut conn)
+            .await?;
+
+        let query_row_count_str =
+            SqliteIndex::create_search_query_str(query, "SELECT COUNT(*) FROM posts_vtab p", "");
+        let query_row_count = SqliteIndex::add_search_query_values(query, &query_row_count_str);
+
+        let total_row_count: i64 = query_row_count
+            .map(|r| r.get(0))
+            .fetch_one(&mut conn)
             .await?;
 
         Ok(Page {
@@ -756,7 +800,7 @@ impl CrossDataSource for SqliteIndex {
     ) -> Result<Page<SearchPostItem>, DataSourceError> {
         let mut conn = self.pool.acquire().await?;
 
-        let total_row_count: (i64, ) =
+        let total_row_count: (i64,) =
             sqlx::query_as("SELECT COUNT(*) FROM post_items WHERE post_id = ?")
                 .bind(post_id as i64)
                 .fetch_one(&mut conn)
@@ -798,10 +842,10 @@ impl CrossDataSource for SqliteIndex {
             LEFT JOIN media m ON m.media_id = pi.content_id
             WHERE pi.post_id = ? AND pi.item_order = ?",
         )
-            .bind(post_id as i64)
-            .bind(position as i64)
-            .map(|r| Self::map_full_post_item(&r))
-            .fetch(&self.pool);
+        .bind(post_id as i64)
+        .bind(position as i64)
+        .map(|r| Self::map_full_post_item(&r))
+        .fetch(&self.pool);
 
         if let Some(row) = rows.try_next().await? {
             Ok(Some(row?))
@@ -950,16 +994,15 @@ impl CrossDataSource for SqliteIndex {
             .execute(&mut tx)
             .await?;
 
-
         if !tags.is_empty() {
             let value_binds = tags.iter().map(|_| "(?, ?)").collect::<Vec<_>>().join(", ");
-            let insert_query = format!("INSERT INTO tags_posts(post_id, tag_id) VALUES {value_binds}");
+            let insert_query =
+                format!("INSERT INTO tags_posts(post_id, tag_id) VALUES {value_binds}");
 
             let mut query = sqlx::query(&insert_query);
 
             for tag in tags {
-                query = query.bind(value.id as i64)
-                    .bind(*tag as i64);
+                query = query.bind(value.id as i64).bind(*tag as i64);
             }
 
             query.execute(&mut tx).await?;

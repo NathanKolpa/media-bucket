@@ -11,6 +11,7 @@ use crate::model::PostSearchQuery;
 #[derive(Deserialize)]
 struct PostSearchParams {
     tags: Option<String>,
+    text: Option<String>,
 }
 
 impl FromRequest for PostSearchQuery {
@@ -37,7 +38,7 @@ impl FromRequest for PostSearchQuery {
                 tags = Some(ids);
             }
 
-            Ok(PostSearchQuery { tags })
+            Ok(PostSearchQuery { tags, text: query.text.clone() })
         })
     }
 }

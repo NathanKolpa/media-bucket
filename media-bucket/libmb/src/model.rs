@@ -281,10 +281,11 @@ pub struct CreateFullPost {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct PostSearchQuery {
     pub tags: Option<Vec<u64>>,
+    pub text: Option<String>,
 }
 
 impl PostSearchQuery {
     pub fn has_criteria(&self) -> bool {
-        self.tags.is_some()
+        self.tags.is_some() || self.text.is_some()
     }
 }

@@ -38,6 +38,22 @@ export class SearchBarComponent {
     }
   }
 
+  addText(str: string) {
+    if (this._query) {
+      if (this.input) {
+        this.input.nativeElement.value = '';
+      }
+
+      this._query = this._query.setText(str);
+    }
+  }
+
+  removeText() {
+    if (this._query) {
+      this._query = this._query.setText(null);
+    }
+  }
+
   removeIndex(index: number) {
     if (this._query) {
       this._query = this._query.removeItem(index);

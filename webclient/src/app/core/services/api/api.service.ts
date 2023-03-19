@@ -131,11 +131,17 @@ export class ApiService {
     let tagItems = query.items.filter(x => x.type == 'tag');
     let tagIds = '';
 
+    let text = '';
+
     if (tagItems.length > 0) {
-      tagIds = '&tags=' + tagItems.map(x => x.tag.id).join(',');
+      tagIds = '&tags=' + tagItems.map(x => x.type == 'tag' ? x.tag.id : 0).join(',');
     }
 
-    let queryStr = `${tagIds}`;
+    if (query.text != null) {
+      text = '&text=' + encodeURIComponent(query.text);
+    }
+
+    let queryStr = `${tagIds}${text}`;
 
 
     return this.authenticatedGet(auth, `/posts?offset=${encodeURIComponent(pageParams.offset)}&size=${encodeURIComponent(pageParams.pageSize)}${queryStr}`).pipe(
