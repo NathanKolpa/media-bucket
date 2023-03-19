@@ -88,11 +88,11 @@ export class AuthCacheService {
   }
 
   private saveCookie(auth: Auth) {
-    document.cookie =  `bucket_${auth.bucketId}=${auth.token}; domain=${auth.domain}; path=${auth.path}; Max-Age=259200; SameSite=Strict; ${auth.protocol == 'https:' ? 'Secure;' : ''}`
+    document.cookie =  `bucket_${auth.bucketId}=${auth.token}; domain=${auth.domain}; HostOnly; path=${auth.path}; Max-Age=259200; SameSite=Strict; ${auth.protocol == 'https:' ? 'Secure;' : ''}`
   }
 
   private removeCookie(auth: Auth) {
-    document.cookie =  `bucket_${auth.bucketId}=; Max-Age=0; SameSite=None`
+    document.cookie =  `bucket_${auth.bucketId}=; Max-Age=0; SameSite=Strict`
   }
 
 }
