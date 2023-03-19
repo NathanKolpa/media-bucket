@@ -764,7 +764,7 @@ impl CrossDataSource for SqliteIndex {
         LEFT JOIN (SELECT * FROM post_items ORDER BY item_order ASC) pi ON pi.post_id = p.post_id AND pi.item_order = 0
         LEFT JOIN content c ON pi.content_id = c.content_id
         LEFT JOIN media m ON c.thumbnail_id = m.media_id",
-                                                             "ORDER BY rank DESC, p.created_at DESC
+                                                             "ORDER BY rank ASC, p.created_at DESC
         LIMIT ? OFFSET ?");
 
         let search_query = SqliteIndex::add_search_query_values(query, search_query_str.as_str());
