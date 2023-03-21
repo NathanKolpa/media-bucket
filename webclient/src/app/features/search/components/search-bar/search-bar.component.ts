@@ -44,13 +44,7 @@ export class SearchBarComponent {
         this.input.nativeElement.value = '';
       }
 
-      this._query = this._query.setText(str);
-    }
-  }
-
-  removeText() {
-    if (this._query) {
-      this._query = this._query.setText(null);
+      this._query = this._query.addText(str);
     }
   }
 

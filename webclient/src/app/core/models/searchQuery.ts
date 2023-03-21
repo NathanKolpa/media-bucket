@@ -1,15 +1,16 @@
 import {Tag} from "./tag";
 
 export type SearchQueryItem =
-  { type: 'tag', tag: Tag };
+  { type: 'tag', tag: Tag }
+  | {type: 'text', str: string};
 
 export class PostSearchQuery {
 
   public static empty(): PostSearchQuery {
-    return new PostSearchQuery([], null);
+    return new PostSearchQuery([]);
   }
 
-  constructor(private _items: SearchQueryItem[], private _text: string | null) {
+  constructor(private _items: SearchQueryItem[]) {
   }
 
   get items(): SearchQueryItem[] {
@@ -17,20 +18,28 @@ export class PostSearchQuery {
   }
 
   public addTag(tag: Tag): PostSearchQuery {
-    return new PostSearchQuery([...this._items.filter(x => x.tag?.id != tag.id), {type: 'tag', tag}], this._text);
+    return new PostSearchQuery([...this._items.filter(x => {
+      if (x.type != 'tag') {
+        return true;
+      }
+
+      return  x.tag.id != tag.id;
+    }), {type: 'tag', tag}]);
+  }
+
+  public addText(text: string): PostSearchQuery {
+    return new PostSearchQuery([...this._items.filter(x => {
+      if (x.type != 'text') {
+        return true;
+      }
+
+      return  x.str != text;
+    }), {type: 'text', str: text}]);
   }
 
   public removeItem(index: number): PostSearchQuery {
     let copy = [...this._items];
     copy.splice(index, 1);
-    return new PostSearchQuery(copy, this._text);
-  }
-
-  public setText(text: string | null): PostSearchQuery {
-    return new PostSearchQuery(this._items, text);
-  }
-
-  get text(): string | null {
-    return this._text;
+    return new PostSearchQuery(copy);
   }
 }

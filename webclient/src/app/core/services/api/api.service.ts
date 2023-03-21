@@ -131,14 +131,15 @@ export class ApiService {
     let tagItems = query.items.filter(x => x.type == 'tag');
     let tagIds = '';
 
+    let textItems = query.items.filter(x => x.type == 'text');
     let text = '';
 
     if (tagItems.length > 0) {
       tagIds = '&tags=' + tagItems.map(x => x.type == 'tag' ? x.tag.id : 0).join(',');
     }
 
-    if (query.text != null) {
-      text = '&text=' + encodeURIComponent(query.text);
+    if (textItems.length > 0) {
+      text = '&text=' + encodeURIComponent(textItems.map(x => x.type == 'text' ? x.str : '').join(' '));
     }
 
     let queryStr = `${tagIds}${text}`;

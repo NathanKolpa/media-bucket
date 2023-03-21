@@ -249,7 +249,7 @@ impl SqliteIndex {
                 let query_is_empty = text.len() < 3;
 
                 if query_is_empty {
-                    where_clause.push_str(" (p.source LIKE ? OR p.title LIKE ? OR p.description LIKE ?)");
+                    where_clause.push_str(" (p.source LIKE ? OR p.title LIKE ? OR p.description LIKE ? OR p.tags LIKE ? OR p.original_name LIKE ? OR p.original_directory LIKE ? OR p.document_title LIKE ? OR p.document_author LIKE ?)");
                 }
                 else {
                     where_clause.push_str(" posts_vtab MATCH (?)")
@@ -289,12 +289,17 @@ impl SqliteIndex {
                 let value = text
                     .trim()
                     .split(' ')
-                    .map(|word| format!("{{title description source}}: \"{word}\""))
+                    .map(|word| format!("{{title description source tags original_name original_directory document_title document_author}}: \"{word}\""))
                     .collect::<Vec<String>>()
                     .join(" OR ");
 
                 query = query.bind(value);
             } else {
+                query = query.bind(format!("%{text}%"));
+                query = query.bind(format!("%{text}%"));
+                query = query.bind(format!("%{text}%"));
+                query = query.bind(format!("%{text}%"));
+                query = query.bind(format!("%{text}%"));
                 query = query.bind(format!("%{text}%"));
                 query = query.bind(format!("%{text}%"));
                 query = query.bind(format!("%{text}%"));

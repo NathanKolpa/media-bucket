@@ -5,19 +5,14 @@
 
       <mat-chip-grid #chips>
 
-        <mat-chip-row (removed)="removeText()" *ngIf="_query?.text != null">
-
-          "{{ _query?.text }}"
-
-          <button matChipRemove>
-            <mat-icon>cancel</mat-icon>
-          </button>
-        </mat-chip-row>
-
         <mat-chip-row *ngFor="let item of _query?.items; let i = index" (removed)="removeIndex(i)">
 
           <ng-template [ngIf]="item.type == 'tag'">
             {{ item.tag.name }}
+          </ng-template>
+
+          <ng-template [ngIf]="item.type == 'text'">
+            "{{ item.str }}"
           </ng-template>
 
           <button matChipRemove>
@@ -38,13 +33,13 @@
       </mat-chip-grid>
 
       <mat-autocomplete autoActiveFirstOption #auto>
+        <mat-option *ngIf="input.value != ''" (onSelectionChange)="addText(input.value)">
+          Text: "{{ input.value }}"
+        </mat-option>
+
         <mat-option *ngFor="let tag of tags"
                     (onSelectionChange)="addTag(tag)">
           Tag: {{ tag.name }}
-        </mat-option>
-
-        <mat-option *ngIf="input.value != ''" (onSelectionChange)="addText(input.value)">
-          Text: "{{ input.value }}"
         </mat-option>
       </mat-autocomplete>
 
