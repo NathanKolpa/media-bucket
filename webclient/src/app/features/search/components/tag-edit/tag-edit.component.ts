@@ -86,7 +86,9 @@ export class TagEditComponent implements OnDestroy {
     this.api.createTag(bucket.auth, this.searchField.value + '', null).subscribe(tag => {
       this.addTag(tag);
 
-      let snackBar = this.snackBar.open(`Successfully created tag "${tag.name}"`, 'Undo');
+      let snackBar = this.snackBar.open(`Successfully created tag "${tag.name}"`, 'Undo', {
+        duration: 3000
+      });
 
       snackBar.onAction().subscribe(() => {
         this.api.removeTag(bucket.auth, tag.id).subscribe(() => {
