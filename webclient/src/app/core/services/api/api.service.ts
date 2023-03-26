@@ -200,11 +200,6 @@ export class ApiService {
     )
   }
 
-
-  public logout(auth: Auth): Observable<any> {
-    return this.authenticatedPost(auth, '/buckets/logout', {});
-  }
-
   // downloads
 
   private queue: QueuedFile[] = [];

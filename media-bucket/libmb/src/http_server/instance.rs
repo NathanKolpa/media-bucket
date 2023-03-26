@@ -6,7 +6,6 @@ use std::sync::{Arc, RwLock};
 use std::sync::atomic::{AtomicI64, Ordering};
 
 use chrono::{DateTime, Duration, Utc};
-use dashmap::DashMap;
 use rand::distributions::Alphanumeric;
 use rand::{thread_rng, Rng};
 use thiserror::Error;
@@ -48,7 +47,6 @@ struct SessionData {
 }
 
 pub struct Session {
-    id: i64,
     parent: Arc<ServerBucketInstance>,
     bucket: Arc<Bucket>,
     ip: IpAddr
@@ -68,10 +66,6 @@ impl Session {
     }
 
     pub fn get_session_count() {}
-
-    pub fn logout(&self) {
-        self.parent.logout(self.id)
-    }
 }
 
 pub struct ServerBucketInstance {
@@ -80,8 +74,6 @@ pub struct ServerBucketInstance {
     name: String,
     password_protected: bool,
     instance: RwLock<Option<Arc<Bucket>>>,
-    sessions: DashMap<i64, SessionData>,
-    session_ai: AtomicI64,
     token_secret: [u8; 32]
 }
 
@@ -93,9 +85,7 @@ impl ServerBucketInstance {
             location,
             name,
             instance: Default::default(),
-            sessions: Default::default(),
             token_secret: thread_rng().gen(),
-            session_ai: Default::default()
         })
     }
 
@@ -108,7 +98,6 @@ impl ServerBucketInstance {
         let bucket = self.instance.read().unwrap().clone()?;
 
         Some(Session {
-            id: auth_token.session_id(),
             bucket,
             parent: self,
             ip
@@ -153,24 +142,17 @@ impl ServerBucketInstance {
     }
 
     fn new_session(&self, ip: IpAddr) -> AuthToken {
-        let session_id = self.session_ai.fetch_add(1, Ordering::SeqCst);
         let now = Utc::now();
         let lifetime = Duration::days(3);
 
-        let token = AuthToken::new(session_id, ip, now.clone(), lifetime);
+        let token = AuthToken::new(ip, now.clone(), lifetime);
 
         let session_data = SessionData {
             ip,
             created_at: now,
         };
 
-        self.sessions.insert(session_id, session_data);
-
         token
-    }
-
-    pub fn logout(&self, session_id: i64) {
-        self.sessions.remove(&session_id);
     }
 
     fn random_token() -> String {

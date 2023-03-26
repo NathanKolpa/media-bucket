@@ -54,7 +54,6 @@ pub fn routes() -> Scope {
                 .service(buckets::index)
                 .service(buckets::check_auth)
                 .service(buckets::auth)
-                .service(buckets::logout)
                 .service(buckets::show)
                 .service(
                     web::scope("/{bucket_id}")

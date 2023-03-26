@@ -19,11 +19,7 @@ export class AuthEffects {
     tap(({auth}) => {
       this.authCache.remove(auth);
     }),
-
-    switchMap(({auth}) => this.api.logout(auth).pipe(
-      map(() => authActions.logoutSuccess()),
-      catchError(async failure => authActions.logoutFailure({failure}))
-    ))
+    map(() => authActions.logoutSuccess())
   ));
 
   initialize$ = createEffect(() => this.actions$.pipe(

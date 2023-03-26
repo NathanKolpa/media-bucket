@@ -11,21 +11,18 @@ struct Claims {
     iat: i64,
     ip: String,
     exp: i64,
-    session_id: i64,
 }
 
 pub struct AuthToken {
-    session_id: i64,
     ip: IpAddr,
     issued_at: DateTime<Utc>,
     lifetime: Duration,
 }
 
 impl AuthToken {
-    pub fn new(session_id: i64, ip: IpAddr, issued_at: DateTime<Utc>, lifetime: Duration) -> Self {
+    pub fn new(ip: IpAddr, issued_at: DateTime<Utc>, lifetime: Duration) -> Self {
         Self {
             lifetime,
-            session_id,
             ip,
             issued_at,
         }
@@ -40,7 +37,6 @@ impl AuthToken {
             ip: self.ip.to_string(),
             iat: self.issued_at.timestamp(),
             exp: self.expires_at(),
-            session_id: self.session_id,
         };
 
         jsonwebtoken::encode(&headers, &claims, &key).unwrap()
@@ -48,10 +44,6 @@ impl AuthToken {
 
     pub fn expires_at(&self) -> i64 {
         self.issued_at.timestamp() + self.lifetime.num_seconds()
-    }
-
-    pub fn session_id(&self) -> i64 {
-        self.session_id
     }
 
     pub fn from_token(
@@ -77,7 +69,6 @@ impl AuthToken {
             ip: claims.claims.ip.parse().ok()?,
             lifetime: Duration::seconds(offset),
             issued_at: iat,
-            session_id: claims.claims.session_id
         })
     }
 }

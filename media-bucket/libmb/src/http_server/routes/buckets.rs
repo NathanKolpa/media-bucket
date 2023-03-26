@@ -79,14 +79,6 @@ pub async fn auth(
     }))
 }
 
-#[post("/logout")]
-pub async fn logout(session: Session) -> impl Responder {
-    info!("User from {} logged out", session.ip());
-
-    session.logout();
-    web::Json(())
-}
-
 #[get("/check-auth")]
 pub async fn check_auth(bucket: Session) -> impl Responder {
     web::Json(())
