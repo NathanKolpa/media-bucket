@@ -9,7 +9,7 @@ const KEY_ALGO: Algorithm = Algorithm::HS256;
 #[derive(Debug, Serialize, Deserialize)]
 struct Claims {
     iat: i64,
-    iss: String,
+    ip: String,
     exp: i64,
     session_id: i64,
 }
@@ -37,7 +37,7 @@ impl AuthToken {
 
 
         let claims = Claims {
-            iss: self.ip.to_string(),
+            ip: self.ip.to_string(),
             iat: self.issued_at.timestamp(),
             exp: self.expires_at(),
             session_id: self.session_id,
@@ -60,19 +60,21 @@ impl AuthToken {
         ip: &IpAddr,
     ) -> Option<Self> {
         let key = DecodingKey::from_secret(secret);
-        let mut validation = Validation::new(KEY_ALGO);
         let ip_str = ip.to_string();
-        validation.set_issuer(&[ip_str]);
 
-        let claims = jsonwebtoken::decode::<Claims>(token, &key, &validation).ok()?;
+        let claims = jsonwebtoken::decode::<Claims>(token, &key, &Validation::new(KEY_ALGO)).ok()?;
 
         let iat = Utc.timestamp_opt(claims.claims.iat, 0)
             .unwrap();
 
         let offset = claims.claims.exp - claims.claims.iat;
 
+        if claims.claims.ip != ip_str {
+            return None;
+        }
+
         Some(Self {
-            ip: claims.claims.iss.parse().ok()?,
+            ip: claims.claims.ip.parse().ok()?,
             lifetime: Duration::seconds(offset),
             issued_at: iat,
             session_id: claims.claims.session_id
