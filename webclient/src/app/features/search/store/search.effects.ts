@@ -158,6 +158,15 @@ export class SearchEffects {
     ))
   ));
 
+  updatePostSuccess$ = createEffect(() => this.actions$.pipe(
+    ofType(searchActions.updatePostSuccess),
+    tap(() => {
+      this.snackBar.open('Successfully updated!', undefined, {
+        duration: 3000
+      });
+    })
+  ), { dispatch: false });
+
   deletePost$ = createEffect(() => this.actions$.pipe(
     ofType(searchActions.deletePost),
     switchMap(({postId, bucket}) => this.api.deletePost(bucket.auth, postId).pipe(
