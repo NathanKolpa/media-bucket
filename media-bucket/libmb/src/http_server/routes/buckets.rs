@@ -1,3 +1,4 @@
+use std::net::IpAddr;
 use std::ops::Deref;
 use std::time::Duration;
 
@@ -54,9 +55,11 @@ pub async fn auth(
         .ok_or(WebError::ResourceNotFound)?;
 
     let ip = req
-        .peer_addr()
+        .connection_info()
+        .realip_remote_addr()
         .expect("Cannot find the client ip address")
-        .ip();
+        .parse::<IpAddr>()
+        .expect("Cannot parse ip address");
 
     let login_result = instance.login(req_body.password.as_deref(), ip).await;
 
