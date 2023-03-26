@@ -1,6 +1,7 @@
 #![/*god*/forbid(unsafe_code)]
 #![allow(dead_code)] // TODO remove me
 #![allow(unused_variables)] // TODO remove me
+#![feature(async_fn_in_trait)]
 
 //! The documentation was largely written by an OpenAI Assistant (https://openai.com/blog/openai-assistant/).
 
