@@ -1,19 +1,21 @@
 use crate::data_source::MediaImportError;
-use crate::media_import::digest::Digest;
+use crate::media_import::digest::{Digest, DigestWrite};
 
 #[derive(Default)]
 struct Sha256Digest {
     context: sha2::Sha256,
 }
 
-impl Digest for Sha256Digest {
-    type Output = String;
-
+impl DigestWrite for Sha256Digest {
     async fn write(&mut self, data: &[u8]) -> Result<(), MediaImportError> {
         use sha2::Digest;
         self.context.update(data);
         Ok(())
     }
+}
+
+impl Digest for Sha256Digest {
+    type Output = String;
 
     async fn digest(self) -> Result<Self::Output, MediaImportError> {
         use sha2::Digest;
@@ -26,14 +28,16 @@ struct Sha1Digest {
     context: sha1::Sha1,
 }
 
-impl Digest for Sha1Digest {
-    type Output = String;
-
+impl DigestWrite for Sha1Digest {
     async fn write(&mut self, data: &[u8]) -> Result<(), MediaImportError> {
         use sha1::Digest;
         self.context.update(data);
         Ok(())
     }
+}
+
+impl Digest for Sha1Digest {
+    type Output = String;
 
     async fn digest(self) -> Result<Self::Output, MediaImportError> {
         use sha1::Digest;
@@ -53,13 +57,15 @@ impl Default for MD5Digest {
     }
 }
 
-impl Digest for MD5Digest {
-    type Output = String;
-
+impl DigestWrite for MD5Digest {
     async fn write(&mut self, data: &[u8]) -> Result<(), MediaImportError> {
         self.context.consume(data);
         Ok(())
     }
+}
+
+impl Digest for MD5Digest {
+    type Output = String;
 
     async fn digest(self) -> Result<Self::Output, MediaImportError> {
         Ok(format!("{:x}", self.context.compute()))
@@ -71,13 +77,15 @@ struct SizeDigest {
     size: usize,
 }
 
-impl Digest for SizeDigest {
-    type Output = usize;
-
+impl DigestWrite for SizeDigest {
     async fn write(&mut self, data: &[u8]) -> Result<(), MediaImportError> {
         self.size += data.len();
         Ok(())
     }
+}
+
+impl Digest for SizeDigest {
+    type Output = usize;
 
     async fn digest(self) -> Result<Self::Output, MediaImportError> {
         Ok(self.size)
