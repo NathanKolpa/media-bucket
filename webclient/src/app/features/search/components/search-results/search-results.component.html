@@ -1,4 +1,5 @@
-<cdk-virtual-scroll-viewport  #viewport [itemSize]="250" class="h-100 d-block" (scrolledIndexChange)="scrolledIndexChange()">
+<cdk-virtual-scroll-viewport #viewport [itemSize]="250" class="h-100 d-block"
+                             (scrolledIndexChange)="scrolledIndexChange()">
 
   <ng-content>
   </ng-content>
@@ -20,7 +21,8 @@
     </ng-container>
   </div>
 
-  <app-loadable-content (loadAgain)="requestNextData.emit()" [loadingState]="nextLoadingState" class="h-100 d-block mt-4">
+  <app-loadable-content (loadAgain)="requestNextData.emit()" [loadingState]="nextLoadingState"
+                        class="h-100 d-block mt-4">
   </app-loadable-content>
 
 </cdk-virtual-scroll-viewport>
