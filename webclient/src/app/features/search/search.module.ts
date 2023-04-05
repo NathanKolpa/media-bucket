@@ -51,6 +51,7 @@ import { SearchBarComponent } from './components/search-bar/search-bar.component
 import { TagComponent } from './components/tag/tag.component';
 import { PostItemListComponent } from './components/post-item-list/post-item-list.component';
 import { PdfViewerComponent } from './components/pdf-viewer/pdf-viewer.component';
+import { ImageViewerComponent } from './components/image-viewer/image-viewer.component';
 
 const routes: Routes = [
   {
@@ -84,6 +85,7 @@ const routes: Routes = [
     TagComponent,
     PostItemListComponent,
     PdfViewerComponent,
+    ImageViewerComponent,
   ],
   exports: [
     SearchPageComponent

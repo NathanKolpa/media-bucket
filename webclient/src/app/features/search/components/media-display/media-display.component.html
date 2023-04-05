@@ -1,7 +1,6 @@
 <ng-container *ngIf="media as media" [ngSwitch]="media.mediaType">
 
-  <img *ngSwitchCase="'image'" [src]="media.url" [width]="media.dimensions?.width" [height]="media.dimensions?.height"
-       [className]="className"/>
+  <app-image-viewer *ngSwitchCase="'image'" [media]="media" [className]="className"></app-image-viewer>
 
   <app-video-player
     *ngSwitchCase="'video'"
