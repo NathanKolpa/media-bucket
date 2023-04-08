@@ -17,7 +17,8 @@ const initialTransform: Transformation = {
   scale: 1
 }
 
-// from https://betterprogramming.pub/implementation-of-zoom-and-pan-in-69-lines-of-javascript-8b0cb5f221c1
+// zooming from https://betterprogramming.pub/implementation-of-zoom-and-pan-in-69-lines-of-javascript-8b0cb5f221c1
+// pinch controls from https://developer.mozilla.org/en-US/docs/Web/API/Pointer_events/Pinch_zoom_gestures
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-image-viewer',
