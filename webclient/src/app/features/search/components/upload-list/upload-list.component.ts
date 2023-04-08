@@ -1,7 +1,7 @@
-import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
+import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output, ViewChild} from '@angular/core';
 import {Upload} from "@core/models";
 import {CdkDragDrop} from "@angular/cdk/drag-drop";
-import {SelectionModel} from "@angular/cdk/collections";
+import {CdkVirtualScrollViewport} from "@angular/cdk/scrolling";
 
 export interface UploadPositionSwapEvent {
   aIndex: number,
@@ -20,6 +20,9 @@ interface UploadListItem {
   styleUrls: ['./upload-list.component.scss']
 })
 export class UploadListComponent {
+
+  @ViewChild('viewport', {static: true})
+  public viewport!: CdkVirtualScrollViewport;
 
   public sortedUploads: UploadListItem[] = [];
 
@@ -45,7 +48,7 @@ export class UploadListComponent {
     });
   }
 
-  mapUploadsToIndexes(uploads: any): number[] {
-    return uploads.map((x: any) => x.value.index);
+  trackBy(item: any): number {
+    return item.index;
   }
 }

@@ -1,26 +1,14 @@
 <div class="actions d-flex">
 
-  <button mat-icon-button
-          (click)="deleteIndexes.emit(mapUploadsToIndexes(list.selectedOptions.selected))"
-          [disabled]="list.selectedOptions.isEmpty()">
-    <mat-icon>delete</mat-icon>
-  </button>
 
-  <div class="spacer"></div>
-
-  <mat-checkbox
-    [checked]="list.selectedOptions.selected.length >= sortedUploads.length && !list.selectedOptions.isEmpty()"
-    (change)="$event.checked ? list.selectAll() : list.deselectAll()" style="margin-right: 8px">
-  </mat-checkbox>
 </div>
 
-<mat-selection-list #list cdkDropList (cdkDropListDropped)="drop($event)">
-
-  <ng-container *ngFor="let item of sortedUploads; let isLast = last;">
-    <mat-list-option cdkDrag #option
-                     [value]="item"
-                     (cdkDragStarted)="option.disabled = true"
-                     (cdkDragEnded)="option.disabled = false">
+<mat-list #list cdkDropList (cdkDropListDropped)="drop($event)" role="list">
+  <ng-container *ngFor="let item of sortedUploads; let isLast = last; trackBy: trackBy" class="h-100">
+    <mat-list-item cdkDrag [cdkDragData]="item" #option
+                   style="height: 73px"
+                   (cdkDragStarted)="option.disabled = true"
+                   (cdkDragEnded)="option.disabled = false">
 
       <img *ngIf="item.upload.thumbnail as thumb; else icon" matListItemAvatar [src]="thumb.url"
            [width]="thumb.dimensions?.width" [height]="thumb.dimensions?.height">
@@ -32,6 +20,13 @@
       <div matListItemTitle>
         {{ item.upload.file.name }}
       </div>
+
+      <div matListItemMeta>
+        <button mat-icon-button (click)="deleteIndexes.emit([item.index])">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </div>
+
       <div matListItemLine>
         {{ item.upload.file.size | bytes }}
       </div>
@@ -66,9 +61,8 @@
             {{ item.upload.uploadedBytes | bytes }} of {{ item.upload.file.size | bytes }}
         </span>
       </div>
-    </mat-list-option>
+    </mat-list-item>
     <mat-divider *ngIf="!isLast"></mat-divider>
   </ng-container>
+</mat-list>
 
-
-</mat-selection-list>

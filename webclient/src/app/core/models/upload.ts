@@ -29,7 +29,7 @@ export class Upload {
   }
 
   get uploadedBytes(): number {
-    return this._uploadedBytes;
+    return this.state == 'done' ? this.file.size : this._uploadedBytes;
   }
 
   get failure(): Failure | null {
