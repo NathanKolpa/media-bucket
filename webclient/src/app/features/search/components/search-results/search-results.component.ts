@@ -1,5 +1,14 @@
-import {ChangeDetectionStrategy, Component, EventEmitter, Input, OnDestroy, Output, ViewChild} from '@angular/core';
-import {LoadingState, SearchPost} from "@core/models";
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  Output,
+  ViewChild
+} from '@angular/core';
+import {LoadingState} from "@core/models";
 import {BreakpointObserver, Breakpoints} from "@angular/cdk/layout";
 import {Subscription} from "rxjs";
 import {CdkVirtualScrollViewport} from "@angular/cdk/scrolling";
@@ -13,7 +22,7 @@ import {Listing} from "@core/models/listing";
 })
 export class SearchResultsComponent implements OnDestroy {
 
-  @ViewChild(CdkVirtualScrollViewport, {static: true})
+  @ViewChild('viewport', {static: true})
   viewport!: CdkVirtualScrollViewport;
 
   @Output()
@@ -27,6 +36,9 @@ export class SearchResultsComponent implements OnDestroy {
 
   @Input()
   public disableFooter = false;
+
+  @Input()
+  public startingIndex: number | null = null;
 
   private _items: Listing[] = [];
   private _rowsSize = 3;
@@ -53,8 +65,23 @@ export class SearchResultsComponent implements OnDestroy {
     this.requestedData = false;
     this.generateRows();
 
-    if (this.viewport)
+    if (this.viewport) {
       this.viewport.checkViewportSize();
+      this.moveToStartingPosition();
+    }
+  }
+
+  private moveToStartingPosition() {
+    if (!this.viewport || this.startingIndex == null) {
+      return;
+    }
+
+    const startingRow = Math.ceil(this.startingIndex / this._rowsSize) - 2;
+
+    if (this.rows.length >= startingRow && startingRow > 0) {
+      this.startingIndex = null;
+      setTimeout(() => this.viewport.scrollToIndex(startingRow), 0);
+    }
   }
 
   get items(): Listing[] {

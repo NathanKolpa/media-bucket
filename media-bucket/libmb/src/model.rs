@@ -257,6 +257,7 @@ pub struct SearchPostItem {
     pub contains_image: bool,
     pub contains_video: bool,
     pub contains_moving_image: bool,
+    pub contains_document: bool,
     pub duration: Option<i32>,
     pub thumbnail: Option<Media>,
 }

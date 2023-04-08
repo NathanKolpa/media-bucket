@@ -217,16 +217,15 @@ impl SqliteIndex {
     }
 
     fn map_search_post_item(row: &SqliteRow) -> Result<SearchPostItem, DataSourceError> {
-        let mime_type: String = row.try_get("mime_type")?;
-        let mime_sub_type: String = row.try_get("mime_sub_type")?;
-        let mime: MediaTypeBuf = format!("{mime_type}/{mime_sub_type}").parse().unwrap();
+        let mime: MediaTypeBuf = row.try_get::<'_, String, _>("content_mime_type")?.parse().unwrap();
 
         Ok(SearchPostItem {
             item: Self::map_post_item(row)?,
             contains_image: mime.ty() == mediatype::names::IMAGE
                 && mime.subty() != mediatype::names::GIF,
             contains_video: mime.ty() == mediatype::names::VIDEO,
-            contains_moving_image: mime.subty() != mediatype::names::GIF,
+            contains_moving_image: mime.subty() == mediatype::names::GIF,
+            contains_document: mime.ty() != mediatype::names::APPLICATION && mime.subty() == mediatype::names::PDF,
             duration: row.try_get("content_duration")?,
             thumbnail: (row.try_get::<'_, Option<i64>, _>("media_id")?)
                 .and_then(|_| Self::map_media(row).ok()),

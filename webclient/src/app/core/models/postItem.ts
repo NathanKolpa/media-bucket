@@ -15,7 +15,7 @@ export class PostItem {
 }
 
 export class SearchPostItem extends PostItem implements Listing {
-  constructor(postId: number, position: number, private _thumbnail: Media) {
+  constructor(postId: number, position: number, private _containsImage: boolean, private _containsMovingImages: boolean, private _containsVideos: boolean, private _containsDocument: boolean, private _duration: number | null, private _thumbnail: Media) {
     super(postId, position);
   }
 
@@ -28,24 +28,8 @@ export class SearchPostItem extends PostItem implements Listing {
     return null;
   }
 
-  get containsDocument(): boolean {
-    return false;
-  }
-
-  get containsImages(): boolean {
-    return false;
-  }
-
-  get containsMovingImages(): boolean {
-    return false;
-  }
-
-  get containsVideos(): boolean {
-    return false;
-  }
-
   get duration(): number | null {
-    return null;
+    return this._duration;
   }
 
   get itemCount(): number {
@@ -54,6 +38,22 @@ export class SearchPostItem extends PostItem implements Listing {
 
   get title(): string | null {
     return null;
+  }
+
+  get containsImages(): boolean {
+    return this._containsImage;
+  }
+
+  get containsMovingImages(): boolean {
+    return this._containsMovingImages;
+  }
+
+  get containsVideos(): boolean {
+    return this._containsVideos;
+  }
+
+  get containsDocument(): boolean {
+    return this._containsDocument;
   }
 }
 

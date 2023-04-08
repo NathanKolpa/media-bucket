@@ -66,7 +66,6 @@ export class SearchEffects {
     ofType(searchActions.showPost),
     switchMap(({bucket, postId}) => [
       searchActions.loadPostItem({bucket, postId, position: 0}),
-      searchActions.loadNextPostItemList({bucket, postId})
     ])
   ));
 

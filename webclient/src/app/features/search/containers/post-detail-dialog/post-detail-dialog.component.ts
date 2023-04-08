@@ -1,6 +1,6 @@
 import {Component, OnDestroy, ViewEncapsulation} from '@angular/core';
 import {MatDialogRef} from "@angular/material/dialog";
-import {delay, first, Subscription} from "rxjs";
+import {delay, first, map, Subscription} from "rxjs";
 import {Store} from "@ngrx/store";
 import {fromSearch, searchActions} from '@features/search/store';
 import {fromBucket} from '@features/bucket/store';
@@ -25,6 +25,8 @@ export class PostDetailDialogComponent implements OnDestroy {
   viewedPostMode$ = this.store.select(fromSearch.selectViewedPostMode);
   itemList$ = this.store.select(fromSearch.selectItemList);
   itemListLoadingState$ = this.store.select(fromSearch.selectItemListLoadingState);
+
+  startingIndex$ = this.item$.pipe(map(x => x?.position ?? null));
 
   private currentBucket: SelectedBucket | null = null;
   private currentPostId: number | null = null;

@@ -38,6 +38,7 @@
   max-width: 80vw;
   max-height: 80vh;
   height: auto;
+  visibility: visible;
 }
 
 app-media-display .media, .results {
@@ -56,5 +57,5 @@ app-media-display .media, .results {
 }
 
 .post-detail-container .mat-mdc-dialog-surface {
-  background: none !important;
+  visibility: hidden;
 }

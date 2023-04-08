@@ -466,6 +466,11 @@ export class ApiService {
     return new SearchPostItem(
       json.item.post.id,
       json.item.position,
+      json.contains_image,
+      json.contains_moving_image,
+      json.contains_video,
+      json.contains_document,
+      json.duration,
       this.mapMedia(auth, json.thumbnail)
     );
   }

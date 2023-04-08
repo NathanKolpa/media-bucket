@@ -92,6 +92,7 @@ const feature = createFeature({
       ...state,
       viewedPostLoadingState: state.viewedPostLoadingState.loading(),
       currentItem: null,
+      viewedPost: null,
       itemList: []
     })),
     on(searchActions.showPostSuccess, (state, {post}) => ({

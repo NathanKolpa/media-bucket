@@ -52,6 +52,7 @@
         <app-search-results *ngIf="(itemList$ | async) || null as items"
                             class="results"
                             [disableFooter]="true"
+                            [startingIndex]="startingIndex$ | async"
                             [nextLoadingState]="itemListLoadingState$ | async"
                             (showDetail)="loadItemFromList(bucket, items[$event].postId, items[$event].position)"
                             [items]="castItemsToListing(items)"
