@@ -57,12 +57,15 @@
       <ng-template #itemView>
         <app-loadable-content [loadingState]="itemLoadingState$ | async" (loadAgain)="reloadItem()">
           <ng-container *ngIf="(item$ | async) || null as item">
-            <app-media-display
-              (nextItem)="item.position < post.itemCount - 1 ? loadItem(bucket, item.postId, item.position + 1) : 0"
-              [media]="item.content"
-              style="z-index: 9999; position: relative"
-              className="media">
-            </app-media-display>
+            <div class="overflow-hidden">
+              <app-media-display
+                (nextItem)="item.position < post.itemCount - 1 ? loadItem(bucket, item.postId, item.position + 1) : 0"
+                [media]="item.content"
+                style="z-index: 100; position: relative;"
+                className="media">
+              </app-media-display>
+            </div>
+
           </ng-container>
         </app-loadable-content>
       </ng-template>

@@ -4,6 +4,7 @@
   top: 50%;
   transform: translateY(-50%);
   margin-left: 10px;
+  z-index: 200;
 }
 
 .right-button {
@@ -12,6 +13,7 @@
   top: 50%;
   transform: translateY(-50%);
   margin-right: 10px;
+  z-index: 200;
 }
 
 .toolbar {
@@ -31,9 +33,8 @@
 
 .dialog-container {
   background: none;
-  min-width: 300px;
-  min-height: 300px;
   max-width: 80vw;
+  max-height: 80vh;
   height: auto;
 }
 
@@ -41,12 +42,11 @@ app-media-display .media {
   width: auto;
   height: auto;
   max-width: 80vw;
-  min-width: 300px;
+  max-height: 80vh;
   min-height: 300px;
-  object-fit: fill;
+  object-fit: scale-down;
   display: block;
 }
 
 .post-detail-container {
-  overflow-y: auto;
 }
