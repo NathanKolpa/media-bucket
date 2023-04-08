@@ -26,7 +26,8 @@
       </mat-card-footer>
     </mat-card>
 
-    <div class="overlay p-4">
+    <div class="overlay p-4"
+         *ngIf="post.containsDocument || post.containsVideos || post.containsMovingImages || post.containsImages || post.itemCount > 1 || post.duration != null">
       <p class="contrast mat-elevation-z6 d-inline-block">
         <mat-icon color="accent" *ngIf="post.containsVideos; else document">movie</mat-icon>
 

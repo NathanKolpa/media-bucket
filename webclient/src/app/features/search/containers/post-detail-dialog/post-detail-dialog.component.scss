@@ -52,8 +52,9 @@ app-media-display .media, .results {
 
 .results {
   height: 80vh;
-  width: 80vh;
+  width: 80vw;
 }
 
-.post-detail-container {
+.post-detail-container .mat-mdc-dialog-surface {
+  background: none !important;
 }
