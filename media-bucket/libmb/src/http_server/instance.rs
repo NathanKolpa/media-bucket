@@ -3,7 +3,6 @@ use std::fmt::{Display, Formatter};
 use std::net::IpAddr;
 use std::ops::Deref;
 use std::sync::{Arc, RwLock};
-use std::sync::atomic::{AtomicI64, Ordering};
 
 use chrono::{DateTime, Duration, Utc};
 use rand::distributions::Alphanumeric;
