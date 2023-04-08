@@ -1,4 +1,4 @@
-<cdk-virtual-scroll-viewport #viewport [itemSize]="250" class="h-100 d-block"
+<cdk-virtual-scroll-viewport #viewport [itemSize]="350" class="h-100 d-block"
                              (scrolledIndexChange)="scrolledIndexChange()">
 
   <ng-content>
@@ -13,7 +13,7 @@
       <app-listing
         class="d-block"
         *ngFor="let index of row"
-        [height]="250"
+        [height]="350"
         (showInfo)="showInfo.emit(index)"
         (showDetail)="showDetail.emit(index)"
         [disableFooter]="disableFooter"
