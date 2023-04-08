@@ -25,6 +25,9 @@ export class SearchResultsComponent implements OnDestroy {
   @Output()
   public showDetail = new EventEmitter<number>();
 
+  @Input()
+  public disableFooter = false;
+
   private _items: Listing[] = [];
   private _rowsSize = 3;
   private requestedData: boolean = false;

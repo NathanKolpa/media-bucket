@@ -16,6 +16,7 @@
         [height]="250"
         (showInfo)="showInfo.emit(index)"
         (showDetail)="showDetail.emit(index)"
+        [disableFooter]="disableFooter"
         [item]="items[index]">
       </app-listing>
     </ng-container>

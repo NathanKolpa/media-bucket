@@ -4,8 +4,9 @@ import {delay, first, Subscription} from "rxjs";
 import {Store} from "@ngrx/store";
 import {fromSearch, searchActions} from '@features/search/store';
 import {fromBucket} from '@features/bucket/store';
-import {Post, SelectedBucket} from "@core/models";
+import {Post, SearchPostItem, SelectedBucket} from "@core/models";
 import {AppTitleService} from "@core/services";
+import {Listing} from "@core/models/listing";
 
 @Component({
   encapsulation: ViewEncapsulation.None,
@@ -29,7 +30,6 @@ export class PostDetailDialogComponent implements OnDestroy {
   private currentPostId: number | null = null;
   private currentPosition: number = 0;
   private titleIndex: number | null = null;
-  private resetViewCallback: (() => void) | null = null;
 
   private postSubscription: Subscription;
   private bucketSubscription: Subscription;
@@ -98,13 +98,16 @@ export class PostDetailDialogComponent implements OnDestroy {
       position,
       postId
     }));
+
+    this.originalSize = true;
   }
 
   toggleViewMode() {
     this.store.dispatch(searchActions.togglePostDetailViewMode());
+    this.originalSize = true;
   }
 
-  reloadList() {
+  loadNextItems() {
     if (this.currentBucket && this.currentPostId) {
       this.store.dispatch(searchActions.loadNextPostItemList({
         bucket: this.currentBucket,
@@ -119,4 +122,8 @@ export class PostDetailDialogComponent implements OnDestroy {
   }
 
   public originalSize = true;
+
+  castItemsToListing(items: SearchPostItem[]): Listing[] {
+    return items as Listing[];
+  }
 }

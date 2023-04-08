@@ -32,7 +32,6 @@ import {MatRadioModule} from "@angular/material/radio";
 import { PostInfoFormFieldsComponent } from './components/post-info-form-fields/post-info-form-fields.component';
 import { FileUploadBoxComponent } from './components/file-upload-box/file-upload-box.component';
 import { UploadListComponent } from './components/upload-list/upload-list.component';
-import {MatTableModule} from "@angular/material/table";
 import { CreatePostFormComponent } from './components/create-post-form/create-post-form.component';
 import {MatExpansionModule} from "@angular/material/expansion";
 import {CdkDrag, CdkDropList} from "@angular/cdk/drag-drop";
@@ -49,7 +48,6 @@ import { VideoPlayerComponent } from './components/video-player/video-player.com
 import {ConfirmGuard} from "@core/services";
 import { SearchBarComponent } from './components/search-bar/search-bar.component';
 import { TagComponent } from './components/tag/tag.component';
-import { PostItemListComponent } from './components/post-item-list/post-item-list.component';
 import { PdfViewerComponent } from './components/pdf-viewer/pdf-viewer.component';
 import { ImageViewerComponent } from './components/image-viewer/image-viewer.component';
 import {MatTooltipModule} from "@angular/material/tooltip";
@@ -84,7 +82,6 @@ const routes: Routes = [
     VideoPlayerComponent,
     SearchBarComponent,
     TagComponent,
-    PostItemListComponent,
     PdfViewerComponent,
     ImageViewerComponent,
   ],
@@ -115,7 +112,6 @@ const routes: Routes = [
     MatCheckboxModule,
     MatInputModule,
     MatRadioModule,
-    MatTableModule,
     MatExpansionModule,
     CdkDropList,
     CdkDrag,

@@ -68,10 +68,6 @@ export class ImageViewerComponent {
 
   resetTransform() {
     this.transformation = initialTransform;
-
-    if (!this._originalSize) {
-      this.originalSizeChange.emit(true);
-    }
   }
 
   enableTouch() {

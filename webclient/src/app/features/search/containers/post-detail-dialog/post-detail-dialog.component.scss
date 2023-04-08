@@ -40,7 +40,7 @@
   height: auto;
 }
 
-app-media-display .media {
+app-media-display .media, .results {
   width: auto;
   height: auto;
   max-width: 80vw;
@@ -48,6 +48,11 @@ app-media-display .media {
   min-height: 300px;
   object-fit: scale-down;
   display: block;
+}
+
+.results {
+  height: 80vh;
+  width: 80vh;
 }
 
 .post-detail-container {

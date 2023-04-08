@@ -24,4 +24,7 @@ export class ListingComponent {
 
   @Output()
   public showDetail = new EventEmitter();
+
+  @Input()
+  public disableFooter = false;
 }

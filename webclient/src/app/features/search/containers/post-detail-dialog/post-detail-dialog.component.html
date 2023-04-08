@@ -49,13 +49,14 @@
 
       <ng-container *ngIf="(viewedPostMode$ | async) == 'list'; else itemView">
 
-        <app-loadable-content [loadingState]="itemListLoadingState$ | async" (loadAgain)="reloadList()">
-          <app-post-item-list
-            (clickItem)="loadItemFromList(bucket, $event.postId, $event.position)"
-            [items]="(itemList$ | async) || []">
-          </app-post-item-list>
-        </app-loadable-content>
-
+        <app-search-results *ngIf="(itemList$ | async) || null as items"
+                            class="results"
+                            [disableFooter]="true"
+                            [nextLoadingState]="itemListLoadingState$ | async"
+                            (showDetail)="loadItemFromList(bucket, items[$event].postId, items[$event].position)"
+                            [items]="castItemsToListing(items)"
+                            (requestNextData)="loadNextItems()">
+        </app-search-results>
       </ng-container>
 
       <ng-template #itemView>
