@@ -3,6 +3,7 @@ import {LoadingState, SearchPost} from "@core/models";
 import {BreakpointObserver, Breakpoints} from "@angular/cdk/layout";
 import {Subscription} from "rxjs";
 import {CdkVirtualScrollViewport} from "@angular/cdk/scrolling";
+import {Listing} from "@core/models/listing";
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -19,12 +20,12 @@ export class SearchResultsComponent implements OnDestroy {
   public requestNextData = new EventEmitter();
 
   @Output()
-  public showInfo = new EventEmitter<SearchPost>();
+  public showInfo = new EventEmitter<number>();
 
   @Output()
-  public showDetail = new EventEmitter<SearchPost>();
+  public showDetail = new EventEmitter<number>();
 
-  private _posts: SearchPost[] = [];
+  private _items: Listing[] = [];
   private _rowsSize = 3;
   private requestedData: boolean = false;
 
@@ -44,8 +45,8 @@ export class SearchResultsComponent implements OnDestroy {
   }
 
   @Input()
-  set posts(value: SearchPost[]) {
-    this._posts = value;
+  set items(value: Listing[]) {
+    this._items = value;
     this.requestedData = false;
     this.generateRows();
 
@@ -53,8 +54,8 @@ export class SearchResultsComponent implements OnDestroy {
       this.viewport.checkViewportSize();
   }
 
-  get posts(): SearchPost[] {
-    return this._posts;
+  get items(): Listing[] {
+    return this._items;
   }
 
   @Input()
@@ -94,7 +95,7 @@ export class SearchResultsComponent implements OnDestroy {
   private generateRows() {
     let result: number[][] = [];
 
-    for (let i = 0; i < this._posts.length; i += this.rowsSize) {
+    for (let i = 0; i < this._items.length; i += this.rowsSize) {
       let row = [];
 
       for (let y = 0; y < this.rowsSize; y++) {

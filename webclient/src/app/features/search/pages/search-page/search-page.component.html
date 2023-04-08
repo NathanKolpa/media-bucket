@@ -18,11 +18,11 @@
     [loadingState]="sidebarPostLoadingState$ | async"
     [open]="(showSidebar$ | async) || false">
 
-    <app-search-results
+    <app-search-results *ngIf="(posts$ | async) || null as posts"
       [nextLoadingState]="postsLoadingState$ | async"
-      [posts]="(posts$ | async) || []"
-      (showInfo)="showSidebar(bucket, $event)"
-      (showDetail)="showPost(bucket, $event)"
+      [items]="castPostToListing(posts)"
+      (showInfo)="showSidebar(bucket, posts[$event])"
+      (showDetail)="showPost(bucket, posts[$event])"
       [resultCount]="postCount$ | async"
       (requestNextData)="loadNext(bucket)">
 

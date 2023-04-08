@@ -7,6 +7,7 @@ import {MatDialog} from "@angular/material/dialog";
 import {ConfirmComponent} from "@core/services/confirm/confirm.guard";
 import {Subscription} from "rxjs";
 import {EditPostRequest} from "@features/search/components/post-detail-sidebar/post-detail-sidebar.component";
+import {Listing} from "@core/models/listing";
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -38,6 +39,10 @@ export class SearchPageComponent implements OnDestroy, ConfirmComponent {
     this.unsavedInputSub = this.activeJobs$.subscribe(activeJobs => {
       this.hasUnsavedInput = activeJobs > 0;
     })
+  }
+
+  castPostToListing(posts: SearchPost[]): Listing[] {
+    return posts as Listing[];
   }
 
   loadNext(bucket: SelectedBucket) {

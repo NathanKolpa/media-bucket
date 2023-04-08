@@ -1,5 +1,6 @@
 import {Media} from "./media";
 import {Tag} from "@core/models/tag";
+import {Listing} from "@core/models/listing";
 
 export class Post {
   constructor(
@@ -31,7 +32,7 @@ export class Post {
   }
 }
 
-export class SearchPost extends Post {
+export class SearchPost extends Post implements Listing {
   constructor(
     id: number,
     source: string | null,
@@ -74,6 +75,10 @@ export class SearchPost extends Post {
   }
 
   get filename(): string | null {
+    return this._filename;
+  }
+
+  get altTitle(): string | null {
     return this._filename;
   }
 

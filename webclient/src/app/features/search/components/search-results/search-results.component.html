@@ -14,9 +14,9 @@
         class="d-block"
         *ngFor="let index of row"
         [height]="250"
-        (showInfo)="showInfo.emit($event)"
-        (showDetail)="showDetail.emit($event)"
-        [post]="posts[index]">
+        (showInfo)="showInfo.emit(index)"
+        (showDetail)="showDetail.emit(index)"
+        [item]="items[index]">
       </app-listing>
     </ng-container>
   </div>

@@ -1,6 +1,7 @@
 import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output, ViewChild} from '@angular/core';
 import {SearchPost} from "@core/models";
 import {MatRipple} from "@angular/material/core";
+import {Listing} from "@core/models/listing";
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -13,14 +14,14 @@ export class ListingComponent {
   disableCardRipple = false;
 
   @Input()
-  public post: SearchPost | null = null;
+  public item: Listing | null = null;
 
   @Input()
   public height: number = 100;
 
   @Output()
-  public showInfo = new EventEmitter<SearchPost>();
+  public showInfo = new EventEmitter();
 
   @Output()
-  public showDetail = new EventEmitter<SearchPost>();
+  public showDetail = new EventEmitter();
 }
