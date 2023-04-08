@@ -8,10 +8,13 @@
       <mat-icon>sync</mat-icon>
     </button>
 
-    <ng-container *ngIf="(item$ | async) || null as item">
-      <a mat-mini-fab [href]="item.content.url" target="_blank">
-        <mat-icon>link</mat-icon>
-      </a>
+    <ng-container *ngIf="{ item: item$ | async,  mode: viewedPostMode$ | async  } as ctx">
+      <ng-container *ngIf="ctx.item !== null && ctx.mode == 'preview'">
+        <a mat-mini-fab [href]="ctx.item.content.url" target="_blank" >
+          <mat-icon>link</mat-icon>
+        </a>
+      </ng-container>
+
     </ng-container>
 
     <button mat-mini-fab *ngIf="{ mode: viewedPostMode$ | async } as ctx" (click)="toggleViewMode()" color="primary">
