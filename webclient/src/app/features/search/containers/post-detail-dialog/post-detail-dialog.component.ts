@@ -29,6 +29,7 @@ export class PostDetailDialogComponent implements OnDestroy {
   private currentPostId: number | null = null;
   private currentPosition: number = 0;
   private titleIndex: number | null = null;
+  private resetViewCallback: (() => void) | null = null;
 
   private postSubscription: Subscription;
   private bucketSubscription: Subscription;
@@ -116,4 +117,6 @@ export class PostDetailDialogComponent implements OnDestroy {
     this.store.dispatch(searchActions.togglePostDetailViewMode());
     this.loadItem(bucket, postId, position);
   }
+
+  public originalSize = true;
 }

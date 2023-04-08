@@ -22,3 +22,7 @@ body {
 .spacer {
   flex: 1 1 auto;
 }
+
+mat-dialog-container .mdc-dialog__surface {
+  overflow: visible;
+}

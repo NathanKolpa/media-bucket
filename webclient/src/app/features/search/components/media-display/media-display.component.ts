@@ -17,4 +17,10 @@ export class MediaDisplayComponent {
 
   @Input()
   public className: string | null = null;
+
+  @Input()
+  public originalSize = true;
+
+  @Output()
+  public originalSizeChange = new EventEmitter<boolean>();
 }

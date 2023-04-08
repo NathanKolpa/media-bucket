@@ -52,6 +52,7 @@ import { TagComponent } from './components/tag/tag.component';
 import { PostItemListComponent } from './components/post-item-list/post-item-list.component';
 import { PdfViewerComponent } from './components/pdf-viewer/pdf-viewer.component';
 import { ImageViewerComponent } from './components/image-viewer/image-viewer.component';
+import {MatTooltipModule} from "@angular/material/tooltip";
 
 const routes: Routes = [
   {
@@ -90,40 +91,41 @@ const routes: Routes = [
   exports: [
     SearchPageComponent
   ],
-    imports: [
-        CommonModule,
-        RouterModule.forChild(routes),
-        SearchStoreModule,
+  imports: [
+    CommonModule,
+    RouterModule.forChild(routes),
+    SearchStoreModule,
 
-        PdfJsViewerModule,
+    PdfJsViewerModule,
 
-        ScrollingModule,
-        MatDialogModule,
-        MatCardModule,
-        MatIconModule,
-        PipesModule,
-        LoadingModule,
-        MatSidenavModule,
-        MatButtonModule,
-        MatToolbarModule,
-        MatRippleModule,
-        MatTabsModule,
-        MatMenuModule,
-        MatListModule,
-        ReactiveFormsModule,
-        MatCheckboxModule,
-        MatInputModule,
-        MatRadioModule,
-        MatTableModule,
-        MatExpansionModule,
-        CdkDropList,
-        CdkDrag,
-        MatSnackBarModule,
-        MatChipsModule,
-        MatAutocompleteModule,
-        MatProgressBarModule,
-        MatBadgeModule
-    ]
+    ScrollingModule,
+    MatDialogModule,
+    MatCardModule,
+    MatIconModule,
+    PipesModule,
+    LoadingModule,
+    MatSidenavModule,
+    MatButtonModule,
+    MatToolbarModule,
+    MatRippleModule,
+    MatTabsModule,
+    MatMenuModule,
+    MatListModule,
+    ReactiveFormsModule,
+    MatCheckboxModule,
+    MatInputModule,
+    MatRadioModule,
+    MatTableModule,
+    MatExpansionModule,
+    CdkDropList,
+    CdkDrag,
+    MatSnackBarModule,
+    MatChipsModule,
+    MatAutocompleteModule,
+    MatProgressBarModule,
+    MatBadgeModule,
+    MatTooltipModule
+  ]
 })
 export class SearchModule {
 }

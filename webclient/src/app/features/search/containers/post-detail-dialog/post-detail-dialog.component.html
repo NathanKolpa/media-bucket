@@ -4,6 +4,10 @@
 
     <div class="spacer"></div>
 
+    <button *ngIf="!originalSize" (click)="originalSize = true" mat-icon-button matTooltip="Reset view to original">
+      <mat-icon>sync</mat-icon>
+    </button>
+
     <ng-container *ngIf="(item$ | async) || null as item">
       <a mat-icon-button [href]="item.content.url" target="_blank">
         <mat-icon>link</mat-icon>
@@ -57,10 +61,11 @@
       <ng-template #itemView>
         <app-loadable-content [loadingState]="itemLoadingState$ | async" (loadAgain)="reloadItem()">
           <ng-container *ngIf="(item$ | async) || null as item">
-            <div class="overflow-hidden">
+            <div class="overflow-visible">
               <app-media-display
                 (nextItem)="item.position < post.itemCount - 1 ? loadItem(bucket, item.postId, item.position + 1) : 0"
                 [media]="item.content"
+                [(originalSize)]="originalSize"
                 style="z-index: 100; position: relative;"
                 className="media">
               </app-media-display>

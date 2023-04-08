@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
+import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
 import {Media} from "@core/models";
 
 interface Transformation {
@@ -7,6 +7,14 @@ interface Transformation {
   translateX: number,
   translateY: number,
   scale: number
+}
+
+const initialTransform: Transformation = {
+  originX: 0,
+  originY: 0,
+  translateX: 0,
+  translateY: 0,
+  scale: 1
 }
 
 // from https://betterprogramming.pub/implementation-of-zoom-and-pan-in-69-lines-of-javascript-8b0cb5f221c1
@@ -25,21 +33,45 @@ export class ImageViewerComponent {
   private minScale = 0.1;
   private maxScale = 30;
   private scaleSensitivity = 10;
-  private transformation: Transformation = {
-    originX: 0,
-    originY: 0,
-    translateX: 0,
-    translateY: 0,
-    scale: 1
-  };
+  private transformation = initialTransform;
+
+  public _media: Media | null = null;
 
   @Input()
-  public media: Media | null = null;
+  public set media(value: Media | null) {
+    this._media = value;
+    this.resetTransform();
+  }
+
+  @Output()
+  public viewChanged = new EventEmitter();
+
+  private _originalSize = true;
+
+  @Input()
+  public set originalSize(value: boolean) {
+    if (value && !this._originalSize) {
+      this.resetTransform();
+    }
+
+    this._originalSize = value;
+  }
+
+  @Output()
+  public originalSizeChange = new EventEmitter<boolean>();
 
   @Input()
   public className: string | null = null;
 
   private touchEnabled = true;
+
+  resetTransform() {
+    this.transformation = initialTransform;
+
+    if (!this._originalSize) {
+      this.originalSizeChange.emit(true);
+    }
+  }
 
   enableTouch() {
     this.touchEnabled = true;
@@ -102,7 +134,7 @@ export class ImageViewerComponent {
   }
 
   mouseWheel(element: HTMLImageElement, event: WheelEvent) {
-    if (!event.shiftKey) {
+    if (this.touchEnabled) {
       return;
     }
 
@@ -111,7 +143,7 @@ export class ImageViewerComponent {
   }
 
   mouseMove(event: MouseEvent) {
-    if (event.buttons != 1 || !event.shiftKey) {
+    if (event.buttons != 1 || this.touchEnabled) {
       return;
     }
 
@@ -120,8 +152,15 @@ export class ImageViewerComponent {
   }
 
   private pan(originX: number, originY: number) {
-    this.transformation.translateX += originX;
-    this.transformation.translateY += originY;
+    this.transformation = {
+      translateX: this.transformation.translateX + originX,
+      translateY: this.transformation.translateY + originY,
+      originX: this.transformation.originX,
+      originY: this.transformation.originY,
+      scale: this.transformation.scale,
+    }
+
+    this.emitChange();
   }
 
   private zoom(element: HTMLImageElement, deltaScale: number, x: number, y: number) {
@@ -138,6 +177,14 @@ export class ImageViewerComponent {
 
     this.transformation = {
       originX: newOriginX, originY: newOriginY, translateX, translateY, scale: newScale
+    }
+
+    this.emitChange();
+  }
+
+  private emitChange() {
+    if (this._originalSize) {
+      this.originalSizeChange.emit(false);
     }
   }
 

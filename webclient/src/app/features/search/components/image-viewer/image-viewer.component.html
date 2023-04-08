@@ -1,5 +1,5 @@
-<img [className]="className" #image *ngIf="media" [src]="media.url" [width]="media.dimensions?.width"
-     [height]="media.dimensions?.height"
+<img [className]="className" #image *ngIf="_media" [src]="_media.url" [width]="_media.dimensions?.width"
+     [height]="_media.dimensions?.height"
      alt="Media"
      style="touch-action:none;"
      [style]="getCss()"
