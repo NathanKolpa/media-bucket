@@ -22,7 +22,7 @@
     <mat-divider [vertical]="true"></mat-divider>
   </ng-container>
 
-  <button mat-icon-button (click)="toggleInfo.emit()">
+  <button mat-icon-button (click)="toggleInfo.emit()" [disabled]="selectedPost == null">
     <mat-icon class="material-icons-outlined">info</mat-icon>
   </button>
 
