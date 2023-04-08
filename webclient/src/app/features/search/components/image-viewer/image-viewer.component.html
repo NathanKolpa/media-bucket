@@ -1,9 +1,18 @@
 <img [className]="className" #image *ngIf="media" [src]="media.url" [width]="media.dimensions?.width"
      [height]="media.dimensions?.height"
      alt="Media"
+     style="touch-action:none;"
      [style]="getCss()"
-     (mousemove)="mouseMove(image, $event)"
+     (mousemove)="mouseMove($event)"
      [draggable]="false"
+     (pointerdown)="pointerDown($event)"
+     (pointerup)="pointerUp($event)"
+     (pointercancel)="pointerUp($event)"
+     (pointerout)="pointerUp($event)"
+     (pointerleave)="pointerUp($event)"
+     (pointermove)="pointerMove(image, $event)"
+     (mouseenter)="disableTouch()"
+     (mouseleave)="enableTouch()"
      (wheel)="mouseWheel(image, $event)">
 
 
