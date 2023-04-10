@@ -65,14 +65,20 @@ export class UploadListComponent implements AfterViewInit {
   @Output()
   public deleteIndexes = new EventEmitter<number[]>();
 
+  private dragItem: number | null = null;
+
+  public dragStart(index: number) {
+    this.dragItem = index;
+  }
+
   drop(event: CdkDragDrop<number>) {
-    if (this.range == null) {
+    if (this.range == null || this.dragItem === null) {
       return;
     }
 
     this.swapUploads.emit({
-      aIndex: this.sortedUploads[event.item.data as number].index,
-      bIndex: this.sortedUploads[event.currentIndex + this.range.start].index
+      aIndex: this.sortedUploads[this.dragItem].index,
+      bIndex: this.sortedUploads[event.currentIndex + this.range.start ].index
     });
   }
 

@@ -2,12 +2,13 @@
 
 
 </div>
-<cdk-virtual-scroll-viewport #viewport [itemSize]="73" style="height: 500px">
-  <mat-list #list cdkDropList (cdkDropListDropped)="drop($event)" role="list">
-    <ng-container *cdkVirtualFor="let item of sortedUploads; let i = index; let isLast = last; trackBy: trackBy" class="h-100">
+<mat-list #list cdkDropList (cdkDropListDropped)="drop($event)" role="list">
+  <cdk-virtual-scroll-viewport #viewport [itemSize]="73" style="height: 500px">
+    <ng-container *cdkVirtualFor="let item of sortedUploads; let i = index; let isLast = last; trackBy: trackBy; templateCacheSize: 0"
+                  class="h-100">
       <mat-list-item cdkDrag [cdkDragData]="i" #option
                      style="height: 73px"
-                     (cdkDragStarted)="option.disabled = true"
+                     (cdkDragStarted)="(option.disabled = true) && dragStart(i)"
                      (cdkDragEnded)="option.disabled = false">
 
         <img *ngIf="item.upload.thumbnail as thumb; else icon" matListItemAvatar [src]="thumb.url"
@@ -64,5 +65,5 @@
       </mat-list-item>
       <mat-divider *ngIf="!isLast"></mat-divider>
     </ng-container>
-  </mat-list>
-</cdk-virtual-scroll-viewport>
+  </cdk-virtual-scroll-viewport>
+</mat-list>
