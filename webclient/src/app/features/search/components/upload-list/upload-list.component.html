@@ -2,49 +2,49 @@
 
 
 </div>
+<cdk-virtual-scroll-viewport #viewport [itemSize]="73" style="height: 500px">
+  <mat-list #list cdkDropList (cdkDropListDropped)="drop($event)" role="list">
+    <ng-container *cdkVirtualFor="let item of sortedUploads; let i = index; let isLast = last; trackBy: trackBy" class="h-100">
+      <mat-list-item cdkDrag [cdkDragData]="i" #option
+                     style="height: 73px"
+                     (cdkDragStarted)="option.disabled = true"
+                     (cdkDragEnded)="option.disabled = false">
 
-<mat-list #list cdkDropList (cdkDropListDropped)="drop($event)" role="list">
-  <ng-container *ngFor="let item of sortedUploads; let isLast = last; trackBy: trackBy" class="h-100">
-    <mat-list-item cdkDrag [cdkDragData]="item" #option
-                   style="height: 73px"
-                   (cdkDragStarted)="option.disabled = true"
-                   (cdkDragEnded)="option.disabled = false">
+        <img *ngIf="item.upload.thumbnail as thumb; else icon" matListItemAvatar [src]="thumb.url"
+             [width]="thumb.dimensions?.width" [height]="thumb.dimensions?.height">
 
-      <img *ngIf="item.upload.thumbnail as thumb; else icon" matListItemAvatar [src]="thumb.url"
-           [width]="thumb.dimensions?.width" [height]="thumb.dimensions?.height">
+        <ng-template #icon>
+          <mat-icon matListItemIcon>upload_file</mat-icon>
+        </ng-template>
 
-      <ng-template #icon>
-        <mat-icon matListItemIcon>upload_file</mat-icon>
-      </ng-template>
+        <div matListItemTitle>
+          {{ item.upload.file.name }}
+        </div>
 
-      <div matListItemTitle>
-        {{ item.upload.file.name }}
-      </div>
+        <div matListItemMeta>
+          <button mat-icon-button (click)="deleteIndexes.emit([item.index])">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
 
-      <div matListItemMeta>
-        <button mat-icon-button (click)="deleteIndexes.emit([item.index])">
-          <mat-icon>delete</mat-icon>
-        </button>
-      </div>
+        <div matListItemLine>
+          {{ item.upload.file.size | bytes }}
+        </div>
 
-      <div matListItemLine>
-        {{ item.upload.file.size | bytes }}
-      </div>
+        <div matListItemLine *ngIf="item.upload.state == 'error'">
+          Error occurred: {{ item.upload.failure?.message }}
+        </div>
 
-      <div matListItemLine *ngIf="item.upload.state == 'error'">
-        Error occurred: {{ item.upload.failure?.message }}
-      </div>
+        <div matListItemLine
+             class="d-flex align-items-center"
+             *ngIf="item.upload.state == 'done' || item.upload.state == 'uploading'">
+          <mat-progress-bar
+            mode="determinate"
+            [value]="item.upload.progress"
+            color="accent">
+          </mat-progress-bar>
 
-      <div matListItemLine
-           class="d-flex align-items-center"
-           *ngIf="item.upload.state == 'done' || item.upload.state == 'uploading'">
-        <mat-progress-bar
-          mode="determinate"
-          [value]="item.upload.progress"
-          color="accent">
-        </mat-progress-bar>
-
-        <span class="ps-4" *ngIf="item.upload.state == 'uploading'">
+          <span class="ps-4" *ngIf="item.upload.state == 'uploading'">
           <ng-container *ngIf="item.upload.progress == 100; else progressDetail">
             Processing
           </ng-container>
@@ -53,16 +53,16 @@
           </ng-template>
         </span>
 
-        <span class="ps-4" *ngIf="item.upload.state == 'done'">
+          <span class="ps-4" *ngIf="item.upload.state == 'done'">
           Done
         </span>
 
-        <span class="ps-4" style="white-space: nowrap">
+          <span class="ps-4" style="white-space: nowrap">
             {{ item.upload.uploadedBytes | bytes }} of {{ item.upload.file.size | bytes }}
         </span>
-      </div>
-    </mat-list-item>
-    <mat-divider *ngIf="!isLast"></mat-divider>
-  </ng-container>
-</mat-list>
-
+        </div>
+      </mat-list-item>
+      <mat-divider *ngIf="!isLast"></mat-divider>
+    </ng-container>
+  </mat-list>
+</cdk-virtual-scroll-viewport>

@@ -1,7 +1,18 @@
-import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output, ViewChild} from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+  ViewChild,
+  ViewEncapsulation
+} from '@angular/core';
 import {Upload} from "@core/models";
 import {CdkDragDrop} from "@angular/cdk/drag-drop";
-import {CdkVirtualScrollViewport} from "@angular/cdk/scrolling";
+import {CdkVirtualForOf} from "@angular/cdk/scrolling";
+import {ListRange} from "@angular/cdk/collections";
+import {Subscription} from "rxjs";
 
 export interface UploadPositionSwapEvent {
   aIndex: number,
@@ -19,12 +30,25 @@ interface UploadListItem {
   templateUrl: './upload-list.component.html',
   styleUrls: ['./upload-list.component.scss']
 })
-export class UploadListComponent {
+export class UploadListComponent implements AfterViewInit {
 
-  @ViewChild('viewport', {static: true})
-  public viewport!: CdkVirtualScrollViewport;
+  @ViewChild(CdkVirtualForOf, {static: true})
+  public viewport!: CdkVirtualForOf<UploadListItem[]>;
 
   public sortedUploads: UploadListItem[] = [];
+
+  private range: ListRange | null = null;
+  private viewportSub: Subscription | null = null;
+
+  constructor() {
+
+  }
+
+  ngAfterViewInit(): void {
+    this.viewportSub = this.viewport.viewChange.subscribe(x => {
+      this.range = x;
+    });
+  }
 
   @Input()
   public set uploads(value: Upload[]) {
@@ -41,10 +65,14 @@ export class UploadListComponent {
   @Output()
   public deleteIndexes = new EventEmitter<number[]>();
 
-  drop(event: CdkDragDrop<Upload[]>) {
+  drop(event: CdkDragDrop<number>) {
+    if (this.range == null) {
+      return;
+    }
+
     this.swapUploads.emit({
-      aIndex: this.sortedUploads[event.previousIndex].index,
-      bIndex: this.sortedUploads[event.currentIndex].index
+      aIndex: this.sortedUploads[event.item.data as number].index,
+      bIndex: this.sortedUploads[event.currentIndex + this.range.start].index
     });
   }
 
