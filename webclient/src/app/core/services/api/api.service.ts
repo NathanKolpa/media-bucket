@@ -142,8 +142,8 @@ export class ApiService {
       text = '&text=' + encodeURIComponent(textItems.map(x => x.type == 'text' ? x.str : '').join(' '));
     }
 
-    let queryStr = `${tagIds}${text}`;
 
+    let queryStr = `${tagIds}${text}&order=${query.order}&seed=${query.seed}`;
 
     return this.authenticatedGet(auth, `/posts?offset=${encodeURIComponent(pageParams.offset)}&size=${encodeURIComponent(pageParams.pageSize)}${queryStr}`).pipe(
       map((json) => {

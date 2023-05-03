@@ -1,5 +1,5 @@
 import {ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, Output, ViewChild} from '@angular/core';
-import {PostSearchQuery, Tag} from "@core/models";
+import {PostSearchQuery, SearchQueryOrder, Tag} from "@core/models";
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -57,6 +57,12 @@ export class SearchBarComponent {
   submit() {
     if (this._query) {
       this.queryChange.emit(this._query);
+    }
+  }
+
+  setOrder(value: SearchQueryOrder) {
+    if (this._query) {
+      this._query = this._query.setOrder(value);
     }
   }
 }

@@ -1,17 +1,19 @@
 use std::future::Future;
 use std::pin::Pin;
 
-use crate::http_server::web_error::WebError;
 use actix_web::dev::Payload;
 use actix_web::{web, FromRequest, HttpRequest};
 use serde::Deserialize;
 
-use crate::model::PostSearchQuery;
+use crate::http_server::web_error::WebError;
+use crate::model::{PostSearchQuery, PostSearchQueryOrder};
 
 #[derive(Deserialize)]
 struct PostSearchParams {
     tags: Option<String>,
     text: Option<String>,
+    order: Option<String>,
+    seed: Option<f32>,
 }
 
 impl FromRequest for PostSearchQuery {
@@ -38,7 +40,22 @@ impl FromRequest for PostSearchQuery {
                 tags = Some(ids);
             }
 
-            Ok(PostSearchQuery { tags, text: query.text.clone() })
+            let seed = query.seed
+                .ok_or(WebError::ParseError);
+
+            let order = match query.order.as_deref() {
+                Some("newest") | None => Ok(PostSearchQueryOrder::Newest),
+                Some("oldest") => Ok(PostSearchQueryOrder::Oldest),
+                Some("random") => Ok(PostSearchQueryOrder::Random(seed?)),
+                Some("relevant") => Ok(PostSearchQueryOrder::Relevant),
+                _ => Err(WebError::ParseError),
+            }?;
+
+            Ok(PostSearchQuery {
+                tags,
+                text: query.text.clone(),
+                order,
+            })
         })
     }
 }

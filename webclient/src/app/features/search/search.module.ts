@@ -51,6 +51,7 @@ import { TagComponent } from './components/tag/tag.component';
 import { PdfViewerComponent } from './components/pdf-viewer/pdf-viewer.component';
 import { ImageViewerComponent } from './components/image-viewer/image-viewer.component';
 import {MatTooltipModule} from "@angular/material/tooltip";
+import {MatSelectModule} from "@angular/material/select";
 
 const routes: Routes = [
   {
@@ -88,40 +89,41 @@ const routes: Routes = [
   exports: [
     SearchPageComponent
   ],
-  imports: [
-    CommonModule,
-    RouterModule.forChild(routes),
-    SearchStoreModule,
+    imports: [
+        CommonModule,
+        RouterModule.forChild(routes),
+        SearchStoreModule,
 
-    PdfJsViewerModule,
+        PdfJsViewerModule,
 
-    ScrollingModule,
-    MatDialogModule,
-    MatCardModule,
-    MatIconModule,
-    PipesModule,
-    LoadingModule,
-    MatSidenavModule,
-    MatButtonModule,
-    MatToolbarModule,
-    MatRippleModule,
-    MatTabsModule,
-    MatMenuModule,
-    MatListModule,
-    ReactiveFormsModule,
-    MatCheckboxModule,
-    MatInputModule,
-    MatRadioModule,
-    MatExpansionModule,
-    CdkDropList,
-    CdkDrag,
-    MatSnackBarModule,
-    MatChipsModule,
-    MatAutocompleteModule,
-    MatProgressBarModule,
-    MatBadgeModule,
-    MatTooltipModule
-  ]
+        ScrollingModule,
+        MatDialogModule,
+        MatCardModule,
+        MatIconModule,
+        PipesModule,
+        LoadingModule,
+        MatSidenavModule,
+        MatButtonModule,
+        MatToolbarModule,
+        MatRippleModule,
+        MatTabsModule,
+        MatMenuModule,
+        MatListModule,
+        ReactiveFormsModule,
+        MatCheckboxModule,
+        MatInputModule,
+        MatRadioModule,
+        MatExpansionModule,
+        CdkDropList,
+        CdkDrag,
+        MatSnackBarModule,
+        MatChipsModule,
+        MatAutocompleteModule,
+        MatProgressBarModule,
+        MatBadgeModule,
+        MatTooltipModule,
+        MatSelectModule
+    ]
 })
 export class SearchModule {
 }

@@ -217,7 +217,10 @@ impl SqliteIndex {
     }
 
     fn map_search_post_item(row: &SqliteRow) -> Result<SearchPostItem, DataSourceError> {
-        let mime: MediaTypeBuf = row.try_get::<'_, String, _>("content_mime_type")?.parse().unwrap();
+        let mime: MediaTypeBuf = row
+            .try_get::<'_, String, _>("content_mime_type")?
+            .parse()
+            .unwrap();
 
         Ok(SearchPostItem {
             item: Self::map_post_item(row)?,
@@ -225,7 +228,8 @@ impl SqliteIndex {
                 && mime.subty() != mediatype::names::GIF,
             contains_video: mime.ty() == mediatype::names::VIDEO,
             contains_moving_image: mime.subty() == mediatype::names::GIF,
-            contains_document: mime.ty() != mediatype::names::APPLICATION && mime.subty() == mediatype::names::PDF,
+            contains_document: mime.ty() != mediatype::names::APPLICATION
+                && mime.subty() == mediatype::names::PDF,
             duration: row.try_get("content_duration")?,
             thumbnail: (row.try_get::<'_, Option<i64>, _>("media_id")?)
                 .and_then(|_| Self::map_media(row).ok()),
@@ -249,8 +253,7 @@ impl SqliteIndex {
 
                 if query_is_empty {
                     where_clause.push_str(" (p.source LIKE ? OR p.title LIKE ? OR p.description LIKE ? OR p.tags LIKE ? OR p.original_name LIKE ? OR p.original_directory LIKE ? OR p.document_title LIKE ? OR p.document_author LIKE ?)");
-                }
-                else {
+                } else {
                     where_clause.push_str(" posts_vtab MATCH (?)")
                 }
 
@@ -753,6 +756,17 @@ impl CrossDataSource for SqliteIndex {
     ) -> Result<Page<SearchPost>, DataSourceError> {
         let mut conn = self.pool.acquire().await?;
 
+        let order = match query.order {
+            PostSearchQueryOrder::Newest => "p.created_at DESC",
+            PostSearchQueryOrder::Oldest => "p.created_at ASC",
+            PostSearchQueryOrder::Relevant => "rank ASC, p.created_at DESC",
+            PostSearchQueryOrder::Random(_) => {
+                "substr(p.post_id * ?, length(p.post_id) + 2)"
+            }
+        };
+
+        let after_where = format!("ORDER BY {order} LIMIT ? OFFSET ?");
+
         let search_query_str = SqliteIndex::create_search_query_str(query, "SELECT p.*, m.*, pi.original_name,
         (SELECT COUNT(*) FROM post_items pi WHERE pi.post_id = p.post_id) as 'item_count',
         (SELECT SUM(c.duration) FROM post_items pi JOIN media c ON pi.content_id = c.media_id WHERE pi.post_id = p.post_id) as 'total_duration',
@@ -763,11 +777,14 @@ impl CrossDataSource for SqliteIndex {
         FROM posts_vtab p
         LEFT JOIN (SELECT * FROM post_items ORDER BY item_order ASC) pi ON pi.post_id = p.post_id AND pi.item_order = 0
         LEFT JOIN content c ON pi.content_id = c.content_id
-        LEFT JOIN media m ON c.thumbnail_id = m.media_id",
-                                                             "ORDER BY rank ASC, p.created_at DESC
-        LIMIT ? OFFSET ?");
+        LEFT JOIN media m ON c.thumbnail_id = m.media_id", &after_where);
 
-        let search_query = SqliteIndex::add_search_query_values(query, search_query_str.as_str());
+        let mut search_query =
+            SqliteIndex::add_search_query_values(query, search_query_str.as_str());
+
+        if let PostSearchQueryOrder::Random(seed) = query.order {
+            search_query = search_query.bind(seed);
+        }
 
         let rows = search_query
             .bind(page.page_size() as i64)

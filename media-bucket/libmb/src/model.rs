@@ -279,10 +279,19 @@ pub struct CreateFullPost {
     pub flatten: bool,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+pub enum PostSearchQueryOrder {
+    Newest,
+    Oldest,
+    Relevant,
+    Random(f32)
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct PostSearchQuery {
     pub tags: Option<Vec<u64>>,
     pub text: Option<String>,
+    pub order: PostSearchQueryOrder
 }
 
 impl PostSearchQuery {

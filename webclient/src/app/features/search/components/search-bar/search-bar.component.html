@@ -44,6 +44,15 @@
       </mat-autocomplete>
 
     </mat-form-field>
+    <mat-form-field appearance="fill" class="col-md-4 col-xl-2">
+      <mat-label>Sort by</mat-label>
+      <mat-select [value]="_query?.order" (valueChange)="setOrder($event)">
+        <mat-option [value]="'newest'">Newest</mat-option>
+        <mat-option [value]="'oldest'">Oldest</mat-option>
+        <mat-option [value]="'relevant'">Relevant</mat-option>
+        <mat-option [value]="'random'">Random</mat-option>
+      </mat-select>
+    </mat-form-field>
   </div>
 
   <button mat-flat-button color="primary" (click)="submit()">
