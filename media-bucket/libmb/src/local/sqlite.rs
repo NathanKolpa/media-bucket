@@ -96,7 +96,7 @@ impl SqliteIndex {
 
     async fn prepare_db(pool: &SqlitePool) -> Result<(), SqliteError> {
         let mut conn = pool.acquire().await?;
-        conn.execute("PRAGMA schema.wal_checkpoint(FULL)").await?;
+        conn.execute("PRAGMA wal_checkpoint(FULL)").await?;
         Ok(())
     }
 
