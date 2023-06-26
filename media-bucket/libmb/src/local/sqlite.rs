@@ -89,7 +89,8 @@ impl SqliteIndex {
         connect_options.disable_statement_logging();
 
         Ok(SqlitePoolOptions::new()
-            .max_connections(32)
+            .max_connections(1)
+            .acquire_timeout(Duration::from_secs(60 * 60 * 6))
             .connect_with(connect_options)
             .await?)
     }
