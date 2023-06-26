@@ -82,8 +82,7 @@ impl SqliteIndex {
                 .create_if_missing(create)
                 .pragma("key", key)
                 .journal_mode(SqliteJournalMode::Wal)
-                .synchronous(SqliteSynchronous::Full)
-                .locking_mode(SqliteLockingMode::Exclusive)
+                .synchronous(SqliteSynchronous::Normal)
                 .busy_timeout(Duration::from_secs(10));
 
         connect_options.disable_statement_logging();
