@@ -738,12 +738,17 @@ impl CrossDataSource for SqliteIndex {
             .bind(post_id as i64)
             .fetch(&self.pool);
 
+
         if let Some(row) = get_post_query.try_next().await? {
             let post = Self::map_post(&row)?;
 
+            let item_count: i64 = row.try_get("item_count")?;
+
+            drop(row);
+            drop(get_post_query);
+
             let tags = TagDataSource::get_all_from_post(self, post_id).await?;
 
-            let item_count: i64 = row.try_get("item_count")?;
 
             Ok(Some(PostDetail {
                 post,
