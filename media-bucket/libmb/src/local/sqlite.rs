@@ -6,7 +6,7 @@ use async_trait::async_trait;
 use chrono::Utc;
 use futures::TryStreamExt;
 use mediatype::MediaTypeBuf;
-use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode, SqliteLockingMode, SqlitePoolOptions, SqliteRow, SqliteSynchronous};
+use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode, SqliteSynchronous, SqlitePoolOptions, SqliteRow};
 use sqlx::{ConnectOptions, Executor, Row, Sqlite, SqlitePool};
 use thiserror::Error;
 use uuid::Uuid;
@@ -52,6 +52,7 @@ impl SqliteIndex {
 
         let pool = Self::new_encrypted_pool(path, secret, false).await?;
 
+        Self::prepare_db(&pool).await?;
         Self::migrate(&pool).await?;
 
         Ok(Self { pool })
@@ -91,6 +92,12 @@ impl SqliteIndex {
             .max_connections(32)
             .connect_with(connect_options)
             .await?)
+    }
+
+    async fn prepare_db(pool: &SqlitePool) -> Result<(), SqliteError> {
+        let mut conn = pool.acquire().await?;
+        conn.execute("PRAGMA schema.wal_checkpoint(TRUNCATE)").await?;
+        Ok(())
     }
 
     async fn migrate(pool: &SqlitePool) -> Result<(), SqliteError> {
