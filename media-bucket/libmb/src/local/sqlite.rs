@@ -6,9 +6,7 @@ use async_trait::async_trait;
 use chrono::Utc;
 use futures::TryStreamExt;
 use mediatype::MediaTypeBuf;
-use sqlx::sqlite::{
-    SqliteConnectOptions, SqliteJournalMode, SqlitePoolOptions, SqliteRow, SqliteSynchronous,
-};
+use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode, SqliteLockingMode, SqlitePoolOptions, SqliteRow, SqliteSynchronous};
 use sqlx::{ConnectOptions, Executor, Row, Sqlite, SqlitePool};
 use thiserror::Error;
 use uuid::Uuid;
@@ -85,6 +83,7 @@ impl SqliteIndex {
                 .pragma("key", key)
                 .journal_mode(SqliteJournalMode::Wal)
                 .synchronous(SqliteSynchronous::Full)
+                .locking_mode(SqliteLockingMode::Exclusive)
                 .busy_timeout(Duration::from_secs(10));
 
         connect_options.disable_statement_logging();
