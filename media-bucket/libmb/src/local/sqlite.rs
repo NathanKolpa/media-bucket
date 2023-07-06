@@ -6,7 +6,9 @@ use async_trait::async_trait;
 use chrono::Utc;
 use futures::TryStreamExt;
 use mediatype::MediaTypeBuf;
-use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode, SqliteSynchronous, SqlitePoolOptions, SqliteRow};
+use sqlx::sqlite::{
+    SqliteConnectOptions, SqliteJournalMode, SqlitePoolOptions, SqliteRow, SqliteSynchronous,
+};
 use sqlx::{ConnectOptions, Executor, Row, Sqlite, SqlitePool};
 use thiserror::Error;
 use uuid::Uuid;
@@ -752,7 +754,6 @@ impl CrossDataSource for SqliteIndex {
             .bind(post_id as i64)
             .fetch(&self.pool);
 
-
         if let Some(row) = get_post_query.try_next().await? {
             let post = Self::map_post(&row)?;
 
@@ -762,7 +763,6 @@ impl CrossDataSource for SqliteIndex {
             drop(get_post_query);
 
             let tags = TagDataSource::get_all_from_post(self, post_id).await?;
-
 
             Ok(Some(PostDetail {
                 post,
@@ -785,9 +785,7 @@ impl CrossDataSource for SqliteIndex {
             PostSearchQueryOrder::Newest => "p.created_at DESC",
             PostSearchQueryOrder::Oldest => "p.created_at ASC",
             PostSearchQueryOrder::Relevant => "rank ASC, p.created_at DESC",
-            PostSearchQueryOrder::Random(_) => {
-                "substr(p.post_id * ?, length(p.post_id) + 2)"
-            }
+            PostSearchQueryOrder::Random(_) => "substr(p.post_id * ?, length(p.post_id) + 2)",
         };
 
         let after_where = format!("ORDER BY {order} LIMIT ? OFFSET ?");

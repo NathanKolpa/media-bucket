@@ -1,3 +1,6 @@
+#[cfg(feature = "local")]
+use std::path::Path;
+
 use thiserror::Error;
 use url::Url;
 
@@ -85,7 +88,7 @@ impl Bucket {
         };
 
         #[cfg(not(feature = "local"))]
-        return Err(BucketError::MissingFeature("local"))
+        return Err(BucketError::MissingFeature("local"));
     }
 
     pub async fn password_protected(location: &str) -> std::io::Result<bool> {

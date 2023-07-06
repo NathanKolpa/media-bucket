@@ -174,7 +174,12 @@ pub async fn update(
     post.description = req.description.clone();
     post.source = req.source.clone();
 
-    session.bucket().data_source().cross().update_full_post(&post, &req.tag_ids).await?;
+    session
+        .bucket()
+        .data_source()
+        .cross()
+        .update_full_post(&post, &req.tag_ids)
+        .await?;
 
     Ok(web::Json(post))
 }

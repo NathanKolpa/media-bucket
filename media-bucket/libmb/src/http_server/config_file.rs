@@ -26,7 +26,7 @@ pub struct ServerConfigSection {
 
     pub serve_ui: Option<bool>,
     pub static_files: Option<PathBuf>,
-    pub index_file: Option<String>
+    pub index_file: Option<String>,
 }
 
 #[derive(Deserialize)]

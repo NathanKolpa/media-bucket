@@ -82,7 +82,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
             port,
             ui,
             static_files,
-            index_file
+            index_file,
         } => {
             let mut config = ServerConfig::from_file(&config).await?;
 

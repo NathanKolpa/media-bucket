@@ -11,8 +11,8 @@ use thiserror::Error;
 
 use crate::data_source::DataSourceError;
 use crate::http_server::instance::LoginError::LoadingError;
-use crate::{Bucket, BucketError};
 use crate::http_server::token::AuthToken;
+use crate::{Bucket, BucketError};
 
 #[derive(Error, Debug)]
 pub enum LoginError {
@@ -48,7 +48,7 @@ struct SessionData {
 pub struct Session {
     parent: Arc<ServerBucketInstance>,
     bucket: Arc<Bucket>,
-    ip: IpAddr
+    ip: IpAddr,
 }
 
 impl Session {
@@ -73,7 +73,7 @@ pub struct ServerBucketInstance {
     name: String,
     password_protected: bool,
     instance: RwLock<Option<Arc<Bucket>>>,
-    token_secret: [u8; 32]
+    token_secret: [u8; 32],
 }
 
 impl ServerBucketInstance {
@@ -99,7 +99,7 @@ impl ServerBucketInstance {
         Some(Session {
             bucket,
             parent: self,
-            ip
+            ip,
         })
     }
 

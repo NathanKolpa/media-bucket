@@ -16,8 +16,8 @@ mod instance;
 mod middleware;
 mod routes;
 mod stream_file;
-mod web_error;
 mod token;
+mod web_error;
 
 struct InstanceConfig {
     id: u64,
@@ -32,10 +32,16 @@ struct StaticFilesConfig {
 
 impl StaticFilesConfig {
     pub fn file_root(&self) -> &Path {
-        self.file_root.as_ref().map(|s| s.as_path()).unwrap_or_else(|| Path::new("/var/www/html"))
+        self.file_root
+            .as_ref()
+            .map(|s| s.as_path())
+            .unwrap_or_else(|| Path::new("/var/www/html"))
     }
     pub fn index_file(&self) -> &str {
-        self.index_file.as_ref().map(|s| s.as_str()).unwrap_or("index.html")
+        self.index_file
+            .as_ref()
+            .map(|s| s.as_str())
+            .unwrap_or("index.html")
     }
 }
 
@@ -112,7 +118,7 @@ impl ServerConfig {
                     instance_config.name.clone(),
                     instance_config.location.clone(),
                 )
-                    .await?,
+                .await?,
             ))
         }
 
@@ -131,11 +137,13 @@ pub async fn start_server(config: ServerConfig) -> std::io::Result<()> {
 
     HttpServer::new(move || {
         let app_routes = if let Some(files) = &factory_config.static_files {
-            routes_with_static(files.file_root().to_path_buf(), files.index_file().to_string())
+            routes_with_static(
+                files.file_root().to_path_buf(),
+                files.index_file().to_string(),
+            )
         } else {
             routes()
         };
-
 
         let cors = Cors::default()
             .allow_any_origin()
@@ -150,7 +158,7 @@ pub async fn start_server(config: ServerConfig) -> std::io::Result<()> {
             .wrap(cors)
             .service(app_routes)
     })
-        .bind((config.get_address(), config.get_port()))?
-        .run()
-        .await
+    .bind((config.get_address(), config.get_port()))?
+    .run()
+    .await
 }

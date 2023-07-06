@@ -1,5 +1,5 @@
+use serde::{Deserialize, Serialize};
 use std::net::IpAddr;
-use serde::{Serialize, Deserialize};
 
 use chrono::{DateTime, Duration, TimeZone, Utc};
 use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Header, Validation};
@@ -32,7 +32,6 @@ impl AuthToken {
         let key = EncodingKey::from_secret(secret);
         let headers = Header::new(KEY_ALGO);
 
-
         let claims = Claims {
             ip: self.ip.to_string(),
             iat: self.issued_at.timestamp(),
@@ -46,18 +45,14 @@ impl AuthToken {
         self.issued_at.timestamp() + self.lifetime.num_seconds()
     }
 
-    pub fn from_token(
-        token: &str,
-        secret: &[u8],
-        ip: &IpAddr,
-    ) -> Option<Self> {
+    pub fn from_token(token: &str, secret: &[u8], ip: &IpAddr) -> Option<Self> {
         let key = DecodingKey::from_secret(secret);
         let ip_str = ip.to_string();
 
-        let claims = jsonwebtoken::decode::<Claims>(token, &key, &Validation::new(KEY_ALGO)).ok()?;
+        let claims =
+            jsonwebtoken::decode::<Claims>(token, &key, &Validation::new(KEY_ALGO)).ok()?;
 
-        let iat = Utc.timestamp_opt(claims.claims.iat, 0)
-            .unwrap();
+        let iat = Utc.timestamp_opt(claims.claims.iat, 0).unwrap();
 
         let offset = claims.claims.exp - claims.claims.iat;
 

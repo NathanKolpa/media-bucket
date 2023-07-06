@@ -68,7 +68,7 @@ pub async fn auth(
         Err(e) => {
             info!("Failed attempt to login from {ip} for {instance}: {e}");
             sleep(Duration::from_millis(2000)).await
-        },
+        }
     }
 
     let login_token = login_result?;

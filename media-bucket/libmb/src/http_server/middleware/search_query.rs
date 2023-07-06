@@ -41,8 +41,7 @@ impl FromRequest for PostSearchQuery {
                 tags = Some(ids);
             }
 
-            let seed = query.seed
-                .ok_or(WebError::ParseError);
+            let seed = query.seed.ok_or(WebError::ParseError);
 
             let order = match query.order.as_deref() {
                 Some("newest") | None => Ok(PostSearchQueryOrder::Newest),

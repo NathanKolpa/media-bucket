@@ -46,5 +46,5 @@ pub struct UpdatePostRequest {
     pub title: Option<String>,
     pub description: Option<String>,
     pub source: Option<Url>,
-    pub tag_ids: Vec<u64>
+    pub tag_ids: Vec<u64>,
 }

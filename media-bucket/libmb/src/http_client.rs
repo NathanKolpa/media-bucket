@@ -375,7 +375,32 @@ impl CrossDataSource for HttpDataSource {
         query: &PostSearchQuery,
         page: &PageParams,
     ) -> Result<Page<SearchPost>, DataSourceError> {
-        todo!()
+        let mut url = format!("{}/posts", self.base)
+            .parse::<Url>()
+            .expect("Cannot parse url");
+
+        {
+            let mut query_pairs = url.query_pairs_mut();
+
+            query_pairs.append_pair("offset", page.offset().to_string().as_str());
+            query_pairs.append_pair("size", page.page_size().to_string().as_str());
+
+            if let Some(source) = query.source.as_deref() {
+                query_pairs.append_pair("source", source);
+            }
+
+            if let Some(text) = query.text.as_deref() {
+                query_pairs.append_pair("text", text);
+            }
+        }
+
+        Ok(self
+            .client
+            .get(url)
+            .send()
+            .await?
+            .json::<Page<SearchPost>>()
+            .await?)
     }
 
     async fn search_items(

@@ -248,7 +248,7 @@ pub struct SearchPost {
     pub item_count: usize,
     pub duration: Option<i32>,
     pub thumbnail: Option<Media>,
-    pub file_name: Option<String>
+    pub file_name: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -284,7 +284,7 @@ pub enum PostSearchQueryOrder {
     Newest,
     Oldest,
     Relevant,
-    Random(f32)
+    Random(f32),
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -292,7 +292,7 @@ pub struct PostSearchQuery {
     pub tags: Option<Vec<u64>>,
     pub text: Option<String>,
     pub source: Option<String>,
-    pub order: PostSearchQueryOrder
+    pub order: PostSearchQueryOrder,
 }
 
 impl PostSearchQuery {
