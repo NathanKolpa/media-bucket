@@ -64,83 +64,17 @@ export class ImageViewerComponent {
   @Input()
   public className: string | null = null;
 
-  private touchEnabled = true;
-
   resetTransform() {
     this.transformation = initialTransform;
   }
 
-  enableTouch() {
-    this.touchEnabled = true;
-  }
-
-  disableTouch() {
-    this.touchEnabled = false;
-  }
-
-  pointerDown(event: PointerEvent) {
-    if (!this.touchEnabled) {
-      return;
-    }
-
-    this.pointerStack.push(event);
-  }
-
-  pointerUp(event: PointerEvent) {
-    if (!this.touchEnabled) {
-      return;
-    }
-
-    const index = this.pointerStack.findIndex((cachedEv) => cachedEv.pointerId === event.pointerId);
-    this.pointerStack.splice(index, 1);
-
-    if (this.pointerStack.length < 1) {
-      this.pointerX = null;
-      this.pointerY = null;
-    } else if (this.pointerStack.length < 2) {
-      this.pointerZoomDiff = null;
-    }
-  }
-
-  pointerMove(element: HTMLImageElement, event: PointerEvent) {
-    if (!this.touchEnabled) {
-      return;
-    }
-
-    const index = this.pointerStack.findIndex((cachedEv) => cachedEv.pointerId === event.pointerId);
-    this.pointerStack[index] = event;
-
-    if (this.pointerStack.length == 2) {
-      const [pointerA, pointerB] = this.pointerStack;
-      const curDiff = Math.sqrt(Math.pow(pointerB.clientX - pointerA.clientX, 2) + Math.pow(pointerB.clientY - pointerA.clientY, 2));
-
-      if (this.pointerZoomDiff != null) {
-        this.zoom(element, (curDiff - this.pointerZoomDiff) / this.scaleSensitivity, event.pageX, event.pageY);
-      }
-
-      this.pointerZoomDiff = curDiff;
-    } else if (this.pointerStack.length == 1) {
-
-      if (this.pointerX != null && this.pointerY != null) {
-        this.pan(event.movementX - this.pointerX, event.movementY - this.pointerY);
-      }
-
-      this.pointerX = event.movementX;
-      this.pointerY = event.movementY;
-    }
-  }
-
   mouseWheel(element: HTMLImageElement, event: WheelEvent) {
-    if (this.touchEnabled) {
-      return;
-    }
-
     event.preventDefault();
     this.zoom(element, Math.sign(event.deltaY) > 0 ? -1 : 1, event.pageX, event.pageY);
   }
 
   mouseMove(event: MouseEvent) {
-    if (event.buttons != 1 || this.touchEnabled) {
+    if (event.buttons != 1) {
       return;
     }
 
