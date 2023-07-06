@@ -1,7 +1,6 @@
 <img [className]="className" #image *ngIf="_media" [src]="_media.url" [width]="_media.dimensions?.width"
      [height]="_media.dimensions?.height"
      alt="Media"
-     style="touch-action:none;"
      [style]="getCss()"
      (mousemove)="mouseMove($event)"
      [draggable]="false"
