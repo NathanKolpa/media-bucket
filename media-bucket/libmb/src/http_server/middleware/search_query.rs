@@ -13,6 +13,7 @@ struct PostSearchParams {
     tags: Option<String>,
     text: Option<String>,
     order: Option<String>,
+    source: Option<String>,
     seed: Option<f32>,
 }
 
@@ -54,6 +55,7 @@ impl FromRequest for PostSearchQuery {
             Ok(PostSearchQuery {
                 tags,
                 text: query.text.clone(),
+                source: query.source.clone(),
                 order,
             })
         })

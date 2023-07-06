@@ -291,11 +291,12 @@ pub enum PostSearchQueryOrder {
 pub struct PostSearchQuery {
     pub tags: Option<Vec<u64>>,
     pub text: Option<String>,
+    pub source: Option<String>,
     pub order: PostSearchQueryOrder
 }
 
 impl PostSearchQuery {
     pub fn has_criteria(&self) -> bool {
-        self.tags.is_some() || self.text.is_some()
+        self.tags.is_some() || self.text.is_some() || self.source.is_some()
     }
 }

@@ -279,6 +279,16 @@ impl SqliteIndex {
                     is_first = false;
                 }
             }
+
+            if let Some(source) = query.source.as_ref() {
+                if !is_first {
+                    where_clause.push_str(" AND")
+                }
+
+                where_clause.push_str(" p.source = ?");
+
+                // is_first = false;
+            }
         }
 
         format!("{before_where}\n{where_clause}\n{after_where}")
@@ -318,6 +328,10 @@ impl SqliteIndex {
             for tag in tag_ids {
                 query = query.bind(*tag as i64);
             }
+        }
+
+        if let Some(source) = query_values.source.as_ref() {
+            query = query.bind(source.as_str());
         }
 
         query
