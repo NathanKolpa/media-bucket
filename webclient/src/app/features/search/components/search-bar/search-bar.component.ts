@@ -56,6 +56,7 @@ export class SearchBarComponent {
 
   submit() {
     if (this._query) {
+      this._query = this._query.randomizeSeed();
       this.queryChange.emit(this._query);
     }
   }

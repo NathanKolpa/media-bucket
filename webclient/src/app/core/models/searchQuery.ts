@@ -27,6 +27,10 @@ export class PostSearchQuery {
     return this._seed;
   }
 
+  public randomizeSeed(): PostSearchQuery {
+    return new PostSearchQuery(this._items, this._order, Math.random());
+  }
+
   public addTag(tag: Tag): PostSearchQuery {
     return new PostSearchQuery([...this._items.filter(x => {
       if (x.type != 'tag') {
