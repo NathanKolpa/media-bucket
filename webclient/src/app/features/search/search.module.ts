@@ -4,7 +4,7 @@ import {SearchPageComponent} from './pages/search-page/search-page.component';
 import { SearchResultsComponent } from './components/search-results/search-results.component';
 import {ScrollingModule} from "@angular/cdk/scrolling";
 import { ListingComponent } from './components/listing/listing.component';
-import {SearchStoreModule} from "@features/search/store";
+import {SearchStoreModule} from "./store";
 import {MatCardModule} from "@angular/material/card";
 import {MatIconModule} from "@angular/material/icon";
 import {PipesModule} from "@shared/pipes/pipes.module";

@@ -25,6 +25,8 @@
     "@ngrx/entity": "^15.1.0",
     "@ngrx/store": "^15.1.0",
     "bootstrap": "^5.2.3",
+    "chart.js": "^3.6.0",
+    "ng2-charts": "^4.1.1",
     "ng2-pdfjs-viewer": "^15.0.0",
     "rxjs": "~7.5.0",
     "tslib": "^2.3.0",

@@ -10,6 +10,7 @@ import {MatButtonModule} from "@angular/material/button";
 import {MatIconModule} from "@angular/material/icon";
 import {MatMenuModule} from "@angular/material/menu";
 import {NotAuthenticatedComponent} from './components/not-authenticated/not-authenticated.component';
+import {MatDividerModule} from "@angular/material/divider";
 
 const routes: Routes = [
   {
@@ -20,6 +21,11 @@ const routes: Routes = [
         path: '',
         pathMatch: 'full',
         loadChildren: () => import("@features/search/search.module").then(m => m.SearchModule)
+      },
+      {
+        path: 'stats',
+        pathMatch: 'full',
+        loadChildren: () => import("@features/stats/stats.module").then(m => m.StatsModule)
       }
     ]
   }
@@ -41,6 +47,7 @@ const routes: Routes = [
     MatButtonModule,
     MatMenuModule,
     MatIconModule,
+    MatDividerModule,
   ]
 })
 export class BucketModule {

@@ -37,7 +37,7 @@ const initialState: State = {
   searchQuery: PostSearchQuery.empty(),
   searchTags: tagAdapter.getInitialState(),
   nextPageLoadingState: LoadingState.initial(),
-  pageSize: 100,
+  pageSize: 30,
   posts: [],
   postCount: null,
 

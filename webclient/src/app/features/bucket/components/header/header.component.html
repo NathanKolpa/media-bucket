@@ -18,6 +18,13 @@
 
   <mat-menu #menu="matMenu">
 
+    <a mat-menu-item [routerLink]="['/buckets', bucket.id, 'stats']">
+      <mat-icon>query_stats</mat-icon>
+      <span>Statistics</span>
+    </a>
+
+    <mat-divider></mat-divider>
+
     <a mat-menu-item routerLink="/">
       <mat-icon>compare_arrows</mat-icon>
       <span>Switch bucket</span>
