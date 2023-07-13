@@ -4,7 +4,7 @@ import {
   Component,
   ElementRef,
   EventEmitter,
-  Input,
+  Input, OnDestroy,
   Output,
   ViewChild
 } from '@angular/core';
@@ -16,7 +16,7 @@ import {Media} from "@core/models";
   templateUrl: './video-player.component.html',
   styleUrls: ['./video-player.component.scss']
 })
-export class VideoPlayerComponent implements AfterViewInit {
+export class VideoPlayerComponent implements AfterViewInit, OnDestroy {
 
   @ViewChild('video', {static: false})
   public videoPlayer?: ElementRef<HTMLVideoElement>;
@@ -63,5 +63,13 @@ export class VideoPlayerComponent implements AfterViewInit {
     }
 
     let _ = element.play()
+  }
+
+  ngOnDestroy(): void {
+    if (this.videoPlayer) {
+      this.videoPlayer.nativeElement.pause()
+      this.videoPlayer.nativeElement.removeAttribute('src');
+      this.videoPlayer.nativeElement.load();
+    }
   }
 }
