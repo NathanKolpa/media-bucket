@@ -1,0 +1,31 @@
+<div class="mt-4 ms-4 me-4">
+
+  <div class="row">
+    <mat-form-field appearance="fill" class="col">
+      <mat-label>Chart title</mat-label>
+
+      <input
+        matInput
+        #titleElement
+        [value]="title"
+        (input)="titleChange.emit(titleElement.value == '' ? null : titleElement.value)">
+    </mat-form-field>
+  </div>
+
+  <div class="row">
+    <mat-chip-listbox class="col">
+
+      <mat-chip *ngFor="let query of queries">
+        {{ query.name }}
+      </mat-chip>
+
+      <mat-chip (click)="addQuery.emit()">
+        Add query
+        <mat-icon matChipTrailingIcon>add</mat-icon>
+      </mat-chip>
+    </mat-chip-listbox>
+  </div>
+
+  <button mat-raised-button color="primary" class="mt-3" (click)="load.emit()">Go</button>
+
+</div>

@@ -5,6 +5,9 @@ import {
   ApiFailure,
   Auth,
   Bucket,
+  Chart,
+  ChartPoint,
+  ChartsQuery,
   CreatePostData,
   Dimensions,
   DocumentData,
@@ -152,6 +155,35 @@ export class ApiService {
           page: this.mapPage(json)
         }
       })
+    )
+  }
+
+  public loadChart(auth: Auth, query: ChartsQuery): Observable<Chart> {
+    let select;
+
+    switch (query.select) {
+      case "count":
+        select = 'Count'
+        break;
+    }
+
+    let discriminator;
+
+    switch (query.discriminator) {
+      case "none":
+        discriminator = 'None';
+        break;
+      case 'duration':
+        discriminator = { Duration: { nanos: 0, secs: query.duration }  }
+        break;
+    }
+
+    return this.authenticatedPost(auth, `/posts/graph`, {
+      select,
+      discriminator,
+      filter: {}
+    }).pipe(
+      map(json => new Chart(query.name, json.points.map((x: any) => this.mapChartPoint(x))))
     )
   }
 
@@ -389,6 +421,25 @@ export class ApiService {
       json.thumbnail == null ? null : this.mapMedia(auth, json.thumbnail),
       json.file_name
     )
+  }
+
+  private mapChartPoint(json: any): ChartPoint {
+    let x;
+    let type;
+
+    if (typeof json.y === 'string') {
+      type = 'none';
+    }
+    else {
+      type = 'duration';
+      x = new Date(json.x.Date)
+    }
+
+    return {
+      type,
+      x,
+      y: json.y
+    } as ChartPoint
   }
 
   private mapMedia(auth: Auth, json: any): Media {

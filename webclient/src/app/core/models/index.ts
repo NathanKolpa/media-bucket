@@ -9,3 +9,5 @@ export * from './postItem';
 export * from './upload';
 export * from './tag';
 export * from './searchQuery';
+export * from './chartsQuery';
+export * from './chart';
