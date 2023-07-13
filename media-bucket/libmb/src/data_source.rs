@@ -254,4 +254,6 @@ pub trait CrossDataSource: Sync + Send {
     async fn update_full_post(&self, value: &Post, tags: &[u64]) -> Result<(), DataSourceError>;
 
     async fn cascade_delete_post(&self, id: u64) -> Result<(), DataSourceError>;
+
+    async fn graph_post(&self, query: &PostGraphQuery) -> Result<Graph, DataSourceError>;
 }

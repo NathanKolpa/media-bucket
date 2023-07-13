@@ -55,7 +55,7 @@ impl FromRequest for PostSearchQuery {
                 tags,
                 text: query.text.clone(),
                 source: query.source.clone(),
-                order,
+                order: Some(order),
             })
         })
     }

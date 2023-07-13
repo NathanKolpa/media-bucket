@@ -6,7 +6,22 @@ use crate::data_source::PageParams;
 use crate::http_models::{CreateFullPostResponse, UpdatePostRequest};
 use crate::http_server::instance::Session;
 use crate::http_server::web_error::WebError;
-use crate::model::{CreateFullPost, PostSearchQuery};
+use crate::model::{CreateFullPost, PostGraphQuery, PostSearchQuery};
+
+#[post("graph")]
+pub async fn graph(
+    session: Session,
+    req: web::Json<PostGraphQuery>,
+) -> Result<impl Responder, WebError> {
+    let graph = session
+        .bucket()
+        .data_source()
+        .cross()
+        .graph_post(&req)
+        .await?;
+
+    Ok(web::Json(graph))
+}
 
 #[get("")]
 pub async fn index(

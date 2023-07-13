@@ -15,8 +15,8 @@ use crate::http_models::{
     AuthRequest, AuthResponse, BucketInfo, CreateFullPostResponse, CreateTagRequest, ErrorResponse,
 };
 use crate::model::{
-    Content, CreateFullPost, ImportBatch, Media, Page, Post, PostDetail, PostItem, PostSearchQuery,
-    SearchPost, SearchPostItem, Tag,
+    Content, CreateFullPost, Graph, ImportBatch, Media, Page, Post, PostDetail, PostGraphQuery,
+    PostItem, PostSearchQuery, SearchPost, SearchPostItem, Tag,
 };
 
 const USER_AGENT: &'static str = "libmb/1.0";
@@ -440,6 +440,10 @@ impl CrossDataSource for HttpDataSource {
     }
 
     async fn cascade_delete_post(&self, id: u64) -> Result<(), DataSourceError> {
+        todo!()
+    }
+
+    async fn graph_post(&self, query: &PostGraphQuery) -> Result<Graph, DataSourceError> {
         todo!()
     }
 }

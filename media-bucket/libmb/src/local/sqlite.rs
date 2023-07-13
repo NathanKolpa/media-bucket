@@ -213,6 +213,24 @@ impl SqliteIndex {
         })
     }
 
+    fn map_graph_point(row: &SqliteRow) -> Result<GraphPoint, DataSourceError> {
+        let kind: &str = row.try_get(2)?;
+
+        Ok(GraphPoint {
+            x: row.try_get(0)?,
+            y: match kind {
+                "date" => GraphValue::Date(row.try_get(1)?),
+                "none" => GraphValue::None,
+                _ => {
+                    return Err(DataSourceError::SQLError(sqlx::Error::ColumnDecode {
+                        source: "map_graph_point".into(),
+                        index: String::from("2"),
+                    }))
+                }
+            },
+        })
+    }
+
     fn map_full_post_item(row: &SqliteRow) -> Result<PostItem, DataSourceError> {
         Ok(PostItem {
             post: ManyToOne::Obj(Self::map_post(row)?),
@@ -782,10 +800,10 @@ impl CrossDataSource for SqliteIndex {
         let mut conn = self.pool.acquire().await?;
 
         let order = match query.order {
-            PostSearchQueryOrder::Newest => "p.created_at DESC",
-            PostSearchQueryOrder::Oldest => "p.created_at ASC",
-            PostSearchQueryOrder::Relevant => "rank ASC, p.created_at DESC",
-            PostSearchQueryOrder::Random(_) => "substr(p.post_id * ?, length(p.post_id) + 2)",
+            Some(PostSearchQueryOrder::Newest) | None => "p.created_at DESC",
+            Some(PostSearchQueryOrder::Oldest) => "p.created_at ASC",
+            Some(PostSearchQueryOrder::Relevant) => "rank ASC, p.created_at DESC",
+            Some(PostSearchQueryOrder::Random(_)) => "substr(p.post_id * ?, length(p.post_id) + 2)",
         };
 
         let after_where = format!("ORDER BY {order} LIMIT ? OFFSET ?");
@@ -805,7 +823,7 @@ impl CrossDataSource for SqliteIndex {
         let mut search_query =
             SqliteIndex::add_search_query_values(query, search_query_str.as_str());
 
-        if let PostSearchQueryOrder::Random(seed) = query.order {
+        if let Some(PostSearchQueryOrder::Random(seed)) = query.order {
             search_query = search_query.bind(seed);
         }
 
@@ -1073,5 +1091,48 @@ impl CrossDataSource for SqliteIndex {
         tx.commit().await?;
 
         Ok(())
+    }
+
+    async fn graph_post(&self, query: &PostGraphQuery) -> Result<Graph, DataSourceError> {
+        let mut conn = self.pool.acquire().await?;
+
+        let select = match query.select {
+            GraphSelect::Count => "COUNT(*) * 1.0",
+        };
+
+        let y_axis = match query.discriminator {
+            GraphDiscriminator::Duration(_) => "p.created_at",
+            GraphDiscriminator::None => "null",
+        };
+
+        let y_axis_kind = match query.discriminator {
+            GraphDiscriminator::Duration(_) => "date",
+            GraphDiscriminator::None => "none",
+        };
+
+        let before_where = format!("SELECT {select}, {y_axis}, '{y_axis_kind}' FROM posts_vtab p");
+        let after_where = match query.discriminator {
+            GraphDiscriminator::Duration(_) => "GROUP BY strftime('%s', p.created_at) / ?",
+            GraphDiscriminator::None => "",
+        };
+
+        let query_str =
+            SqliteIndex::create_search_query_str(&query.filter, &before_where, &after_where);
+        let mut graph_query = SqliteIndex::add_search_query_values(&query.filter, &query_str);
+
+        match query.discriminator {
+            GraphDiscriminator::Duration(duration) => {
+                graph_query = graph_query.bind(duration.as_secs() as i64);
+            }
+            _ => {}
+        }
+
+        let rows = graph_query
+            .map(|r| Self::map_graph_point(&r))
+            .fetch_all(&mut conn)
+            .await?
+            .into_iter()
+            .collect::<Result<Vec<_>, DataSourceError>>()?;
+        Ok(Graph { points: rows })
     }
 }

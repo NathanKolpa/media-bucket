@@ -76,6 +76,7 @@ pub fn routes() -> Scope {
                         )
                         .service(
                             web::scope("/posts")
+                                .service(posts::graph)
                                 .service(posts::index)
                                 .service(posts::store)
                                 .service(posts::index_items)

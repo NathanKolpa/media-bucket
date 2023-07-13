@@ -5,6 +5,7 @@
 
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use std::time::Duration;
 use url::Url;
 use uuid::Uuid;
 
@@ -292,11 +293,45 @@ pub struct PostSearchQuery {
     pub tags: Option<Vec<u64>>,
     pub text: Option<String>,
     pub source: Option<String>,
-    pub order: PostSearchQueryOrder,
+    pub order: Option<PostSearchQueryOrder>,
 }
 
 impl PostSearchQuery {
     pub fn has_criteria(&self) -> bool {
         self.tags.is_some() || self.text.is_some() || self.source.is_some()
     }
+}
+#[derive(Debug, Serialize, Deserialize)]
+pub enum GraphValue {
+    Date(DateTime<Utc>),
+    None,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct GraphPoint {
+    pub x: f32,
+    pub y: GraphValue,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Graph {
+    pub points: Vec<GraphPoint>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub enum GraphDiscriminator {
+    Duration(Duration),
+    None,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub enum GraphSelect {
+    Count,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct PostGraphQuery {
+    pub filter: PostSearchQuery,
+    pub discriminator: GraphDiscriminator,
+    pub select: GraphSelect,
 }
