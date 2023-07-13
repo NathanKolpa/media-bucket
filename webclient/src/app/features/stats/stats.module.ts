@@ -17,6 +17,7 @@ import { QueryAddModalComponent } from './containers/query-add-modal/query-add-m
 import { QueryFormComponent } from './components/query-form/query-form.component';
 import {ReactiveFormsModule} from "@angular/forms";
 import {LoadingModule} from "@shared/loading/loading.module";
+import 'chartjs-adapter-luxon';
 
 const routes: Routes = [
   {

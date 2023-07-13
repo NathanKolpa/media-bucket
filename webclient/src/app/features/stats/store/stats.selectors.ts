@@ -1,5 +1,5 @@
 import {createSelector} from "@ngrx/store";
-import {selectStatsState, querySelectors} from "./stats.reducer";
+import {selectStatsState, querySelectors, chartSelectors} from "./stats.reducer";
 
 export const selectQueries = createSelector(
   selectStatsState,
@@ -8,10 +8,18 @@ export const selectQueries = createSelector(
   }
 )
 
+export const selectCharts = createSelector(
+  selectStatsState,
+  (state) => {
+    return chartSelectors.selectAll(state.charts)
+  }
+)
+
+
 export const selectHasChart = createSelector(
   selectStatsState,
   (state) => {
-    return false;
+    return chartSelectors.selectTotal(state.charts) > 0;
   }
 )
 

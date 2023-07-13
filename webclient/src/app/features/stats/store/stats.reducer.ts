@@ -1,11 +1,12 @@
 import {createFeature, createReducer, on} from "@ngrx/store";
 import {createEntityAdapter, EntityState} from "@ngrx/entity";
-import {ChartsQuery, LoadingState} from "@core/models";
+import {Chart, ChartsQuery, LoadingState} from "@core/models";
 import * as statsActions from "./stats.actions";
 
 interface State {
   title: string | null
   queries: EntityState<ChartsQuery>,
+  charts: EntityState<Chart>,
   loadingState: LoadingState
 }
 
@@ -13,11 +14,15 @@ const queryAdapter = createEntityAdapter<ChartsQuery>({
   selectId: (x) => x.name
 });
 
+const chartAdapter = createEntityAdapter<Chart>({
+  selectId: (x) => x.name
+});
 
 const initialState: State = {
   title: null,
   queries: queryAdapter.getInitialState(),
-  loadingState: LoadingState.initial()
+  loadingState: LoadingState.initial(),
+  charts: chartAdapter.getInitialState()
 }
 
 const feature = createFeature({
@@ -38,7 +43,8 @@ const feature = createFeature({
     })),
     on(statsActions.loadChartSuccess, (state, { charts }) => ({
       ...state,
-      loadingState: state.loadingState.success()
+      loadingState: state.loadingState.success(),
+      charts: chartAdapter.setAll(charts, state.charts)
     })),
   )
 });
@@ -52,3 +58,4 @@ export const {
 } = feature;
 
 export const querySelectors = queryAdapter.getSelectors();
+export const chartSelectors = chartAdapter.getSelectors();

@@ -18,6 +18,7 @@ export class StatsPageComponent implements OnDestroy {
   queries$ = this.store.select(fromStats.selectQueries);
   loadingState$ = this.store.select(fromStats.selectLoadingState);
   hasChart$ = this.store.select(fromStats.selectHasChart);
+  charts$ = this.store.select(fromStats.selectCharts);
 
   public bucket$ = this.store.select(fromBucket.selectBucket);
 

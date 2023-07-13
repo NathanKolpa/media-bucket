@@ -5,7 +5,7 @@
                      (addQuery)="openCreateQueryModal()"></app-chart-queries>
   <div class="chart-container m-4 d-block">
     <app-loadable-content [loadingState]="loadingState$ | async" (loadAgain)="loadChart(bucket)">
-      <app-chart *ngIf="(hasChart$ | async) || false"></app-chart>
+      <app-chart *ngIf="(hasChart$ | async) || false" [charts]="(charts$ | async) || []"></app-chart>
     </app-loadable-content>
   </div>
 

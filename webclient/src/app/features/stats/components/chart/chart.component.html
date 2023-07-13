@@ -1,4 +1,7 @@
 <canvas baseChart class="w-100 h-100"
+        *ngIf="chartData as data"
         [legend]="true"
+        [data]="data"
+        [options]="options"
         [type]="'line'">
 </canvas>

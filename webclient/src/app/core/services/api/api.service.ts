@@ -431,7 +431,7 @@ export class ApiService {
       type = 'none';
     }
     else {
-      type = 'duration';
+      type = 'time';
       x = new Date(json.x.Date)
     }
 
