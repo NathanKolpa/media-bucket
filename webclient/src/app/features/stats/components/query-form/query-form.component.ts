@@ -1,6 +1,6 @@
 import {Component, EventEmitter, Output} from '@angular/core';
 import {FormControl, FormGroup, Validators} from "@angular/forms";
-import {ChartsQuery, PostSearchQuery} from "@core/models";
+import {ChartSeriesQuery, PostSearchQuery} from "@core/models";
 
 @Component({
   selector: 'app-query-form',
@@ -13,7 +13,7 @@ export class QueryFormComponent {
   })
 
   @Output()
-  public querySubmit = new EventEmitter<ChartsQuery>();
+  public querySubmit = new EventEmitter<ChartSeriesQuery>();
 
   submitForm() {
     if (!this.form.valid) {
@@ -22,6 +22,6 @@ export class QueryFormComponent {
 
     let name = this.form.controls.name.value!;
 
-    this.querySubmit.emit(new ChartsQuery(name, PostSearchQuery.empty(), 'count', 'duration', 3600));
+    this.querySubmit.emit(new ChartSeriesQuery(name, PostSearchQuery.empty(), 'count'));
   }
 }

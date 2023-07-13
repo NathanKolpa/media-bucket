@@ -10,12 +10,10 @@ import {ApiService} from "@core/services";
 export class StatsEffects {
   loadChart$ = createEffect(() => this.actions$.pipe(
     ofType(statsActions.loadChart),
-    withLatestFrom(this.store.select(fromStats.selectQueries)),
-    switchMap(([action, queries]) => {
-      let apiCalls = queries.map(query => this.api.loadChart(action.bucket.auth, query));
-
-      return forkJoin(apiCalls).pipe(
-        map(charts => statsActions.loadChartSuccess({charts})),
+    withLatestFrom(this.store.select(fromStats.selectQuery)),
+    switchMap(([action, query]) => {
+      return this.api.loadChart(action.bucket.auth, query).pipe(
+        map(chart => statsActions.loadChartSuccess({chart})),
         catchError(async failure => statsActions.loadChartFailure({failure}))
       )
     })

@@ -1,14 +1,10 @@
-<div class="mt-4 ms-4 me-4">
+<div class="mt-4 ms-4 me-4" *ngIf="query as query">
 
   <div class="row">
     <mat-form-field appearance="fill" class="col">
       <mat-label>Chart title</mat-label>
 
-      <input
-        matInput
-        #titleElement
-        [value]="title"
-        (input)="titleChange.emit(titleElement.value == '' ? null : titleElement.value)">
+      <input matInput>
     </mat-form-field>
   </div>
 
@@ -17,7 +13,7 @@
   <div class="row">
     <mat-chip-listbox class="col">
 
-      <mat-chip *ngFor="let query of queries">
+      <mat-chip *ngFor="let query of query.series">
         {{ query.name }}
       </mat-chip>
 

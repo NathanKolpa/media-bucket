@@ -1,31 +1,24 @@
 import {createSelector} from "@ngrx/store";
-import {selectStatsState, querySelectors, chartSelectors} from "./stats.reducer";
+import {selectStatsState} from "./stats.reducer";
 
-export const selectQueries = createSelector(
+export const selectSeries = createSelector(
   selectStatsState,
   (state) => {
-    return querySelectors.selectAll(state.queries)
+    return state.query.series
   }
 )
-
-export const selectCharts = createSelector(
-  selectStatsState,
-  (state) => {
-    return chartSelectors.selectAll(state.charts)
-  }
-)
-
 
 export const selectHasChart = createSelector(
   selectStatsState,
   (state) => {
-    return chartSelectors.selectTotal(state.charts) > 0;
+    return state.chart !== null
   }
 )
 
 export {
   selectStatsState,
-  selectTitle,
   selectLoadingState,
+  selectChart,
+  selectQuery
 } from './stats.reducer'
 

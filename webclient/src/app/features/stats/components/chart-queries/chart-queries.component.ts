@@ -1,5 +1,5 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
-import {ChartsQuery} from "@core/models";
+import {ChartQuery, ChartSeriesQuery} from "@core/models";
 
 @Component({
   selector: 'app-chart-queries',
@@ -7,17 +7,11 @@ import {ChartsQuery} from "@core/models";
   styleUrls: ['./chart-queries.component.scss']
 })
 export class ChartQueriesComponent {
-  @Input()
-  public title: string | null = null;
-
-  @Output()
-  public titleChange = new EventEmitter<string | null>();
-
   @Output()
   public addQuery = new EventEmitter();
 
   @Input()
-  public queries: ChartsQuery[] = [];
+  public query: ChartQuery | null = null;
 
   @Output()
   public load = new EventEmitter();

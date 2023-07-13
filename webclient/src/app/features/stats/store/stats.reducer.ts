@@ -1,37 +1,28 @@
 import {createFeature, createReducer, on} from "@ngrx/store";
 import {createEntityAdapter, EntityState} from "@ngrx/entity";
-import {Chart, ChartsQuery, LoadingState} from "@core/models";
+import {ChartSeries, ChartDiscriminator, ChartSeriesQuery, LoadingState, ChartQuery, Chart} from "@core/models";
 import * as statsActions from "./stats.actions";
 
 interface State {
-  title: string | null
-  queries: EntityState<ChartsQuery>,
-  charts: EntityState<Chart>,
+  query: ChartQuery,
+  chart: Chart | null,
   loadingState: LoadingState
 }
 
-const queryAdapter = createEntityAdapter<ChartsQuery>({
-  selectId: (x) => x.name
-});
-
-const chartAdapter = createEntityAdapter<Chart>({
-  selectId: (x) => x.name
-});
 
 const initialState: State = {
-  title: null,
-  queries: queryAdapter.getInitialState(),
+  query: ChartQuery.initial(),
   loadingState: LoadingState.initial(),
-  charts: chartAdapter.getInitialState()
+  chart: null
 }
 
 const feature = createFeature({
   name: 'stats',
   reducer: createReducer(
     initialState,
-    on(statsActions.addQuery, (state, {query}) => ({
+    on(statsActions.addSeriesQuery, (state, {query}) => ({
       ...state,
-      queries: queryAdapter.addOne(query, state.queries)
+      query: state.query.addSeries(query)
     })),
     on(statsActions.loadChart, (state) => ({
       ...state,
@@ -41,10 +32,10 @@ const feature = createFeature({
       ...state,
       loadingState: state.loadingState.fail(failure)
     })),
-    on(statsActions.loadChartSuccess, (state, { charts }) => ({
+    on(statsActions.loadChartSuccess, (state, { chart }) => ({
       ...state,
       loadingState: state.loadingState.success(),
-      charts: chartAdapter.setAll(charts, state.charts)
+      chart
     })),
   )
 });
@@ -53,9 +44,7 @@ export const {
   name,
   reducer,
   selectStatsState,
-  selectTitle,
-  selectLoadingState
+  selectLoadingState,
+  selectChart,
+  selectQuery
 } = feature;
-
-export const querySelectors = queryAdapter.getSelectors();
-export const chartSelectors = chartAdapter.getSelectors();

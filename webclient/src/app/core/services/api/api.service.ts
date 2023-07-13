@@ -1,13 +1,13 @@
 import {Injectable} from '@angular/core';
 import {HttpClient, HttpErrorResponse, HttpEventType} from "@angular/common/http";
-import {audit, catchError, first, interval, map, Observable, Subject, Subscription, takeUntil} from "rxjs";
+import {audit, catchError, first, forkJoin, interval, map, Observable, Subject, Subscription, takeUntil} from "rxjs";
 import {
   ApiFailure,
   Auth,
   Bucket,
-  Chart,
+  ChartSeries, ChartDiscriminator,
   ChartPoint,
-  ChartsQuery,
+  ChartSeriesQuery,
   CreatePostData,
   Dimensions,
   DocumentData,
@@ -22,7 +22,7 @@ import {
   SearchPost,
   SearchPostItem,
   Tag,
-  Upload
+  Upload, Chart, ChartQuery
 } from "@core/models";
 import {environment} from "@src/environments/environment";
 
@@ -158,7 +158,14 @@ export class ApiService {
     )
   }
 
-  public loadChart(auth: Auth, query: ChartsQuery): Observable<Chart> {
+  public loadChart(auth: Auth, query: ChartQuery): Observable<Chart> {
+    return forkJoin(query.series.map(x => this.loadChartSeries(auth, x, query.discriminator)))
+      .pipe(
+        map(x => new Chart(query.name, x, query.discriminator))
+      )
+  }
+
+  private loadChartSeries(auth: Auth, query: ChartSeriesQuery, discriminatorQuery: ChartDiscriminator): Observable<ChartSeries> {
     let select;
 
     switch (query.select) {
@@ -168,13 +175,32 @@ export class ApiService {
     }
 
     let discriminator;
+    let secs;
 
-    switch (query.discriminator) {
+    switch (discriminatorQuery.duration) {
+      case 'day':
+        secs = 60 * 60 * 24;
+        break;
+
+      case 'hour':
+        secs = 60 * 60;
+        break;
+
+      case 'week':
+        secs = 60 * 60 * 24 * 7;
+        break;
+
+      case 'year':
+        secs = 60 * 60 * 24 * 365;
+        break;
+    }
+
+    switch (discriminatorQuery.discriminator) {
       case "none":
         discriminator = 'None';
         break;
       case 'duration':
-        discriminator = { Duration: { nanos: 0, secs: query.duration }  }
+        discriminator = { Duration: { nanos: 0, secs }  }
         break;
     }
 
@@ -183,7 +209,7 @@ export class ApiService {
       discriminator,
       filter: {}
     }).pipe(
-      map(json => new Chart(query.name, json.points.map((x: any) => this.mapChartPoint(x))))
+      map(json => new ChartSeries(query.name, json.points.map((x: any) => this.mapChartPoint(x))))
     )
   }
 

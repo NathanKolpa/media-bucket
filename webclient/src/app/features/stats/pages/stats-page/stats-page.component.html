@@ -1,11 +1,11 @@
 <main class="d-flex flex-column h-100 mat-app-background" *ngIf="bucket$ | async as bucket">
-  <app-chart-queries [title]="chartTitle$ | async" (titleChange)="setChartTitle($event)"
-                     [queries]="(queries$ | async) || []"
-                     (load)="loadChart(bucket)"
-                     (addQuery)="openCreateQueryModal()"></app-chart-queries>
+  <app-chart-queries
+    [query]="query$ | async"
+    (load)="loadChart(bucket)"
+    (addQuery)="openCreateQueryModal()"></app-chart-queries>
   <div class="chart-container m-4 d-block">
     <app-loadable-content [loadingState]="loadingState$ | async" (loadAgain)="loadChart(bucket)">
-      <app-chart *ngIf="(hasChart$ | async) || false" [charts]="(charts$ | async) || []"></app-chart>
+      <app-chart *ngIf="(hasChart$ | async) || false" [chart]="chart$ | async"></app-chart>
     </app-loadable-content>
   </div>
 

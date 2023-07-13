@@ -1,6 +1,6 @@
 import {Component, Input} from '@angular/core';
-import {Chart} from "@core/models";
-import {ChartConfiguration, ChartDataset, ChartOptions, ChartType, ScatterDataPoint} from "chart.js";
+import {Chart, ChartSeries} from "@core/models";
+import {ChartConfiguration, ChartDataset, ChartOptions} from "chart.js";
 
 @Component({
   selector: 'app-chart',
@@ -11,34 +11,35 @@ export class ChartComponent {
 
   public options: ChartOptions<'line'> = {
     responsive: true,
-    scales: {
-      xAxes: {
-        type: 'time',
-        time: {
-          unit: 'day'
-        }
-      }
-    }
   }
 
   public chartData: ChartConfiguration<'line'>['data'] | null = null;
 
   @Input()
-  public set charts(charts: Chart[]) {
-    if (charts.length <= 0) {
+  public set chart(chart: Chart | null) {
+    if (chart === null || chart.series.length <= 0) {
       this.chartData = null;
       return;
     }
 
-    console.log(charts.map(x => this.chartToDataset(x)))
+    if (chart.discriminator.discriminator == 'duration' && chart.discriminator.duration !== null) {
+      this.options.scales = {
+        xAxes: {
+          type: 'time',
+          time: {
+            unit: chart.discriminator.duration
+          }
+        }
+      };
+    }
 
     this.chartData = {
-      datasets: charts.map(x => this.chartToDataset(x))
+      datasets: chart.series.map(x => this.seriesToDataset(x))
     }
 
   }
 
-  private chartToDataset(chart: Chart):  ChartDataset<"line", any[]> {
+  private seriesToDataset(chart: ChartSeries): ChartDataset<"line", any[]> {
     return {
       label: chart.name,
       data: chart.points.map((point, i) => {
@@ -46,7 +47,7 @@ export class ChartComponent {
           case 'none':
             return {y: point.y, x: i}
           case "time":
-            return {y: point.y, x: point.x }
+            return {y: point.y, x: point.x}
         }
       })
     }

@@ -14,20 +14,15 @@ import {Auth, SelectedBucket} from "@core/models";
   styleUrls: ['./stats-page.component.scss']
 })
 export class StatsPageComponent implements OnDestroy {
-  chartTitle$ = this.store.select(fromStats.selectTitle);
-  queries$ = this.store.select(fromStats.selectQueries);
+  query$ = this.store.select(fromStats.selectQuery);
   loadingState$ = this.store.select(fromStats.selectLoadingState);
   hasChart$ = this.store.select(fromStats.selectHasChart);
-  charts$ = this.store.select(fromStats.selectCharts);
+  chart$ = this.store.select(fromStats.selectChart);
 
   public bucket$ = this.store.select(fromBucket.selectBucket);
 
   constructor(private store: Store, private dialog: MatDialog, private title: AppTitleService) {
     this.title.push('Statistics');
-  }
-
-  setChartTitle(title: string | null) {
-    this.store.dispatch(statsActions.updateTitle({ title }))
   }
 
   openCreateQueryModal() {
