@@ -20,6 +20,6 @@ export class DurationPipe implements PipeTransform {
   }
 
   private formatNum(value: number): string {
-    return value.toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping:false})
+    return value.toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping: false})
   }
 }

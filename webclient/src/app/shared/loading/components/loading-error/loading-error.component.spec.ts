@@ -1,6 +1,6 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {ComponentFixture, TestBed} from '@angular/core/testing';
 
-import { LoadingErrorComponent } from './loading-error.component';
+import {LoadingErrorComponent} from './loading-error.component';
 
 describe('LoadingErrorComponent', () => {
   let component: LoadingErrorComponent;
@@ -8,9 +8,9 @@ describe('LoadingErrorComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ LoadingErrorComponent ]
+      declarations: [LoadingErrorComponent]
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(LoadingErrorComponent);
     component = fixture.componentInstance;

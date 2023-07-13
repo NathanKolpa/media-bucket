@@ -1,7 +1,7 @@
 import {Component, EventEmitter, Input, OnDestroy, Output} from '@angular/core';
 import {PageParams, SelectedBucket, Tag} from "@core/models";
 import {FormControl} from "@angular/forms";
-import {auditTime, combineLatest, first, map, startWith, Subject, Subscription, switchMap} from "rxjs";
+import {auditTime, combineLatest, map, startWith, Subject, Subscription, switchMap} from "rxjs";
 import {ApiService} from "@core/services";
 import {MatSnackBar} from "@angular/material/snack-bar";
 
@@ -16,27 +16,13 @@ import {MatSnackBar} from "@angular/material/snack-bar";
   styleUrls: ['./tag-edit.component.scss']
 })
 export class TagEditComponent implements OnDestroy {
-  private bucket$: Subject<SelectedBucket> = new Subject<SelectedBucket>();
-  private _bucket: SelectedBucket | null = null;
-
   public searchTags: Tag[] = [];
-
   @Input()
   public tags: Tag[] = [];
-
-  @Input()
-  public set bucket(value: SelectedBucket | null) {
-    if (value) {
-      this.bucket$.next(value);
-      this._bucket = value;
-    }
-  }
-
   @Output()
   public tagsChange = new EventEmitter<Tag[]>();
-
   public searchField = new FormControl();
-
+  private bucket$: Subject<SelectedBucket> = new Subject<SelectedBucket>();
   private tagsSubscription: Subscription;
 
   constructor(private api: ApiService, private snackBar: MatSnackBar) {
@@ -50,6 +36,16 @@ export class TagEditComponent implements OnDestroy {
         map(x => x.tags)
       )),
     ).subscribe(tags => this.searchTags = tags)
+  }
+
+  private _bucket: SelectedBucket | null = null;
+
+  @Input()
+  public set bucket(value: SelectedBucket | null) {
+    if (value) {
+      this.bucket$.next(value);
+      this._bucket = value;
+    }
   }
 
   ngOnDestroy(): void {

@@ -1,4 +1,4 @@
-import { AgoPipe } from './ago.pipe';
+import {AgoPipe} from './ago.pipe';
 
 describe('AgoPipe', () => {
   it('create an instance', () => {

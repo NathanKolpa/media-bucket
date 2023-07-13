@@ -1,4 +1,4 @@
-<div class="mt-4 ms-4 me-4" *ngIf="query as query">
+<div *ngIf="query as query" class="mt-4 ms-4 me-4">
 
   <div class="row">
     <mat-form-field appearance="fill" class="col">
@@ -24,6 +24,6 @@
     </mat-chip-listbox>
   </div>
 
-  <button mat-raised-button color="primary" class="mt-3" (click)="load.emit()">Go</button>
+  <button (click)="load.emit()" class="mt-3" color="primary" mat-raised-button>Go</button>
 
 </div>

@@ -1,6 +1,6 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {ComponentFixture, TestBed} from '@angular/core/testing';
 
-import { UploadListComponent } from './upload-list.component';
+import {UploadListComponent} from './upload-list.component';
 
 describe('UploadListComponent', () => {
   let component: UploadListComponent;
@@ -8,9 +8,9 @@ describe('UploadListComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ UploadListComponent ]
+      declarations: [UploadListComponent]
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(UploadListComponent);
     component = fixture.componentInstance;

@@ -2,28 +2,28 @@
   <h2 mat-dialog-title>Create a new post</h2>
   <mat-dialog-content class="p-3">
     <app-create-post-form
-                          [bucket]="bucket$ | async"
-                          [uploads]="job.uploads"
-                          [(tags)]="tags"
-                          [(description)]="description"
-                          [(title)]="title"
-                          [(source)]="source"
-                          [(flatten)]="flatten"
-                          (deleteIndexes)="deleteUploads($event)"
-                          (swapUploads)="swapUploads($event)"
-                          (filesAdded)="addFiles($event)">
+      (deleteIndexes)="deleteUploads($event)"
+      (filesAdded)="addFiles($event)"
+      (swapUploads)="swapUploads($event)"
+      [(description)]="description"
+      [(flatten)]="flatten"
+      [(source)]="source"
+      [(tags)]="tags"
+      [(title)]="title"
+      [bucket]="bucket$ | async"
+      [uploads]="job.uploads">
     </app-create-post-form>
   </mat-dialog-content>
 
   <mat-dialog-actions class="w-100">
     <div class="w-100 d-flex justify-content-between">
       <div>
-        <mat-checkbox [checked]="createAnother" (change)="createAnother = $event.checked">Create another</mat-checkbox>
+        <mat-checkbox (change)="createAnother = $event.checked" [checked]="createAnother">Create another</mat-checkbox>
       </div>
 
       <div *ngIf="(bucket$ | async) as bucket">
-        <button mat-raised-button color="primary" [disabled]="job.isEmpty()" (click)="submit(bucket)">Start</button>
-        <button mat-button [mat-dialog-close]="true">Cancel</button>
+        <button (click)="submit(bucket)" [disabled]="job.isEmpty()" color="primary" mat-raised-button>Start</button>
+        <button [mat-dialog-close]="true" mat-button>Cancel</button>
       </div>
     </div>
   </mat-dialog-actions>

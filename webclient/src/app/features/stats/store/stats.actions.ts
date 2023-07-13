@@ -1,5 +1,5 @@
 import {createAction, props} from "@ngrx/store";
-import {Auth, Chart, ChartSeries, ChartSeriesQuery, Failure, SelectedBucket} from "@core/models";
+import {Chart, ChartSeriesQuery, Failure, SelectedBucket} from "@core/models";
 
 export const reset = createAction('[Stats] reset');
 

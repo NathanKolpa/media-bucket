@@ -17,22 +17,19 @@ import {Listing} from "@core/models/listing";
 })
 export class SearchPageComponent implements OnDestroy, ConfirmComponent {
 
-  private hasUnsavedInput = false;
-  private unsavedInputSub: Subscription;
-
   public bucket$ = this.store.select(fromBucket.selectBucket);
-
   posts$ = this.store.select(fromSearch.selectPosts);
   postCount$ = this.store.select(fromSearch.selectPostCount);
   postsLoadingState$ = this.store.select(fromSearch.selectNextPageLoadingState);
   showSidebar$ = this.store.select(fromSearch.selectShowSidebar);
   activeJobs$ = this.store.select(fromSearch.selectActiveUploadJobs);
-
   sidebarPost$ = this.store.select(fromSearch.selectSidebarPost);
   sidebarPostLoadingState$ = this.store.select(fromSearch.selectSidebarPostLoadingState);
-
   searchTags$ = this.store.select(fromSearch.selectSearchTags);
   searchQuery$ = this.store.select(fromSearch.selectSearchQuery);
+  private hasUnsavedInput = false;
+  private unsavedInputSub: Subscription;
+  private leaveMessage = 'You have unsaved progress on this page, are you sure you want to leave?';
 
   constructor(private store: Store, private dialog: MatDialog) {
 
@@ -82,8 +79,6 @@ export class SearchPageComponent implements OnDestroy, ConfirmComponent {
     this.store.dispatch(searchActions.requestPostDelete({post, bucket}));
   }
 
-  private leaveMessage = 'You have unsaved progress on this page, are you sure you want to leave?';
-
   showNavigationWarning(): boolean | string {
     return this.hasUnsavedInput ? this.leaveMessage : false;
   }
@@ -96,15 +91,15 @@ export class SearchPageComponent implements OnDestroy, ConfirmComponent {
   }
 
   searchTextChange(bucket: SelectedBucket, query: string | null) {
-    this.store.dispatch(searchActions.searchTextChange({ bucket, query }));
+    this.store.dispatch(searchActions.searchTextChange({bucket, query}));
   }
 
   queryChange(bucket: SelectedBucket, query: PostSearchQuery) {
-    this.store.dispatch(searchActions.searchQueryChange({ bucket, query }));
+    this.store.dispatch(searchActions.searchQueryChange({bucket, query}));
   }
 
   addTagToSearchQuery(bucket: SelectedBucket, tag: Tag) {
-    this.store.dispatch(searchActions.addTagToSearchQuery({ bucket, tag }));
+    this.store.dispatch(searchActions.addTagToSearchQuery({bucket, tag}));
   }
 
   editPost(bucket: SelectedBucket, req: EditPostRequest) {

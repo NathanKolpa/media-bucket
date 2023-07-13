@@ -164,7 +164,7 @@ export class SearchEffects {
         duration: 3000
       });
     })
-  ), { dispatch: false });
+  ), {dispatch: false});
 
   deletePost$ = createEffect(() => this.actions$.pipe(
     ofType(searchActions.deletePost),

@@ -1,10 +1,10 @@
-<main class="d-flex flex-column h-100 mat-app-background" *ngIf="bucket$ | async as bucket">
+<main *ngIf="bucket$ | async as bucket" class="d-flex flex-column h-100 mat-app-background">
   <app-chart-queries
-    [query]="query$ | async"
+    (addQuery)="openCreateQueryModal()"
     (load)="loadChart(bucket)"
-    (addQuery)="openCreateQueryModal()"></app-chart-queries>
+    [query]="query$ | async"></app-chart-queries>
   <div class="chart-container m-4 d-block">
-    <app-loadable-content [loadingState]="loadingState$ | async" (loadAgain)="loadChart(bucket)">
+    <app-loadable-content (loadAgain)="loadChart(bucket)" [loadingState]="loadingState$ | async">
       <app-chart *ngIf="(hasChart$ | async) || false" [chart]="chart$ | async"></app-chart>
     </app-loadable-content>
   </div>

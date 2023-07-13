@@ -1,5 +1,5 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
-import {ChartQuery, ChartSeriesQuery} from "@core/models";
+import {ChartQuery} from "@core/models";
 
 @Component({
   selector: 'app-chart-queries',

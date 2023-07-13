@@ -5,7 +5,7 @@
 
       <mat-chip-grid #chips>
 
-        <mat-chip-row *ngFor="let item of _query?.items; let i = index" (removed)="removeIndex(i)">
+        <mat-chip-row (removed)="removeIndex(i)" *ngFor="let item of _query?.items; let i = index">
 
           <ng-template [ngIf]="item.type == 'tag'">
             {{ item.tag.name }}
@@ -21,24 +21,24 @@
         </mat-chip-row>
 
         <input
-          matInput
           #input
-          autocomplete="off"
-          [matChipInputFor]="chips"
-          placeholder="Add search criteria"
-          [matAutocomplete]="auto" (focus)="searchTextChange.emit(input.value == '' ? null : input.value)"
+          (focus)="searchTextChange.emit(input.value == '' ? null : input.value)"
+          (input)="searchTextChange.emit(input.value == '' ? null : input.value)"
           (keydown.enter)="auto.closed && submit()"
-          (input)="searchTextChange.emit(input.value == '' ? null : input.value)">
+          [matAutocomplete]="auto"
+          [matChipInputFor]="chips" autocomplete="off"
+          matInput
+          placeholder="Add search criteria">
 
       </mat-chip-grid>
 
-      <mat-autocomplete autoActiveFirstOption #auto>
-        <mat-option *ngIf="input.value != ''" (onSelectionChange)="addText(input.value)">
+      <mat-autocomplete #auto autoActiveFirstOption>
+        <mat-option (onSelectionChange)="addText(input.value)" *ngIf="input.value != ''">
           Text: "{{ input.value }}"
         </mat-option>
 
-        <mat-option *ngFor="let tag of tags"
-                    (onSelectionChange)="addTag(tag)">
+        <mat-option (onSelectionChange)="addTag(tag)"
+                    *ngFor="let tag of tags">
           Tag: {{ tag.name }}
         </mat-option>
       </mat-autocomplete>
@@ -46,7 +46,7 @@
     </mat-form-field>
     <mat-form-field appearance="fill" class="col-md-4 col-xl-2">
       <mat-label>Sort by</mat-label>
-      <mat-select [value]="_query?.order" (valueChange)="setOrder($event)">
+      <mat-select (valueChange)="setOrder($event)" [value]="_query?.order">
         <mat-option [value]="'newest'">Newest</mat-option>
         <mat-option [value]="'oldest'">Oldest</mat-option>
         <mat-option [value]="'relevant'">Relevant</mat-option>
@@ -55,7 +55,7 @@
     </mat-form-field>
   </div>
 
-  <button mat-flat-button color="primary" (click)="submit()">
+  <button (click)="submit()" color="primary" mat-flat-button>
     Search
   </button>
 </div>

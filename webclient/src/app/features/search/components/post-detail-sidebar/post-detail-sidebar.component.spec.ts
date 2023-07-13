@@ -1,6 +1,6 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {ComponentFixture, TestBed} from '@angular/core/testing';
 
-import { PostDetailSidebarComponent } from './post-detail-sidebar.component';
+import {PostDetailSidebarComponent} from './post-detail-sidebar.component';
 
 describe('PostInfoContainerComponent', () => {
   let component: PostDetailSidebarComponent;
@@ -8,9 +8,9 @@ describe('PostInfoContainerComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ PostDetailSidebarComponent ]
+      declarations: [PostDetailSidebarComponent]
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(PostDetailSidebarComponent);
     component = fixture.componentInstance;

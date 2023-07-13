@@ -1,6 +1,6 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {ComponentFixture, TestBed} from '@angular/core/testing';
 
-import { QueryAddModalComponent } from './query-add-modal.component';
+import {QueryAddModalComponent} from './query-add-modal.component';
 
 describe('QueryAddModalComponent', () => {
   let component: QueryAddModalComponent;
@@ -8,9 +8,9 @@ describe('QueryAddModalComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ QueryAddModalComponent ]
+      declarations: [QueryAddModalComponent]
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(QueryAddModalComponent);
     component = fixture.componentInstance;

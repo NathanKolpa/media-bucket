@@ -36,10 +36,6 @@ export class ChartSeriesQuery {
 }
 
 export class ChartQuery {
-  public static initial(): ChartQuery {
-    return new ChartQuery(null, [], new ChartDiscriminator('duration', 'day'))
-  }
-
   public constructor(private _name: string | null, private _series: ChartSeriesQuery[], private _discriminator: ChartDiscriminator) {
   }
 
@@ -53,6 +49,10 @@ export class ChartQuery {
 
   get discriminator(): ChartDiscriminator {
     return this._discriminator;
+  }
+
+  public static initial(): ChartQuery {
+    return new ChartQuery(null, [], new ChartDiscriminator('duration', 'day'))
   }
 
   public addSeries(series: ChartSeriesQuery): ChartQuery {

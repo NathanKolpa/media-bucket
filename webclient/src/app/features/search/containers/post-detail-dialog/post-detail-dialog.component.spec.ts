@@ -1,6 +1,6 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {ComponentFixture, TestBed} from '@angular/core/testing';
 
-import { PostDetailDialogComponent } from './post-detail-dialog.component';
+import {PostDetailDialogComponent} from './post-detail-dialog.component';
 
 describe('PostDetailDialogComponent', () => {
   let component: PostDetailDialogComponent;
@@ -8,9 +8,9 @@ describe('PostDetailDialogComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ PostDetailDialogComponent ]
+      declarations: [PostDetailDialogComponent]
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(PostDetailDialogComponent);
     component = fixture.componentInstance;

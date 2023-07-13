@@ -1,6 +1,6 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {ComponentFixture, TestBed} from '@angular/core/testing';
 
-import { LoadingLayoutComponent } from './loading-layout.component';
+import {LoadingLayoutComponent} from './loading-layout.component';
 
 describe('CenteredLayoutComponent', () => {
   let component: LoadingLayoutComponent;
@@ -8,9 +8,9 @@ describe('CenteredLayoutComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ LoadingLayoutComponent ]
+      declarations: [LoadingLayoutComponent]
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(LoadingLayoutComponent);
     component = fixture.componentInstance;

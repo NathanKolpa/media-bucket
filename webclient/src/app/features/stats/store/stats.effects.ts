@@ -2,7 +2,7 @@ import {Injectable} from "@angular/core";
 import {Actions, createEffect, ofType} from "@ngrx/effects";
 import * as statsActions from "./stats.actions";
 import * as fromStats from "./stats.selectors";
-import {catchError, forkJoin, map, switchMap, withLatestFrom} from "rxjs";
+import {catchError, map, switchMap, withLatestFrom} from "rxjs";
 import {Store} from "@ngrx/store";
 import {ApiService} from "@core/services";
 

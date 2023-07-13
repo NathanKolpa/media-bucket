@@ -1,6 +1,6 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {ComponentFixture, TestBed} from '@angular/core/testing';
 
-import { BucketPageComponent } from './bucket-page.component';
+import {BucketPageComponent} from './bucket-page.component';
 
 describe('BucketLayoutComponent', () => {
   let component: BucketPageComponent;
@@ -8,9 +8,9 @@ describe('BucketLayoutComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ BucketPageComponent ]
+      declarations: [BucketPageComponent]
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(BucketPageComponent);
     component = fixture.componentInstance;

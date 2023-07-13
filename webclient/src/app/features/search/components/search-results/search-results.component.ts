@@ -1,13 +1,4 @@
-import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  Component,
-  EventEmitter,
-  Input,
-  OnDestroy,
-  Output,
-  ViewChild
-} from '@angular/core';
+import {ChangeDetectionStrategy, Component, EventEmitter, Input, OnDestroy, Output, ViewChild} from '@angular/core';
 import {LoadingState} from "@core/models";
 import {BreakpointObserver, Breakpoints} from "@angular/cdk/layout";
 import {Subscription} from "rxjs";
@@ -39,61 +30,12 @@ export class SearchResultsComponent implements OnDestroy {
 
   @Input()
   public startingIndex: number | null = null;
-
-  private _items: Listing[] = [];
-  private _rowsSize = 3;
-  private requestedData: boolean = false;
-
   public rows: number[][] = [];
-
-  get rowsSize(): number {
-    return this._rowsSize;
-  }
-
-  set rowsSize(value: number) {
-    this._rowsSize = value;
-    this.generateRows();
-  }
-
-  public get containerClass(): string {
-    return `row-cols-${this._rowsSize}`;
-  }
-
-  @Input()
-  set items(value: Listing[]) {
-    this._items = value;
-    this.requestedData = false;
-    this.generateRows();
-
-    if (this.viewport) {
-      this.viewport.checkViewportSize();
-      this.moveToStartingPosition();
-    }
-  }
-
-  private moveToStartingPosition() {
-    if (!this.viewport || this.startingIndex == null) {
-      return;
-    }
-
-    const startingRow = Math.ceil(this.startingIndex / this._rowsSize) - 2;
-
-    if (this.rows.length >= startingRow && startingRow > 0) {
-      this.startingIndex = null;
-      setTimeout(() => this.viewport.scrollToIndex(startingRow), 0);
-    }
-  }
-
-  get items(): Listing[] {
-    return this._items;
-  }
-
   @Input()
   public nextLoadingState: LoadingState | null = null;
-
   @Input()
   public resultCount: number | null = null;
-
+  private requestedData: boolean = false;
   private breakpointSubscription: Subscription;
 
   constructor(private breakpointObserver: BreakpointObserver) {
@@ -118,24 +60,41 @@ export class SearchResultsComponent implements OnDestroy {
       });
   }
 
-  ngOnDestroy(): void {
-    this.breakpointSubscription.unsubscribe();
+  private _items: Listing[] = [];
+
+  get items(): Listing[] {
+    return this._items;
   }
 
-  private generateRows() {
-    let result: number[][] = [];
+  @Input()
+  set items(value: Listing[]) {
+    this._items = value;
+    this.requestedData = false;
+    this.generateRows();
 
-    for (let i = 0; i < this._items.length; i += this.rowsSize) {
-      let row = [];
-
-      for (let y = 0; y < this.rowsSize; y++) {
-        row.push(i + y);
-      }
-
-      result.push(row);
+    if (this.viewport) {
+      this.viewport.checkViewportSize();
+      this.moveToStartingPosition();
     }
+  }
 
-    this.rows = result;
+  private _rowsSize = 3;
+
+  get rowsSize(): number {
+    return this._rowsSize;
+  }
+
+  set rowsSize(value: number) {
+    this._rowsSize = value;
+    this.generateRows();
+  }
+
+  public get containerClass(): string {
+    return `row-cols-${this._rowsSize}`;
+  }
+
+  ngOnDestroy(): void {
+    this.breakpointSubscription.unsubscribe();
   }
 
   trackById(i: number) {
@@ -153,5 +112,34 @@ export class SearchResultsComponent implements OnDestroy {
       this.requestNextData.emit();
       this.requestedData = true;
     }
+  }
+
+  private moveToStartingPosition() {
+    if (!this.viewport || this.startingIndex == null) {
+      return;
+    }
+
+    const startingRow = Math.ceil(this.startingIndex / this._rowsSize) - 2;
+
+    if (this.rows.length >= startingRow && startingRow > 0) {
+      this.startingIndex = null;
+      setTimeout(() => this.viewport.scrollToIndex(startingRow), 0);
+    }
+  }
+
+  private generateRows() {
+    let result: number[][] = [];
+
+    for (let i = 0; i < this._items.length; i += this.rowsSize) {
+      let row = [];
+
+      for (let y = 0; y < this.rowsSize; y++) {
+        row.push(i + y);
+      }
+
+      result.push(row);
+    }
+
+    this.rows = result;
   }
 }

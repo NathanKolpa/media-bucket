@@ -1,6 +1,6 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {ComponentFixture, TestBed} from '@angular/core/testing';
 
-import { MediaDisplayComponent } from './media-display.component';
+import {MediaDisplayComponent} from './media-display.component';
 
 describe('MediaDisplayComponent', () => {
   let component: MediaDisplayComponent;
@@ -8,9 +8,9 @@ describe('MediaDisplayComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ MediaDisplayComponent ]
+      declarations: [MediaDisplayComponent]
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(MediaDisplayComponent);
     component = fixture.componentInstance;

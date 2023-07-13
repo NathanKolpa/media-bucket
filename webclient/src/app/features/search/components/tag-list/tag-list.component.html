@@ -1,10 +1,10 @@
 <mat-chip-listbox *ngFor="let group of tagGroups">
 
 
-  <app-tag *ngFor="let tag of group.tags"
-           (clicked)="clickTag.emit(tag)"
-           [tag]="tag" [showDelete]="showDelete"
-           (removeTag)="removeTag.emit(tag)">
+  <app-tag (clicked)="clickTag.emit(tag)"
+           (removeTag)="removeTag.emit(tag)"
+           *ngFor="let tag of group.tags" [showDelete]="showDelete"
+           [tag]="tag">
   </app-tag>
 
 

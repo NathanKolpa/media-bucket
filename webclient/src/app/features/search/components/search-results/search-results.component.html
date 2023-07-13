@@ -1,23 +1,23 @@
-<cdk-virtual-scroll-viewport #viewport [itemSize]="350" class="h-100 d-block"
-                             (scrolledIndexChange)="scrolledIndexChange()">
+<cdk-virtual-scroll-viewport #viewport (scrolledIndexChange)="scrolledIndexChange()" [itemSize]="350"
+                             class="h-100 d-block">
 
   <ng-content>
   </ng-content>
 
-  <p class="ms-4 mt-2 mb-0" *ngIf="resultCount as resultCount">
+  <p *ngIf="resultCount as resultCount" class="ms-4 mt-2 mb-0">
     <i>Results: {{ resultCount }}</i>
   </p>
 
-  <div class="row" [ngClass]="containerClass">
+  <div [ngClass]="containerClass" class="row">
     <ng-container *cdkVirtualFor="let row of rows; trackBy: trackById">
       <app-listing
-        class="d-block"
-        *ngFor="let index of row"
-        [height]="350"
-        (showInfo)="showInfo.emit(index)"
         (showDetail)="showDetail.emit(index)"
+        (showInfo)="showInfo.emit(index)"
+        *ngFor="let index of row"
         [disableFooter]="disableFooter"
-        [item]="items[index]">
+        [height]="350"
+        [item]="items[index]"
+        class="d-block">
       </app-listing>
     </ng-container>
   </div>
@@ -28,8 +28,8 @@
 
 </cdk-virtual-scroll-viewport>
 
-<div class="up-container" [hidden]="((viewport.scrolledIndexChange | async) || 0) <= 0">
-  <button mat-fab color="accent" class="up" (click)="viewport.scrollToIndex(0, 'smooth')">
+<div [hidden]="((viewport.scrolledIndexChange | async) || 0) <= 0" class="up-container">
+  <button (click)="viewport.scrollToIndex(0, 'smooth')" class="up" color="accent" mat-fab>
     <mat-icon>keyboard_arrow_up</mat-icon>
   </button>
 </div>

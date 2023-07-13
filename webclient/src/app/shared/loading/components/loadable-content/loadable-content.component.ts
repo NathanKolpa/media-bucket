@@ -7,12 +7,14 @@ import {LoadingState} from "@core/models";
   styleUrls: ['./loadable-content.component.scss']
 })
 export class LoadableContentComponent {
-  private _loadingState: LoadingState | null = null;
   public showLoading = false;
-  private loadingTimeout: any = null;
-
   @Input()
   public showLoadingTimeout = 100;
+  @Output()
+  public loadAgain = new EventEmitter();
+  private loadingTimeout: any = null;
+
+  private _loadingState: LoadingState | null = null;
 
   get loadingState(): LoadingState | null {
     return this._loadingState;
@@ -28,12 +30,8 @@ export class LoadableContentComponent {
 
     if (value?.isLoading) {
       this.loadingTimeout = setTimeout(() => this.showLoading = true, this.showLoadingTimeout);
-    }
-    else {
+    } else {
       this.showLoading = false;
     }
   }
-
-  @Output()
-  public loadAgain = new EventEmitter();
 }

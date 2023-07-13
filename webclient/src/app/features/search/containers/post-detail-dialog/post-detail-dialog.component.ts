@@ -4,7 +4,7 @@ import {delay, first, map, Subscription} from "rxjs";
 import {Store} from "@ngrx/store";
 import {fromSearch, searchActions} from '@features/search/store';
 import {fromBucket} from '@features/bucket/store';
-import {Post, SearchPostItem, SelectedBucket} from "@core/models";
+import {SearchPostItem, SelectedBucket} from "@core/models";
 import {AppTitleService} from "@core/services";
 import {Listing} from "@core/models/listing";
 
@@ -27,12 +27,11 @@ export class PostDetailDialogComponent implements OnDestroy {
   itemListLoadingState$ = this.store.select(fromSearch.selectItemListLoadingState);
 
   startingIndex$ = this.item$.pipe(map(x => x?.position ?? null));
-
+  public originalSize = true;
   private currentBucket: SelectedBucket | null = null;
   private currentPostId: number | null = null;
   private currentPosition: number = 0;
   private titleIndex: number | null = null;
-
   private postSubscription: Subscription;
   private bucketSubscription: Subscription;
   private itemSubscription: Subscription;
@@ -48,8 +47,7 @@ export class PostDetailDialogComponent implements OnDestroy {
       if (post !== null && post.title !== null) {
         if (this.titleIndex !== null) {
           this.title.set(this.titleIndex, post.title);
-        }
-        else {
+        } else {
           this.titleIndex = this.title.push(post.title);
         }
       }
@@ -122,8 +120,6 @@ export class PostDetailDialogComponent implements OnDestroy {
     this.store.dispatch(searchActions.togglePostDetailViewMode());
     this.loadItem(bucket, postId, position);
   }
-
-  public originalSize = true;
 
   castItemsToListing(items: SearchPostItem[]): Listing[] {
     return items as Listing[];

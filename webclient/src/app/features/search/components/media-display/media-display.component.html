@@ -1,12 +1,12 @@
 <ng-container *ngIf="media as media" [ngSwitch]="media.mediaType">
 
-  <app-image-viewer *ngSwitchCase="'image'" [media]="media" [className]="className" [originalSize]="originalSize"
-                    (originalSizeChange)="originalSizeChange.emit($event)"></app-image-viewer>
+  <app-image-viewer (originalSizeChange)="originalSizeChange.emit($event)" *ngSwitchCase="'image'" [className]="className" [media]="media"
+                    [originalSize]="originalSize"></app-image-viewer>
 
   <app-video-player
+    (nextVideo)="nextItem.emit()"
     *ngSwitchCase="'video'"
     [className]="className"
-    (nextVideo)="nextItem.emit()"
     [media]="media">
   </app-video-player>
 

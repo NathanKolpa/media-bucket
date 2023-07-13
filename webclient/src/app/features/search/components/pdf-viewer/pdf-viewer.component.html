@@ -2,11 +2,11 @@
   <ng-container *ngIf="media.documentData as documentData">
     <ng2-pdfjs-viewer
       #pdfViewer
-      cursor="select"
-      [pdfSrc]="media.url"
       [className]="className"
-      style="height: 100vh"
-      [ngStyle]="{ 'width': documentData.pageSize.width * 1.8 + 'px' }">
+      [ngStyle]="{ 'width': documentData.pageSize.width * 1.8 + 'px' }"
+      [pdfSrc]="media.url"
+      cursor="select"
+      style="height: 100vh">
     </ng2-pdfjs-viewer>
   </ng-container>
 </ng-container>

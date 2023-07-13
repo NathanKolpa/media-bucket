@@ -1,6 +1,6 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {ComponentFixture, TestBed} from '@angular/core/testing';
 
-import { PostInfoFormFieldsComponent } from './post-info-form-fields.component';
+import {PostInfoFormFieldsComponent} from './post-info-form-fields.component';
 
 describe('PostInfoFormFieldsComponent', () => {
   let component: PostInfoFormFieldsComponent;
@@ -8,9 +8,9 @@ describe('PostInfoFormFieldsComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ PostInfoFormFieldsComponent ]
+      declarations: [PostInfoFormFieldsComponent]
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(PostInfoFormFieldsComponent);
     component = fixture.componentInstance;

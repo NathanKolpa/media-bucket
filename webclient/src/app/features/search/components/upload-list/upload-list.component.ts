@@ -1,13 +1,4 @@
-import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  Component,
-  EventEmitter,
-  Input,
-  Output,
-  ViewChild,
-  ViewEncapsulation
-} from '@angular/core';
+import {AfterViewInit, ChangeDetectionStrategy, Component, EventEmitter, Input, Output, ViewChild} from '@angular/core';
 import {Upload} from "@core/models";
 import {CdkDragDrop} from "@angular/cdk/drag-drop";
 import {CdkVirtualForOf} from "@angular/cdk/scrolling";
@@ -36,18 +27,16 @@ export class UploadListComponent implements AfterViewInit {
   public viewport!: CdkVirtualForOf<UploadListItem[]>;
 
   public sortedUploads: UploadListItem[] = [];
-
+  @Output()
+  public swapUploads = new EventEmitter<UploadPositionSwapEvent>();
+  @Output()
+  public deleteIndexes = new EventEmitter<number[]>();
   private range: ListRange | null = null;
   private viewportSub: Subscription | null = null;
+  private dragItem: number | null = null;
 
   constructor() {
 
-  }
-
-  ngAfterViewInit(): void {
-    this.viewportSub = this.viewport.viewChange.subscribe(x => {
-      this.range = x;
-    });
   }
 
   @Input()
@@ -59,13 +48,11 @@ export class UploadListComponent implements AfterViewInit {
     this.sortedUploads = copy;
   }
 
-  @Output()
-  public swapUploads = new EventEmitter<UploadPositionSwapEvent>();
-
-  @Output()
-  public deleteIndexes = new EventEmitter<number[]>();
-
-  private dragItem: number | null = null;
+  ngAfterViewInit(): void {
+    this.viewportSub = this.viewport.viewChange.subscribe(x => {
+      this.range = x;
+    });
+  }
 
   public dragStart(index: number) {
     this.dragItem = index;
@@ -78,7 +65,7 @@ export class UploadListComponent implements AfterViewInit {
 
     this.swapUploads.emit({
       aIndex: this.sortedUploads[this.dragItem].index,
-      bIndex: this.sortedUploads[event.currentIndex + this.range.start ].index
+      bIndex: this.sortedUploads[event.currentIndex + this.range.start].index
     });
   }
 

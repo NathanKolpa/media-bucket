@@ -5,8 +5,11 @@ import {
   ApiFailure,
   Auth,
   Bucket,
-  ChartSeries, ChartDiscriminator,
+  Chart,
+  ChartDiscriminator,
   ChartPoint,
+  ChartQuery,
+  ChartSeries,
   ChartSeriesQuery,
   CreatePostData,
   Dimensions,
@@ -22,7 +25,7 @@ import {
   SearchPost,
   SearchPostItem,
   Tag,
-  Upload, Chart, ChartQuery
+  Upload
 } from "@core/models";
 import {environment} from "@src/environments/environment";
 
@@ -48,6 +51,10 @@ interface QueuedFile {
   providedIn: 'root'
 })
 export class ApiService {
+
+  private queue: QueuedFile[] = [];
+  private isRunning = false;
+  private workerPromise: null | Promise<void> = null;
 
   constructor(private client: HttpClient) {
   }
@@ -111,7 +118,6 @@ export class ApiService {
     );
   }
 
-
   public removeTag(auth: Auth, id: number): Observable<any> {
     return this.authenticatedDelete(auth, `/tags/${id}`);
   }
@@ -165,54 +171,6 @@ export class ApiService {
       )
   }
 
-  private loadChartSeries(auth: Auth, query: ChartSeriesQuery, discriminatorQuery: ChartDiscriminator): Observable<ChartSeries> {
-    let select;
-
-    switch (query.select) {
-      case "count":
-        select = 'Count'
-        break;
-    }
-
-    let discriminator;
-    let secs;
-
-    switch (discriminatorQuery.duration) {
-      case 'day':
-        secs = 60 * 60 * 24;
-        break;
-
-      case 'hour':
-        secs = 60 * 60;
-        break;
-
-      case 'week':
-        secs = 60 * 60 * 24 * 7;
-        break;
-
-      case 'year':
-        secs = 60 * 60 * 24 * 365;
-        break;
-    }
-
-    switch (discriminatorQuery.discriminator) {
-      case "none":
-        discriminator = 'None';
-        break;
-      case 'duration':
-        discriminator = { Duration: { nanos: 0, secs }  }
-        break;
-    }
-
-    return this.authenticatedPost(auth, `/posts/graph`, {
-      select,
-      discriminator,
-      filter: {}
-    }).pipe(
-      map(json => new ChartSeries(query.name, json.points.map((x: any) => this.mapChartPoint(x))))
-    )
-  }
-
   public updatePost(auth: Auth, postId: number, title: string | null, description: string | null, source: string | null, tagIds: number[]): Observable<Post> {
     return this.authenticatedPut(auth, `/posts/${encodeURIComponent(postId)}`, {
       title,
@@ -223,6 +181,8 @@ export class ApiService {
       map((json) => this.mapPost(json))
     )
   }
+
+  // downloads
 
   public createPost(auth: Auth, postInfo: CreatePostData, files: Upload[]): Observable<{ batchId: number, posts: Post[] }> {
     return this.authenticatedPost(auth, '/posts', {
@@ -258,12 +218,6 @@ export class ApiService {
     )
   }
 
-  // downloads
-
-  private queue: QueuedFile[] = [];
-  private isRunning = false;
-  private workerPromise: null | Promise<void> = null;
-
   public uploadFile(auth: Auth, file: File, cancellationToken: Observable<any> | null): Observable<UploadProgress> {
     let subject = new Subject<UploadProgress>();
 
@@ -277,6 +231,54 @@ export class ApiService {
     this.runQueue();
 
     return subject.asObservable();
+  }
+
+  private loadChartSeries(auth: Auth, query: ChartSeriesQuery, discriminatorQuery: ChartDiscriminator): Observable<ChartSeries> {
+    let select;
+
+    switch (query.select) {
+      case "count":
+        select = 'Count'
+        break;
+    }
+
+    let discriminator;
+    let secs;
+
+    switch (discriminatorQuery.duration) {
+      case 'day':
+        secs = 60 * 60 * 24;
+        break;
+
+      case 'hour':
+        secs = 60 * 60;
+        break;
+
+      case 'week':
+        secs = 60 * 60 * 24 * 7;
+        break;
+
+      case 'year':
+        secs = 60 * 60 * 24 * 365;
+        break;
+    }
+
+    switch (discriminatorQuery.discriminator) {
+      case "none":
+        discriminator = 'None';
+        break;
+      case 'duration':
+        discriminator = {Duration: {nanos: 0, secs}}
+        break;
+    }
+
+    return this.authenticatedPost(auth, `/posts/graph`, {
+      select,
+      discriminator,
+      filter: {}
+    }).pipe(
+      map(json => new ChartSeries(query.name, json.points.map((x: any) => this.mapChartPoint(x))))
+    )
   }
 
   private runQueue() {
@@ -455,8 +457,7 @@ export class ApiService {
 
     if (typeof json.y === 'string') {
       type = 'none';
-    }
-    else {
+    } else {
       type = 'time';
       x = new Date(json.x.Date)
     }

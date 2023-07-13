@@ -3,7 +3,7 @@
     <h2>An error occurred</h2>
     <p *ngIf="failure as failure">{{ failure.message }}</p>
 
-    <button mat-raised-button color="primary" (click)="clickLoadAgain()" [disabled]="loadAgainClicked">
+    <button (click)="clickLoadAgain()" [disabled]="loadAgainClicked" color="primary" mat-raised-button>
       Refresh
     </button>
   </div>

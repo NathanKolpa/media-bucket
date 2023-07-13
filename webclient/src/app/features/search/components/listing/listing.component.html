@@ -1,52 +1,52 @@
-<div [ngStyle]="{ height: height + 'px', 'max-height': height + 'px' }" *ngIf="item as post">
+<div *ngIf="item as post" [ngStyle]="{ height: height + 'px', 'max-height': height + 'px' }">
   <div class="wrapper h-100 p-4">
-    <mat-card class="h-100" appearance="outlined" matRipple [matRippleDisabled]="disableCardRipple"
-              (click)="showDetail.emit(post)">
+    <mat-card (click)="showDetail.emit(post)" [matRippleDisabled]="disableCardRipple" appearance="outlined" class="h-100"
+              matRipple>
 
       <img [src]="post.thumbnail?.url" alt="Thumbnail" class="thumbnail">
 
-      <mat-card-footer class="p-2 d-flex align-items-center user-select-none" *ngIf="!disableFooter">
+      <mat-card-footer *ngIf="!disableFooter" class="p-2 d-flex align-items-center user-select-none">
 
         <div class="ms-3" style="word-break: break-all">
-              <span [title]="post.title"
-                    *ngIf="post.title as title; else altTitle">{{ title | slice:0:100 }}</span>
+              <span *ngIf="post.title as title; else altTitle"
+                    [title]="post.title">{{ title | slice:0:100 }}</span>
           <ng-template #altTitle><i [title]="post.altTitle">{{ post.altTitle | slice:0:100 }}</i></ng-template>
         </div>
 
 
         <div class="spacer"></div>
 
-        <button mat-icon-button
-                (click)="$event.stopImmediatePropagation(); showInfo.emit(post)"
+        <button (click)="$event.stopImmediatePropagation(); showInfo.emit(post)"
                 (mouseenter)="disableCardRipple=true"
-                (mouseleave)="disableCardRipple=false">
+                (mouseleave)="disableCardRipple=false"
+                mat-icon-button>
           <mat-icon>info</mat-icon>
         </button>
 
       </mat-card-footer>
     </mat-card>
 
-    <div class="overlay p-4"
-         *ngIf="post.containsDocument || post.containsVideos || post.containsMovingImages || post.containsImages || post.itemCount > 1 || post.duration != null">
+    <div *ngIf="post.containsDocument || post.containsVideos || post.containsMovingImages || post.containsImages || post.itemCount > 1 || post.duration != null"
+         class="overlay p-4">
       <p class="contrast mat-elevation-z6 d-inline-block">
-        <mat-icon color="accent" *ngIf="post.containsVideos; else document">movie</mat-icon>
+        <mat-icon *ngIf="post.containsVideos; else document" color="accent">movie</mat-icon>
 
         <ng-template #document>
-          <mat-icon color="accent" *ngIf="post.containsDocument; else movingImage">description</mat-icon>
+          <mat-icon *ngIf="post.containsDocument; else movingImage" color="accent">description</mat-icon>
         </ng-template>
 
         <ng-template #movingImage>
-          <mat-icon color="accent" *ngIf="post.containsMovingImages; else image">gif_box</mat-icon>
+          <mat-icon *ngIf="post.containsMovingImages; else image" color="accent">gif_box</mat-icon>
         </ng-template>
 
         <ng-template #image>
-          <mat-icon color="accent" *ngIf="post.containsImages">image</mat-icon>
+          <mat-icon *ngIf="post.containsImages" color="accent">image</mat-icon>
         </ng-template>
       </p>
 
       <div class="float-end">
-        <p class="contrast mat-elevation-z6" *ngIf="post.itemCount > 1">{{ post.itemCount }} items</p>
-        <p class="contrast mat-elevation-z6" *ngIf="post.duration as duration">{{ duration | duration }}</p>
+        <p *ngIf="post.itemCount > 1" class="contrast mat-elevation-z6">{{ post.itemCount }} items</p>
+        <p *ngIf="post.duration as duration" class="contrast mat-elevation-z6">{{ duration | duration }}</p>
       </div>
 
     </div>

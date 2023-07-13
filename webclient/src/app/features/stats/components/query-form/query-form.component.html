@@ -1,4 +1,4 @@
-<form [formGroup]="form" (submit)="submitForm()">
+<form (submit)="submitForm()" [formGroup]="form">
   <div class="row">
     <mat-form-field appearance="fill" class="col">
       <mat-label>Query name</mat-label>
@@ -9,5 +9,5 @@
     </mat-form-field>
   </div>
 
-  <button mat-flat-button color="primary">Submit</button>
+  <button color="primary" mat-flat-button>Submit</button>
 </form>

@@ -16,7 +16,7 @@
   <p *ngIf="!post.description"><i>No description</i></p>
 
   <h3>Tags</h3>
-  <app-tag-list *ngIf="post.tags.length > 0" [tags]="post.tags" (clickTag)="searchForTag.emit($event)">
+  <app-tag-list (clickTag)="searchForTag.emit($event)" *ngIf="post.tags.length > 0" [tags]="post.tags">
   </app-tag-list>
   <p *ngIf="post.tags.length <= 0"><i>No tags</i></p>
 </div>

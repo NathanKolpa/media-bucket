@@ -1,6 +1,5 @@
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
-import {FormControl, FormGroup} from "@angular/forms";
-import {Tag} from "@core/models";
+import {FormControl} from "@angular/forms";
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,

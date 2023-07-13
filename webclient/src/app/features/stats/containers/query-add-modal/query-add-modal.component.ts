@@ -1,8 +1,8 @@
-import { Component } from '@angular/core';
+import {Component} from '@angular/core';
 import {MatDialogRef} from "@angular/material/dialog";
 import {Store} from "@ngrx/store";
 import {ChartSeriesQuery} from "@core/models";
-import { statsActions } from '@features/stats/store';
+import {statsActions} from '@features/stats/store';
 
 @Component({
   selector: 'app-query-add-modal',
@@ -14,7 +14,7 @@ export class QueryAddModalComponent {
   }
 
   addSeriesQuery(query: ChartSeriesQuery) {
-    this.store.dispatch(statsActions.addSeriesQuery({ query }));
+    this.store.dispatch(statsActions.addSeriesQuery({query}));
     this.dialogRef.close();
   }
 }

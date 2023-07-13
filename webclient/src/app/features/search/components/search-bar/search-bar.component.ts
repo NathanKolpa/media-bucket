@@ -11,22 +11,19 @@ export class SearchBarComponent {
 
   @ViewChild('input')
   public input?: ElementRef<HTMLInputElement>;
-
-  public _query: PostSearchQuery | null = null;
-
   @Output()
   public searchTextChange = new EventEmitter<string | null>();
-
   @Input()
   public tags: Tag[] = [];
+  @Output()
+  public queryChange = new EventEmitter<PostSearchQuery>();
+
+  public _query: PostSearchQuery | null = null;
 
   @Input()
   public set query(query: PostSearchQuery | null) {
     this._query = query;
   }
-
-  @Output()
-  public queryChange = new EventEmitter<PostSearchQuery>();
 
   addTag(tag: Tag) {
     if (this._query) {

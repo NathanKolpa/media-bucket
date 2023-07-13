@@ -1,6 +1,6 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {ComponentFixture, TestBed} from '@angular/core/testing';
 
-import { UploadProgressDialogComponent } from './upload-progress-dialog.component';
+import {UploadProgressDialogComponent} from './upload-progress-dialog.component';
 
 describe('UploadProgressDialogComponent', () => {
   let component: UploadProgressDialogComponent;
@@ -8,9 +8,9 @@ describe('UploadProgressDialogComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ UploadProgressDialogComponent ]
+      declarations: [UploadProgressDialogComponent]
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(UploadProgressDialogComponent);
     component = fixture.componentInstance;

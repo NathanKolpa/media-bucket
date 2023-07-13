@@ -1,15 +1,10 @@
 import {Failure} from "./failure";
 import {Media} from "@core/models/media";
-import {Post} from "@core/models/post";
 import {Tag} from "@core/models/tag";
 
 export type UploadState = 'waiting' | 'uploading' | 'done' | 'error' | 'deleted';
 
 export class Upload {
-
-  public static fromFile(file: File, position: number) {
-    return new Upload(file, 'waiting', 0, null, position, null, null)
-  }
 
   private constructor(private _file: File,
                       private _state: UploadState,
@@ -48,6 +43,14 @@ export class Upload {
     return this._thumbnail;
   }
 
+  public get progress(): number {
+    return this.uploadedBytes / this.file.size * 100;
+  }
+
+  public static fromFile(file: File, position: number) {
+    return new Upload(file, 'waiting', 0, null, position, null, null)
+  }
+
   public setPosition(position: number): Upload {
     return new Upload(this._file, this._state, this._uploadedBytes, this._failure, position, this._content, this._thumbnail);
   }
@@ -66,10 +69,6 @@ export class Upload {
 
   public delete(): Upload {
     return new Upload(this._file, 'deleted', this._uploadedBytes, this._failure, this._position, this._content, this._thumbnail);
-  }
-
-  public get progress(): number {
-    return this.uploadedBytes / this.file.size * 100;
   }
 }
 
@@ -122,10 +121,6 @@ export class CreatePostData {
 
 export class UploadJob {
   private static idAutoIncrement = 0;
-  public static newPostUpload(uploads: Upload[], data: CreatePostData) {
-    this.idAutoIncrement++;
-    return new UploadJob(this.idAutoIncrement + '', uploads, 'createPost', null, data);
-  }
 
   private constructor(private _id: string, private _uploads: Upload[], private _type: UploadJobType, private _failure: Failure | null, private _createPostData: CreatePostData) {
   }
@@ -148,6 +143,39 @@ export class UploadJob {
 
   get failure(): Failure | null {
     return this._failure;
+  }
+
+  public get nonDeletedUploads(): Upload[] {
+    return this._uploads.filter(x => x.state !== 'deleted');
+  }
+
+  public get nonDeletedSortedUploads(): Upload[] {
+    return this.nonDeletedUploads.sort((a, b) => a.position - b.position);
+  }
+
+  get successFullyUploaded(): boolean {
+    return this.nonDeletedUploads.find(x => x.state != 'done') === undefined;
+  }
+
+  get done(): boolean {
+    return this.successFullyUploaded && this.failure == null;
+  }
+
+  get totalBytes(): number {
+    return this.nonDeletedUploads.reduce((acc, u) => acc + u.file.size, 0);
+  }
+
+  get uploadedBytes(): number {
+    return this.nonDeletedUploads.reduce((acc, u) => acc + u.uploadedBytes, 0);
+  }
+
+  get progress(): number {
+    return this.uploadedBytes / this.totalBytes * 100;
+  }
+
+  public static newPostUpload(uploads: Upload[], data: CreatePostData) {
+    this.idAutoIncrement++;
+    return new UploadJob(this.idAutoIncrement + '', uploads, 'createPost', null, data);
   }
 
   public updateUpload(index: number, upload: Upload): UploadJob {
@@ -197,8 +225,7 @@ export class UploadJob {
         if ((position > uploadPosition && position < targetPosition) || position == targetPosition) {
           return upload.setPosition(position - 1);
         }
-      }
-      else {
+      } else {
         if ((position < uploadPosition && position > targetPosition) || position == targetPosition) {
           return upload.setPosition(position + 1);
         }
@@ -227,14 +254,6 @@ export class UploadJob {
     return new UploadJob(this._id, this.nonDeletedUploads, this._type, this._failure, this._createPostData);
   }
 
-  public get nonDeletedUploads(): Upload[] {
-    return this._uploads.filter(x => x.state !== 'deleted');
-  }
-
-  public get nonDeletedSortedUploads(): Upload[] {
-    return this.nonDeletedUploads.sort((a, b) => a.position - b.position);
-  }
-
   public isEmpty(): boolean {
     return this.nonDeletedUploads.length <= 0;
   }
@@ -245,25 +264,5 @@ export class UploadJob {
 
   public postCreated(): UploadJob {
     return new UploadJob(this._id, this._uploads, this._type, this._failure, this._createPostData);
-  }
-
-  get successFullyUploaded(): boolean {
-    return this.nonDeletedUploads.find(x => x.state != 'done') === undefined;
-  }
-
-  get done(): boolean {
-    return this.successFullyUploaded && this.failure == null;
-  }
-
-  get totalBytes(): number {
-    return this.nonDeletedUploads.reduce((acc, u) => acc + u.file.size, 0);
-  }
-
-  get uploadedBytes(): number {
-    return this.nonDeletedUploads.reduce((acc, u) => acc + u.uploadedBytes, 0);
-  }
-
-  get progress(): number {
-    return this.uploadedBytes / this.totalBytes * 100;
   }
 }

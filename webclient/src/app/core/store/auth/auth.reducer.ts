@@ -1,7 +1,6 @@
 import {createFeature, createReducer, on} from "@ngrx/store";
 import {createEntityAdapter, EntityState} from "@ngrx/entity";
 import {Auth} from "@core/models";
-import {addLogin} from "@core/store/auth/auth.actions";
 
 import * as authActions from './auth.actions';
 

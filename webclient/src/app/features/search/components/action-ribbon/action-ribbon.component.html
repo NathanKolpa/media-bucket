@@ -1,13 +1,13 @@
 <mat-toolbar class="mat-elevation-z6 position-relative" style="z-index: 1000">
 
-  <button mat-icon-button (click)="uploadFiles.emit()">
+  <button (click)="uploadFiles.emit()" mat-icon-button>
     <mat-icon class="material-icons-outlined">cloud_upload</mat-icon>
   </button>
 
-  <button mat-icon-button (click)="showUploadProgress.emit()">
-    <mat-icon class="material-icons-outlined"
-              [matBadgeHidden]="activeJobs == 0"
+  <button (click)="showUploadProgress.emit()" mat-icon-button>
+    <mat-icon [matBadgeHidden]="activeJobs == 0"
               [matBadge]="activeJobs"
+              class="material-icons-outlined"
               matBadgeColor="accent">pending
     </mat-icon>
   </button>
@@ -15,14 +15,14 @@
   <div class="spacer"></div>
 
   <ng-container *ngIf="showPostActions && selectedPost">
-    <button mat-icon-button (click)="deleteSelected.emit(selectedPost)">
+    <button (click)="deleteSelected.emit(selectedPost)" mat-icon-button>
       <mat-icon class="material-icons-outlined">delete</mat-icon>
     </button>
 
     <mat-divider [vertical]="true"></mat-divider>
   </ng-container>
 
-  <button mat-icon-button (click)="toggleInfo.emit()" [disabled]="selectedPost == null">
+  <button (click)="toggleInfo.emit()" [disabled]="selectedPost == null" mat-icon-button>
     <mat-icon class="material-icons-outlined">info</mat-icon>
   </button>
 

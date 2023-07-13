@@ -34,10 +34,18 @@ export class LoginFormComponent {
 
   @Input()
   public loginLoading: LoadingState | null = null;
+  public selectedId = 0;
+  public hidePassword = true;
+  form = new FormGroup({
+    password: new FormControl('')
+  })
+  private firstLoad = true;
 
   private _buckets: AuthenticatedBucket[] | null = null;
 
-  private firstLoad = true;
+  public get buckets(): AuthenticatedBucket[] | null {
+    return this._buckets;
+  }
 
   @Input()
   public set buckets(value: AuthenticatedBucket[] | null) {
@@ -49,12 +57,9 @@ export class LoginFormComponent {
     }
   }
 
-  public get buckets(): AuthenticatedBucket[] | null {
-    return this._buckets;
+  public get selectedBucket(): AuthenticatedBucket | null {
+    return this.buckets?.find(x => x.bucket.id == this.selectedId) ?? null;
   }
-
-
-  public selectedId = 0;
 
   public setSelectedId(id: number) {
     this.selectedId = id;
@@ -72,16 +77,6 @@ export class LoginFormComponent {
         this.form.controls.password.clearValidators();
       }
     }
-  }
-
-  public hidePassword = true;
-
-  form = new FormGroup({
-    password: new FormControl('')
-  })
-
-  public get selectedBucket(): AuthenticatedBucket | null {
-    return this.buckets?.find(x => x.bucket.id == this.selectedId) ?? null;
   }
 
   public togglePasswordVisibility() {

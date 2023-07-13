@@ -1,6 +1,6 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {ComponentFixture, TestBed} from '@angular/core/testing';
 
-import { BucketSelectComponent } from './bucket-select.component';
+import {BucketSelectComponent} from './bucket-select.component';
 
 describe('BucketSelectComponent', () => {
   let component: BucketSelectComponent;
@@ -8,9 +8,9 @@ describe('BucketSelectComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ BucketSelectComponent ]
+      declarations: [BucketSelectComponent]
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(BucketSelectComponent);
     component = fixture.componentInstance;

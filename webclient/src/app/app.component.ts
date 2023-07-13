@@ -1,5 +1,5 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import { authActions } from '@core/store/auth';
+import {authActions} from '@core/store/auth';
 import {Store} from "@ngrx/store";
 import {AppTitleService} from "@core/services";
 import {environment} from "@src/environments/environment";

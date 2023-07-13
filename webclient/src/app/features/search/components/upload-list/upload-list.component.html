@@ -2,17 +2,18 @@
 
 
 </div>
-<mat-list #list cdkDropList (cdkDropListDropped)="drop($event)" role="list">
+<mat-list #list (cdkDropListDropped)="drop($event)" cdkDropList role="list">
   <cdk-virtual-scroll-viewport #viewport [itemSize]="73" style="height: 500px">
-    <ng-container *cdkVirtualFor="let item of sortedUploads; let i = index; let isLast = last; trackBy: trackBy; templateCacheSize: 0"
-                  class="h-100">
-      <mat-list-item cdkDrag [cdkDragData]="i" #option
-                     style="height: 73px"
-                     (cdkDragStarted)="(option.disabled = true) && dragStart(i)"
-                     (cdkDragEnded)="option.disabled = false">
+    <ng-container
+      *cdkVirtualFor="let item of sortedUploads; let i = index; let isLast = last; trackBy: trackBy; templateCacheSize: 0"
+      class="h-100">
+      <mat-list-item #option (cdkDragEnded)="option.disabled = false" (cdkDragStarted)="(option.disabled = true) && dragStart(i)"
+                     [cdkDragData]="i"
+                     cdkDrag
+                     style="height: 73px">
 
-        <img *ngIf="item.upload.thumbnail as thumb; else icon" matListItemAvatar [src]="thumb.url"
-             [width]="thumb.dimensions?.width" [height]="thumb.dimensions?.height">
+        <img *ngIf="item.upload.thumbnail as thumb; else icon" [height]="thumb.dimensions?.height" [src]="thumb.url"
+             [width]="thumb.dimensions?.width" matListItemAvatar>
 
         <ng-template #icon>
           <mat-icon matListItemIcon>upload_file</mat-icon>
@@ -23,7 +24,7 @@
         </div>
 
         <div matListItemMeta>
-          <button mat-icon-button (click)="deleteIndexes.emit([item.index])">
+          <button (click)="deleteIndexes.emit([item.index])" mat-icon-button>
             <mat-icon>delete</mat-icon>
           </button>
         </div>
@@ -32,20 +33,20 @@
           {{ item.upload.file.size | bytes }}
         </div>
 
-        <div matListItemLine *ngIf="item.upload.state == 'error'">
+        <div *ngIf="item.upload.state == 'error'" matListItemLine>
           Error occurred: {{ item.upload.failure?.message }}
         </div>
 
-        <div matListItemLine
+        <div *ngIf="item.upload.state == 'done' || item.upload.state == 'uploading'"
              class="d-flex align-items-center"
-             *ngIf="item.upload.state == 'done' || item.upload.state == 'uploading'">
+             matListItemLine>
           <mat-progress-bar
-            mode="determinate"
             [value]="item.upload.progress"
-            color="accent">
+            color="accent"
+            mode="determinate">
           </mat-progress-bar>
 
-          <span class="ps-4" *ngIf="item.upload.state == 'uploading'">
+          <span *ngIf="item.upload.state == 'uploading'" class="ps-4">
           <ng-container *ngIf="item.upload.progress == 100; else progressDetail">
             Processing
           </ng-container>
@@ -54,7 +55,7 @@
           </ng-template>
         </span>
 
-          <span class="ps-4" *ngIf="item.upload.state == 'done'">
+          <span *ngIf="item.upload.state == 'done'" class="ps-4">
           Done
         </span>
 

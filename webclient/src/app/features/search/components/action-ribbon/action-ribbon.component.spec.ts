@@ -1,6 +1,6 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {ComponentFixture, TestBed} from '@angular/core/testing';
 
-import { ActionRibbonComponent } from './action-ribbon.component';
+import {ActionRibbonComponent} from './action-ribbon.component';
 
 describe('ActionRibbonComponent', () => {
   let component: ActionRibbonComponent;
@@ -8,9 +8,9 @@ describe('ActionRibbonComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ ActionRibbonComponent ]
+      declarations: [ActionRibbonComponent]
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(ActionRibbonComponent);
     component = fixture.componentInstance;

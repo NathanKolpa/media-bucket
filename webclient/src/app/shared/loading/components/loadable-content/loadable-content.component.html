@@ -17,9 +17,9 @@
     </div>
 
     <app-loading-error
-      [failure]="failure"
       (loadAgain)="loadAgain.emit()"
-      *ngIf="!fail.hasChildNodes()">
+      *ngIf="!fail.hasChildNodes()"
+      [failure]="failure">
     </app-loading-error>
 
   </ng-container>

@@ -1,6 +1,6 @@
-import { Injectable } from '@angular/core';
+import {Injectable} from '@angular/core';
 import {ActivatedRouteSnapshot, CanDeactivate, RouterStateSnapshot, UrlTree} from '@angular/router';
-import { Observable } from 'rxjs';
+import {Observable} from 'rxjs';
 
 export interface ConfirmComponent {
   showNavigationWarning(): boolean | string;
@@ -20,7 +20,7 @@ export class ConfirmGuard implements CanDeactivate<any> {
 
     let warningMessage = 'Are you sure you want to leave the page?';
 
-    if(typeof showWarning == 'string') {
+    if (typeof showWarning == 'string') {
       warningMessage = showWarning;
     }
 

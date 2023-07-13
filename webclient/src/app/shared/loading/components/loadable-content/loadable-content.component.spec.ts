@@ -1,6 +1,6 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {ComponentFixture, TestBed} from '@angular/core/testing';
 
-import { LoadableContentComponent } from './loadable-content.component';
+import {LoadableContentComponent} from './loadable-content.component';
 
 describe('LoadableContentComponent', () => {
   let component: LoadableContentComponent;
@@ -8,9 +8,9 @@ describe('LoadableContentComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ LoadableContentComponent ]
+      declarations: [LoadableContentComponent]
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(LoadableContentComponent);
     component = fixture.componentInstance;

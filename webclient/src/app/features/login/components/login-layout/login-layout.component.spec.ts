@@ -1,6 +1,6 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {ComponentFixture, TestBed} from '@angular/core/testing';
 
-import { LoginLayoutComponent } from './login-layout.component';
+import {LoginLayoutComponent} from './login-layout.component';
 
 describe('LoginLayoutComponent', () => {
   let component: LoginLayoutComponent;
@@ -8,9 +8,9 @@ describe('LoginLayoutComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ LoginLayoutComponent ]
+      declarations: [LoginLayoutComponent]
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(LoginLayoutComponent);
     component = fixture.componentInstance;

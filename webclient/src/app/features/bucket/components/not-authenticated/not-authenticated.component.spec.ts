@@ -1,6 +1,6 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {ComponentFixture, TestBed} from '@angular/core/testing';
 
-import { NotAuthenticatedComponent } from './not-authenticated.component';
+import {NotAuthenticatedComponent} from './not-authenticated.component';
 
 describe('NotAuthenticatedComponent', () => {
   let component: NotAuthenticatedComponent;
@@ -8,9 +8,9 @@ describe('NotAuthenticatedComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ NotAuthenticatedComponent ]
+      declarations: [NotAuthenticatedComponent]
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(NotAuthenticatedComponent);
     component = fixture.componentInstance;

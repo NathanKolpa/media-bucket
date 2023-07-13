@@ -1,6 +1,4 @@
-import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output, ViewChild} from '@angular/core';
-import {SearchPost} from "@core/models";
-import {MatRipple} from "@angular/material/core";
+import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
 import {Listing} from "@core/models/listing";
 
 @Component({

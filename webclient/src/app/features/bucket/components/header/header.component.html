@@ -1,6 +1,6 @@
-<mat-toolbar color="primary" *ngIf="bucket as bucket" class="mat-elevation-z6 position-relative" style="z-index: 1000">
+<mat-toolbar *ngIf="bucket as bucket" class="mat-elevation-z6 position-relative" color="primary" style="z-index: 1000">
 
-  <a mat-button [routerLink]="['/buckets', bucket.id]">
+  <a [routerLink]="['/buckets', bucket.id]" mat-button>
      <span>
       {{ bucket.name }}
     </span>
@@ -12,13 +12,13 @@
 
   <div class="spacer"></div>
 
-  <button mat-icon-button [matMenuTriggerFor]="menu">
+  <button [matMenuTriggerFor]="menu" mat-icon-button>
     <mat-icon>menu</mat-icon>
   </button>
 
   <mat-menu #menu="matMenu">
 
-    <a mat-menu-item [routerLink]="['/buckets', bucket.id, 'stats']">
+    <a [routerLink]="['/buckets', bucket.id, 'stats']" mat-menu-item>
       <mat-icon>query_stats</mat-icon>
       <span>Statistics</span>
     </a>
@@ -30,7 +30,7 @@
       <span>Switch bucket</span>
     </a>
 
-    <button mat-menu-item (click)="logout.emit()">
+    <button (click)="logout.emit()" mat-menu-item>
       <mat-icon>logout</mat-icon>
       <span>Logout</span>
     </button>

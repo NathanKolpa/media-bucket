@@ -1,7 +1,7 @@
-<div class="mat-elevation-z6 file-upload d-flex align-items-center justify-content-center"
-     [ngClass]="highlighted ? 'active': ''"
-     (dragenter)="dragEnter($event)"
-     (dragleave)="dragLeave($event)" (dragover)="dragOver($event)" (drop)="drop($event)"
+<div (dragenter)="dragEnter($event)"
+     (dragleave)="dragLeave($event)"
+     (dragover)="dragOver($event)"
+     (drop)="drop($event)" [ngClass]="highlighted ? 'active': ''" class="mat-elevation-z6 file-upload d-flex align-items-center justify-content-center"
 >
   <input #input (change)="fileSelectChange()" class="d-none" multiple type="file">
 
@@ -10,6 +10,6 @@
 
     <h1>Drag and drop files here</h1>
     <p><small>or</small></p>
-    <button color="accent" mat-flat-button (click)="selectFiles()">Browse files</button>
+    <button (click)="selectFiles()" color="accent" mat-flat-button>Browse files</button>
   </div>
 </div>

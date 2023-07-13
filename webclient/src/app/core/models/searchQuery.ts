@@ -2,15 +2,11 @@ import {Tag} from "./tag";
 
 export type SearchQueryItem =
   { type: 'tag', tag: Tag }
-  | {type: 'text', str: string};
+  | { type: 'text', str: string };
 
 export type SearchQueryOrder = 'newest' | 'oldest' | 'relevant' | 'random';
 
 export class PostSearchQuery {
-
-  public static empty(): PostSearchQuery {
-    return new PostSearchQuery([], 'relevant', Math.random());
-  }
 
   constructor(private _items: SearchQueryItem[], private _order: SearchQueryOrder, private _seed: number) {
   }
@@ -27,6 +23,10 @@ export class PostSearchQuery {
     return this._seed;
   }
 
+  public static empty(): PostSearchQuery {
+    return new PostSearchQuery([], 'relevant', Math.random());
+  }
+
   public randomizeSeed(): PostSearchQuery {
     return new PostSearchQuery(this._items, this._order, Math.random());
   }
@@ -37,7 +37,7 @@ export class PostSearchQuery {
         return true;
       }
 
-      return  x.tag.id != tag.id;
+      return x.tag.id != tag.id;
     }), {type: 'tag', tag}], this._order, this._seed);
   }
 
@@ -47,7 +47,7 @@ export class PostSearchQuery {
         return true;
       }
 
-      return  x.str != text;
+      return x.str != text;
     }), {type: 'text', str: text}], this._order, this._seed);
   }
 

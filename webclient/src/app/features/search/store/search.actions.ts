@@ -5,10 +5,10 @@ import {
   Page,
   Post,
   PostDetail,
-  PostItem,
   PostItemDetail,
   PostSearchQuery,
-  SearchPost, SearchPostItem,
+  SearchPost,
+  SearchPostItem,
   SelectedBucket,
   Tag,
   UploadJob

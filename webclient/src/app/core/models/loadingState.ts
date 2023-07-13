@@ -2,10 +2,6 @@ import {Failure} from "@core/models/failure";
 
 export class LoadingState {
 
-  public static initial(): LoadingState {
-    return new LoadingState(false, null);
-  }
-
   private constructor(private _isLoading: boolean, private _failure: Failure | null) {
   }
 
@@ -23,6 +19,10 @@ export class LoadingState {
 
   get isSuccess(): boolean {
     return !this.isLoading && !this.hasFailure
+  }
+
+  public static initial(): LoadingState {
+    return new LoadingState(false, null);
   }
 
   public loading(): LoadingState {

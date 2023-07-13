@@ -1,12 +1,12 @@
 <mat-sidenav-container class="h-100 d-block">
-  <mat-sidenav mode="side" position="end" [opened]="open">
+  <mat-sidenav [opened]="open" mode="side" position="end">
 
     <mat-tab-group>
       <mat-tab label="Info">
         <ng-template matTabContent>
 
           <app-loadable-content [loadingState]="loadingState">
-            <app-post-info [post]="post" (searchForTag)="searchForTag.emit($event)">
+            <app-post-info (searchForTag)="searchForTag.emit($event)" [post]="post">
             </app-post-info>
           </app-loadable-content>
 
@@ -15,18 +15,18 @@
       <mat-tab label="Edit">
         <ng-template matTabContent>
 
-          <form class="m-4" [formGroup]="form">
+          <form [formGroup]="form" class="m-4">
             <app-post-info-form-fields
-              [title]="form.controls.title"
+              [description]="form.controls.description"
               [source]="form.controls.source"
-              [description]="form.controls.description">
+              [title]="form.controls.title">
             </app-post-info-form-fields>
 
-            <app-tag-edit [bucket]="bucket" [(tags)]="postTags">
+            <app-tag-edit [(tags)]="postTags" [bucket]="bucket">
 
             </app-tag-edit>
 
-            <button mat-flat-button color="primary" (click)="submit()">Save</button>
+            <button (click)="submit()" color="primary" mat-flat-button>Save</button>
           </form>
 
 

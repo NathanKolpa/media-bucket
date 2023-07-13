@@ -1,9 +1,8 @@
-import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import {NgModule} from '@angular/core';
+import {CommonModule} from '@angular/common';
 import {DurationPipe} from "@shared/pipes/duration.pipe";
-import { BytesPipe } from './bytes.pipe';
-import { AgoPipe } from './ago.pipe';
-
+import {BytesPipe} from './bytes.pipe';
+import {AgoPipe} from './ago.pipe';
 
 
 @NgModule({
@@ -21,4 +20,5 @@ import { AgoPipe } from './ago.pipe';
     CommonModule
   ]
 })
-export class PipesModule { }
+export class PipesModule {
+}

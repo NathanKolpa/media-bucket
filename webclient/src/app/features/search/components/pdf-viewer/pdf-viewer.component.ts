@@ -1,13 +1,4 @@
-import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  Component,
-  ElementRef,
-  EventEmitter,
-  Input,
-  Output,
-  ViewChild
-} from '@angular/core';
+import {AfterViewInit, ChangeDetectionStrategy, Component, Input, ViewChild} from '@angular/core';
 import {Media} from "@core/models";
 
 @Component({
@@ -19,10 +10,11 @@ import {Media} from "@core/models";
 export class PdfViewerComponent implements AfterViewInit {
   @ViewChild('pdfViewer', {static: false})
   public pdfViewer?: PdfViewerComponent;
+  public zoom = 100;
+  @Input()
+  public className: string | null = null;
 
   public _media: Media | null = null;
-
-  public zoom = 100;
 
   @Input()
   public set media(value: Media | null) {
@@ -33,9 +25,6 @@ export class PdfViewerComponent implements AfterViewInit {
     }
   }
 
-  @Input()
-  public className: string | null = null;
-
   ngAfterViewInit(): void {
     this.updateViewer();
   }
@@ -45,7 +34,7 @@ export class PdfViewerComponent implements AfterViewInit {
       return;
     }
 
-    if(this._media) {
+    if (this._media) {
       (this.pdfViewer as any).pdfSrc = encodeURIComponent(this._media.url);
       (this.pdfViewer as any).refresh();
     }

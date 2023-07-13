@@ -1,36 +1,36 @@
-<main class="d-flex flex-column h-100" *ngIf="bucket$ | async as bucket">
+<main *ngIf="bucket$ | async as bucket" class="d-flex flex-column h-100">
   <app-action-ribbon
+    (deleteSelected)="deletePost(bucket, $event)"
     (showUploadProgress)="showUploadProgress()"
+    (toggleInfo)="toggleInfo()"
     (uploadFiles)="showUploadDialog()"
     [activeJobs]="(activeJobs$ | async) || 0"
-    [showPostActions]="((showSidebar$ | async) || false)"
     [selectedPost]="sidebarPost$ | async"
-    (deleteSelected)="deletePost(bucket, $event)"
-    (toggleInfo)="toggleInfo()">
+    [showPostActions]="((showSidebar$ | async) || false)">
   </app-action-ribbon>
 
   <app-post-detail-sidebar
-    class="flex-grow-1"
-    [bucket]="bucket"
     (postEditSubmit)="editPost(bucket, $event)"
     (searchForTag)="addTagToSearchQuery(bucket, $event)"
-    [post]="sidebarPost$ | async"
+    [bucket]="bucket"
     [loadingState]="sidebarPostLoadingState$ | async"
-    [open]="(showSidebar$ | async) || false">
+    [open]="(showSidebar$ | async) || false"
+    [post]="sidebarPost$ | async"
+    class="flex-grow-1">
 
-    <app-search-results *ngIf="(posts$ | async) || null as posts"
-      [nextLoadingState]="postsLoadingState$ | async"
-      [items]="castPostToListing(posts)"
-      (showInfo)="showSidebar(bucket, posts[$event])"
-      (showDetail)="showPost(bucket, posts[$event])"
-      [resultCount]="postCount$ | async"
-      (requestNextData)="loadNext(bucket)">
+    <app-search-results (requestNextData)="loadNext(bucket)"
+                        (showDetail)="showPost(bucket, posts[$event])"
+                        (showInfo)="showSidebar(bucket, posts[$event])"
+                        *ngIf="(posts$ | async) || null as posts"
+                        [items]="castPostToListing(posts)"
+                        [nextLoadingState]="postsLoadingState$ | async"
+                        [resultCount]="postCount$ | async">
 
       <app-search-bar
-        [tags]="(searchTags$ | async) || []"
-        [query]="(searchQuery$ | async) || null"
         (queryChange)="queryChange(bucket, $event)"
-        (searchTextChange)="searchTextChange(bucket, $event)">
+        (searchTextChange)="searchTextChange(bucket, $event)"
+        [query]="(searchQuery$ | async) || null"
+        [tags]="(searchTags$ | async) || []">
       </app-search-bar>
 
     </app-search-results>

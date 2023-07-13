@@ -1,6 +1,6 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {ComponentFixture, TestBed} from '@angular/core/testing';
 
-import { ChartQueriesComponent } from './chart-queries.component';
+import {ChartQueriesComponent} from './chart-queries.component';
 
 describe('ChartQueriesComponent', () => {
   let component: ChartQueriesComponent;
@@ -8,9 +8,9 @@ describe('ChartQueriesComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ ChartQueriesComponent ]
+      declarations: [ChartQueriesComponent]
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(ChartQueriesComponent);
     component = fixture.componentInstance;

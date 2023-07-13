@@ -8,7 +8,8 @@ import {searchActions} from '@features/search/store';
 import {MatDialogRef} from "@angular/material/dialog";
 
 function emptyJob(): UploadJob {
-  return UploadJob.newPostUpload([], new CreatePostData(null, null, null, false, []));;
+  return UploadJob.newPostUpload([], new CreatePostData(null, null, null, false, []));
+  ;
 }
 
 @Component({
@@ -61,7 +62,7 @@ export class UploadDialogComponent implements OnInit, OnDestroy {
       .setTags(this.tags)
     ).normalize();
 
-    this.store.dispatch(searchActions.startUploadJob({ bucket, job }));
+    this.store.dispatch(searchActions.startUploadJob({bucket, job}));
 
     this.job = emptyJob();
 

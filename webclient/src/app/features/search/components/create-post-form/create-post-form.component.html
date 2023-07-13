@@ -1,10 +1,10 @@
 <form [formGroup]="form">
   <div class="row mb-3">
-    <app-file-upload-box class="mb-3" (filesAdded)="filesAdded.emit($event)">
+    <app-file-upload-box (filesAdded)="filesAdded.emit($event)" class="mb-3">
     </app-file-upload-box>
 
     <mat-accordion>
-      <mat-expansion-panel hideToggle #panel>
+      <mat-expansion-panel #panel hideToggle>
         <mat-expansion-panel-header>
           <mat-panel-title>
             Click to {{ panel.expanded ? 'hide' : 'expand' }} files
@@ -20,10 +20,10 @@
         </mat-expansion-panel-header>
 
         <ng-template matExpansionPanelContent>
-          <app-upload-list class=""
-                           (deleteIndexes)="deleteIndexes.emit($event)"
+          <app-upload-list (deleteIndexes)="deleteIndexes.emit($event)"
+                           (swapUploads)="swapUploads.emit($event)"
                            [uploads]="uploads"
-                           (swapUploads)="swapUploads.emit($event)">
+                           class="">
           </app-upload-list>
         </ng-template>
 
@@ -33,12 +33,12 @@
   <div class="row">
 
     <app-post-info-form-fields
-      [title]="form.controls.title"
+      [description]="form.controls.description"
       [source]="form.controls.source"
-      [description]="form.controls.description">
+      [title]="form.controls.title">
     </app-post-info-form-fields>
 
-    <app-tag-edit [tags]="tags" (tagsChange)="tagsChange.emit($event)" [bucket]="bucket">
+    <app-tag-edit (tagsChange)="tagsChange.emit($event)" [bucket]="bucket" [tags]="tags">
     </app-tag-edit>
 
     <mat-radio-group formControlName="flatten">

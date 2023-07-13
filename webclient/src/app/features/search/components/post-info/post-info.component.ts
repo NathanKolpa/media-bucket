@@ -1,5 +1,5 @@
 import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
-import {LoadingState, PostDetail, Tag} from "@core/models";
+import {PostDetail, Tag} from "@core/models";
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,

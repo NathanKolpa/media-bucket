@@ -1,6 +1,5 @@
 import {createFeature, createReducer, on} from "@ngrx/store";
-import {createEntityAdapter, EntityState} from "@ngrx/entity";
-import {ChartSeries, ChartDiscriminator, ChartSeriesQuery, LoadingState, ChartQuery, Chart} from "@core/models";
+import {Chart, ChartQuery, LoadingState} from "@core/models";
 import * as statsActions from "./stats.actions";
 
 interface State {
@@ -28,11 +27,11 @@ const feature = createFeature({
       ...state,
       loadingState: state.loadingState.loading()
     })),
-    on(statsActions.loadChartFailure, (state, { failure }) => ({
+    on(statsActions.loadChartFailure, (state, {failure}) => ({
       ...state,
       loadingState: state.loadingState.fail(failure)
     })),
-    on(statsActions.loadChartSuccess, (state, { chart }) => ({
+    on(statsActions.loadChartSuccess, (state, {chart}) => ({
       ...state,
       loadingState: state.loadingState.success(),
       chart

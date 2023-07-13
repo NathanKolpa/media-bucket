@@ -17,19 +17,24 @@ export interface EditPostRequest {
   styleUrls: ['./post-detail-sidebar.component.scss']
 })
 export class PostDetailSidebarComponent {
-  private _post: PostDetail | null = null;
-
   @Input()
   public open = false;
-
   @Output()
   public searchForTag = new EventEmitter<Tag>();
-
   @Output()
   public postEditSubmit = new EventEmitter<EditPostRequest>();
-
   @Input()
   public bucket: SelectedBucket | null = null;
+  @Input()
+  public loadingState: LoadingState | null = null;
+  form = new FormGroup({
+    title: new FormControl<string | null>(null),
+    description: new FormControl<string | null>(null),
+    source: new FormControl<string | null>(null),
+  });
+  postTags: Tag[] = [];
+
+  private _post: PostDetail | null = null;
 
   get post(): PostDetail | null {
     return this._post;
@@ -44,17 +49,6 @@ export class PostDetailSidebarComponent {
     this.form.controls.source.setValue(value?.source ?? null);
     this.postTags = value?.tags ?? [];
   }
-
-  @Input()
-  public loadingState: LoadingState | null = null;
-
-  form = new FormGroup({
-    title: new FormControl<string | null>(null),
-    description: new FormControl<string | null>(null),
-    source: new FormControl<string | null>(null),
-  });
-
-  postTags: Tag[] = [];
 
   submit() {
     if (this.form.valid && this._post) {

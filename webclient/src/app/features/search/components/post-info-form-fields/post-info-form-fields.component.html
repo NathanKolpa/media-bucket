@@ -1,18 +1,18 @@
 <div class="row">
-  <mat-form-field appearance="outline" class="mb-2" *ngIf="source as source">
+  <mat-form-field *ngIf="source as source" appearance="outline" class="mb-2">
     <mat-label>Source URL</mat-label>
-    <input matInput [formControl]="source">
+    <input [formControl]="source" matInput>
     <mat-hint>Must start with http:// or https://</mat-hint>
   </mat-form-field>
 
-  <mat-form-field appearance="outline" class="mb-2" *ngIf="title as title">
+  <mat-form-field *ngIf="title as title" appearance="outline" class="mb-2">
     <mat-label>Title</mat-label>
-    <input matInput [formControl]="title">
+    <input [formControl]="title" matInput>
   </mat-form-field>
 
-  <mat-form-field appearance="outline" class="mb-2" *ngIf="description as description">
+  <mat-form-field *ngIf="description as description" appearance="outline" class="mb-2">
     <mat-label>Description</mat-label>
-    <textarea matInput rows="5" [formControl]="description"></textarea>
+    <textarea [formControl]="description" matInput rows="5"></textarea>
   </mat-form-field>
 </div>
 

@@ -1,6 +1,6 @@
 import {createSelector} from "@ngrx/store";
-import {selectAuthState, authSelectors} from "@core/store/auth/auth.reducer";
-import {selectLoginState, bucketSelectors} from "@features/login/store/login.reducer";
+import {authSelectors, selectAuthState} from "@core/store/auth/auth.reducer";
+import {bucketSelectors, selectLoginState} from "@features/login/store/login.reducer";
 import {AuthenticatedBucket} from "@core/models";
 
 export const selectBuckets = createSelector(

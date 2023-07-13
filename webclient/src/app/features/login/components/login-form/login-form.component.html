@@ -1,9 +1,9 @@
-<div class="row h-100" *ngIf="buckets as buckets">
+<div *ngIf="buckets as buckets" class="row h-100">
   <app-bucket-select
-    class="col-md-4 height"
-    [buckets]="buckets"
     (selectedIdChange)="setSelectedId($event)"
-    [selectedId]="selectedId">
+    [buckets]="buckets"
+    [selectedId]="selectedId"
+    class="col-md-4 height">
   </app-bucket-select>
 
   <div class="col-md-8 height mt-4 mt-md-0">
@@ -15,22 +15,22 @@
           <mat-form-field appearance="outline">
             <mat-label>Password</mat-label>
 
-            <input matInput
+            <input [type]="hidePassword ? 'password' : 'text'"
                    formControlName="password"
-                   placeholder="Enter your password"
-                   [type]="hidePassword ? 'password' : 'text'">
+                   matInput
+                   placeholder="Enter your password">
 
             <mat-error *ngIf="form.controls.password.invalid">
               This field is required
             </mat-error>
 
-            <button mat-icon-button
-                    type="button"
-                    [disabled]="!bucket.bucket.passwordProtected"
-                    matSuffix
-                    (click)="togglePasswordVisibility()"
+            <button (click)="togglePasswordVisibility()"
                     [attr.aria-label]="'Hide password'"
-                    [attr.aria-pressed]="hidePassword">
+                    [attr.aria-pressed]="hidePassword"
+                    [disabled]="!bucket.bucket.passwordProtected"
+                    mat-icon-button
+                    matSuffix
+                    type="button">
 
               <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
             </button>
@@ -41,20 +41,20 @@
           </mat-error>
         </div>
 
-        <button mat-flat-button color="primary"
-                [disabled]="form.invalid || loginLoading?.isLoading"
-                (click)="loginClick()">
+        <button (click)="loginClick()" [disabled]="form.invalid || loginLoading?.isLoading"
+                color="primary"
+                mat-flat-button>
           Login
         </button>
       </form>
 
       <ng-container *ngIf="bucket.auth">
         <div class="w-100 d-flex justify-content-center h-100 align-items-center">
-          <button mat-flat-button color="primary" (click)="selectClick()">
+          <button (click)="selectClick()" color="primary" mat-flat-button>
             Go
           </button>
 
-          <button mat-stroked-button (click)="logoutClick()">
+          <button (click)="logoutClick()" mat-stroked-button>
             Logout
           </button>
         </div>

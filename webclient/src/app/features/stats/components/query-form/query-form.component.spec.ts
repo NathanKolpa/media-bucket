@@ -1,6 +1,6 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {ComponentFixture, TestBed} from '@angular/core/testing';
 
-import { QueryFormComponent } from './query-form.component';
+import {QueryFormComponent} from './query-form.component';
 
 describe('QueryFormComponent', () => {
   let component: QueryFormComponent;
@@ -8,9 +8,9 @@ describe('QueryFormComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ QueryFormComponent ]
+      declarations: [QueryFormComponent]
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(QueryFormComponent);
     component = fixture.componentInstance;

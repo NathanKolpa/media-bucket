@@ -1,9 +1,9 @@
-<img [className]="className" #image *ngIf="_media" [src]="_media.url" [width]="_media.dimensions?.width"
-     [height]="_media.dimensions?.height"
-     alt="Media"
-     [style]="getCss()"
-     (mousemove)="mouseMove($event)"
+<img #image (mousemove)="mouseMove($event)" (wheel)="mouseWheel(image, $event)" *ngIf="_media" [className]="className"
      [draggable]="false"
-     (wheel)="mouseWheel(image, $event)">
+     [height]="_media.dimensions?.height"
+     [src]="_media.url"
+     [style]="getCss()"
+     [width]="_media.dimensions?.width"
+     alt="Media">
 
 

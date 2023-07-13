@@ -1,6 +1,6 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {ComponentFixture, TestBed} from '@angular/core/testing';
 
-import { TagEditComponent } from './tag-edit.component';
+import {TagEditComponent} from './tag-edit.component';
 
 describe('TagEditComponent', () => {
   let component: TagEditComponent;
@@ -8,9 +8,9 @@ describe('TagEditComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ TagEditComponent ]
+      declarations: [TagEditComponent]
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(TagEditComponent);
     component = fixture.componentInstance;

@@ -26,11 +26,16 @@ const initialTransform: Transformation = {
   styleUrls: ['./image-viewer.component.scss']
 })
 export class ImageViewerComponent {
+  @Output()
+  public viewChanged = new EventEmitter();
+  @Output()
+  public originalSizeChange = new EventEmitter<boolean>();
+  @Input()
+  public className: string | null = null;
   private pointerStack: PointerEvent[] = [];
   private pointerZoomDiff: number | null = null;
   private pointerX: number | null = null;
   private pointerY: number | null = null;
-
   private minScale = 0.1;
   private maxScale = 30;
   private scaleSensitivity = 10;
@@ -44,9 +49,6 @@ export class ImageViewerComponent {
     this.resetTransform();
   }
 
-  @Output()
-  public viewChanged = new EventEmitter();
-
   private _originalSize = true;
 
   @Input()
@@ -57,12 +59,6 @@ export class ImageViewerComponent {
 
     this._originalSize = value;
   }
-
-  @Output()
-  public originalSizeChange = new EventEmitter<boolean>();
-
-  @Input()
-  public className: string | null = null;
 
   resetTransform() {
     this.transformation = initialTransform;
@@ -80,6 +76,13 @@ export class ImageViewerComponent {
 
     event.preventDefault();
     this.pan(event.movementX, event.movementY);
+  }
+
+  public getCss(): object {
+    return {
+      transformOrigin: `${this.transformation.originX}px ${this.transformation.originY}px`,
+      transform: `matrix(${this.transformation.scale}, 0, 0, ${this.transformation.scale}, ${this.transformation.translateX}, ${this.transformation.translateY})`
+    }
   }
 
   private pan(originX: number, originY: number) {
@@ -133,12 +136,5 @@ export class ImageViewerComponent {
     return this.inRange(this.minScale, this.maxScale, this.transformation.scale) && pos !== prevPos
       ? translate + (pos - prevPos * this.transformation.scale) * (1 - 1 / this.transformation.scale)
       : translate;
-  }
-
-  public getCss(): object {
-    return {
-      transformOrigin: `${this.transformation.originX}px ${this.transformation.originY}px`,
-      transform: `matrix(${this.transformation.scale}, 0, 0, ${this.transformation.scale}, ${this.transformation.translateX}, ${this.transformation.translateY})`
-    }
   }
 }

@@ -4,7 +4,8 @@ import {
   Component,
   ElementRef,
   EventEmitter,
-  Input, OnDestroy,
+  Input,
+  OnDestroy,
   Output,
   ViewChild
 } from '@angular/core';
@@ -20,6 +21,10 @@ export class VideoPlayerComponent implements AfterViewInit, OnDestroy {
 
   @ViewChild('video', {static: false})
   public videoPlayer?: ElementRef<HTMLVideoElement>;
+  @Input()
+  public className: string | null = null;
+  @Output()
+  public nextVideo = new EventEmitter();
 
   public _media: Media | null = null;
 
@@ -32,14 +37,16 @@ export class VideoPlayerComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  @Input()
-  public className: string | null = null;
-
-  @Output()
-  public nextVideo = new EventEmitter();
-
   ngAfterViewInit(): void {
     this.updateVideoPlayer();
+  }
+
+  ngOnDestroy(): void {
+    if (this.videoPlayer) {
+      this.videoPlayer.nativeElement.pause()
+      this.videoPlayer.nativeElement.removeAttribute('src');
+      this.videoPlayer.nativeElement.load();
+    }
   }
 
   private updateVideoPlayer() {
@@ -55,21 +62,12 @@ export class VideoPlayerComponent implements AfterViewInit, OnDestroy {
     element.onended = () => {
       if (element.duration >= 10) {
         this.nextVideo.emit();
-      }
-      else {
+      } else {
         element.currentTime = 0;
         let _ = element.play();
       }
     }
 
     let _ = element.play()
-  }
-
-  ngOnDestroy(): void {
-    if (this.videoPlayer) {
-      this.videoPlayer.nativeElement.pause()
-      this.videoPlayer.nativeElement.removeAttribute('src');
-      this.videoPlayer.nativeElement.load();
-    }
   }
 }

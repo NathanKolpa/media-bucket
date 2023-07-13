@@ -4,8 +4,8 @@ import {Store} from "@ngrx/store";
 import {MatDialog} from "@angular/material/dialog";
 import {QueryAddModalComponent} from "@features/stats/containers/query-add-modal/query-add-modal.component";
 import {AppTitleService} from "@core/services";
-import { fromBucket } from '@features/bucket/store';
-import {Auth, SelectedBucket} from "@core/models";
+import {fromBucket} from '@features/bucket/store';
+import {SelectedBucket} from "@core/models";
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -34,6 +34,6 @@ export class StatsPageComponent implements OnDestroy {
   }
 
   loadChart(bucket: SelectedBucket) {
-    this.store.dispatch(statsActions.loadChart({ bucket }));
+    this.store.dispatch(statsActions.loadChart({bucket}));
   }
 }

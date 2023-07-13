@@ -1,7 +1,7 @@
-<canvas baseChart class="w-100 h-100"
-        *ngIf="chartData as data"
+<canvas *ngIf="chartData as data" [data]="data"
         [legend]="true"
-        [data]="data"
         [options]="options"
-        [type]="'line'">
+        [type]="'line'"
+        baseChart
+        class="w-100 h-100">
 </canvas>

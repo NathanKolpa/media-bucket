@@ -1,9 +1,9 @@
 <div class="scroll">
   <div class="scroll-inner">
 
-    <mat-selection-list [multiple]="false" (selectionChange)="setSelected($event.options[0].value)">
-      <mat-list-option *ngFor="let bucket of buckets" [value]="bucket.bucket.id"
-                       [selected]="selectedId == bucket.bucket.id">
+    <mat-selection-list (selectionChange)="setSelected($event.options[0].value)" [multiple]="false">
+      <mat-list-option *ngFor="let bucket of buckets" [selected]="selectedId == bucket.bucket.id"
+                       [value]="bucket.bucket.id">
 
         <mat-icon *ngIf="bucket.auth || !bucket.bucket.passwordProtected" matListItemIcon>lock_open</mat-icon>
         <mat-icon *ngIf="!bucket.auth && bucket.bucket.passwordProtected" matListItemIcon>lock</mat-icon>
