@@ -309,8 +309,8 @@ pub enum GraphValue {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct GraphPoint {
-    pub x: f32,
-    pub y: GraphValue,
+    pub x: GraphValue,
+    pub y: f32,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

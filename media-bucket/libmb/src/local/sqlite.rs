@@ -217,8 +217,8 @@ impl SqliteIndex {
         let kind: &str = row.try_get(2)?;
 
         Ok(GraphPoint {
-            x: row.try_get(0)?,
-            y: match kind {
+            y: row.try_get(0)?,
+            x: match kind {
                 "date" => GraphValue::Date(row.try_get(1)?),
                 "none" => GraphValue::None,
                 _ => {
