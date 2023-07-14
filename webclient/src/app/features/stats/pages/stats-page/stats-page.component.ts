@@ -5,7 +5,7 @@ import {MatDialog} from "@angular/material/dialog";
 import {QueryAddModalComponent} from "@features/stats/containers/query-add-modal/query-add-modal.component";
 import {AppTitleService} from "@core/services";
 import {fromBucket} from '@features/bucket/store';
-import {SelectedBucket} from "@core/models";
+import {ChartDiscriminator, SelectedBucket} from "@core/models";
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -35,5 +35,17 @@ export class StatsPageComponent implements OnDestroy {
 
   loadChart(bucket: SelectedBucket) {
     this.store.dispatch(statsActions.loadChart({bucket}));
+  }
+
+  updateTitle(value: string | null) {
+    this.store.dispatch(statsActions.updateQueryTitle({ title: value }));
+  }
+
+  updateDiscriminator(value: ChartDiscriminator) {
+    this.store.dispatch(statsActions.updateQueryDiscriminator({ discriminator: value }));
+  }
+
+  removeSeries(index: number) {
+    this.store.dispatch(statsActions.removeSeriesQuery({ index }));
   }
 }

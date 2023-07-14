@@ -48,12 +48,12 @@ import {
 } from './components/confirm-delete-post-dialog/confirm-delete-post-dialog.component';
 import {VideoPlayerComponent} from './components/video-player/video-player.component';
 import {ConfirmGuard} from "@core/services";
-import {SearchBarComponent} from './components/search-bar/search-bar.component';
 import {TagComponent} from './components/tag/tag.component';
 import {PdfViewerComponent} from './components/pdf-viewer/pdf-viewer.component';
 import {ImageViewerComponent} from './components/image-viewer/image-viewer.component';
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {MatSelectModule} from "@angular/material/select";
+import {SearchBarModule} from "@shared/search-bar/search-bar.module";
 
 const routes: Routes = [
   {
@@ -83,7 +83,6 @@ const routes: Routes = [
     UploadProgressDialogComponent,
     ConfirmDeletePostDialogComponent,
     VideoPlayerComponent,
-    SearchBarComponent,
     TagComponent,
     PdfViewerComponent,
     ImageViewerComponent,
@@ -124,7 +123,8 @@ const routes: Routes = [
     MatProgressBarModule,
     MatBadgeModule,
     MatTooltipModule,
-    MatSelectModule
+    MatSelectModule,
+    SearchBarModule
   ]
 })
 export class SearchModule {

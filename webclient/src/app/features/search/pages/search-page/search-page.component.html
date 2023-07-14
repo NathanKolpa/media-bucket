@@ -26,12 +26,15 @@
                         [nextLoadingState]="postsLoadingState$ | async"
                         [resultCount]="postCount$ | async">
 
-      <app-search-bar
-        (queryChange)="queryChange(bucket, $event)"
-        (searchTextChange)="searchTextChange(bucket, $event)"
-        [query]="(searchQuery$ | async) || null"
-        [tags]="(searchTags$ | async) || []">
-      </app-search-bar>
+      <div  class="ms-4 me-4 mt-4">
+        <app-search-bar
+          (queryChange)="queryChange(bucket, $event)"
+          (searchTextChange)="searchTextChange(bucket, $event)"
+          [query]="(searchQuery$ | async) || null"
+          [tags]="(searchTags$ | async) || []">
+        </app-search-bar>
+      </div>
+
 
     </app-search-results>
 

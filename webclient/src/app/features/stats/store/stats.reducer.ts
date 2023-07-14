@@ -36,6 +36,18 @@ const feature = createFeature({
       loadingState: state.loadingState.success(),
       chart
     })),
+    on(statsActions.updateQueryTitle, (state, { title }) => ({
+      ...state,
+      query: state.query.setTitle(title)
+    })),
+    on(statsActions.updateQueryDiscriminator, (state, { discriminator }) => ({
+      ...state,
+      query: state.query.setDiscriminator(discriminator)
+    })),
+    on(statsActions.removeSeriesQuery, (state, { index }) => ({
+      ...state,
+      query: state.query.removeSeries(index)
+    }))
   )
 });
 

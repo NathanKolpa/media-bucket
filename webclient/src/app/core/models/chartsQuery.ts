@@ -52,11 +52,25 @@ export class ChartQuery {
   }
 
   public static initial(): ChartQuery {
-    return new ChartQuery(null, [], new ChartDiscriminator('duration', 'day'))
+    return new ChartQuery(null, [], new ChartDiscriminator('none', null))
   }
 
   public addSeries(series: ChartSeriesQuery): ChartQuery {
     return new ChartQuery(this._name, [...this._series, series], this._discriminator);
+  }
+
+  public removeSeries(index: number): ChartQuery {
+    let copy = [...this._series];
+    copy.splice(index, 1);
+    return new ChartQuery(this._name, copy, this._discriminator);
+  }
+
+  public setTitle(title: null | string): ChartQuery {
+    return new ChartQuery(title, this._series, this._discriminator);
+  }
+
+  public setDiscriminator(value: ChartDiscriminator): ChartQuery {
+    return new ChartQuery(this._name, this._series, value);
   }
 }
 

@@ -11,12 +11,24 @@ export class SearchBarComponent {
 
   @ViewChild('input')
   public input?: ElementRef<HTMLInputElement>;
+
   @Output()
   public searchTextChange = new EventEmitter<string | null>();
+
   @Input()
   public tags: Tag[] = [];
+
   @Output()
   public queryChange = new EventEmitter<PostSearchQuery>();
+
+  @Input()
+  public hideSortBy = false;
+
+  @Input()
+  public hideSearchButton = false;
+
+  @Input()
+  public title: string = 'Search query';
 
   public _query: PostSearchQuery | null = null;
 
@@ -32,6 +44,7 @@ export class SearchBarComponent {
       }
 
       this._query = this._query.addTag(tag);
+      this.queryChanged();
     }
   }
 
@@ -42,12 +55,14 @@ export class SearchBarComponent {
       }
 
       this._query = this._query.addText(str);
+      this.queryChanged();
     }
   }
 
   removeIndex(index: number) {
     if (this._query) {
       this._query = this._query.removeItem(index);
+      this.queryChanged();
     }
   }
 
@@ -61,6 +76,13 @@ export class SearchBarComponent {
   setOrder(value: SearchQueryOrder) {
     if (this._query) {
       this._query = this._query.setOrder(value);
+      this.queryChanged();
+    }
+  }
+
+  private queryChanged() {
+    if (this.hideSearchButton && this._query) {
+      this.queryChange.emit(this._query);
     }
   }
 }

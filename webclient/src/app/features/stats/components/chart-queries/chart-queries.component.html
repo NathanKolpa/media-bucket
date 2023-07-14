@@ -1,20 +1,44 @@
-<div *ngIf="query as query" class="mt-4 ms-4 me-4">
+<form class="mt-4 ms-4 me-4" [formGroup]="form">
 
   <div class="row">
     <mat-form-field appearance="fill" class="col">
       <mat-label>Chart title</mat-label>
 
-      <input matInput>
+      <input matInput formControlName="title">
     </mat-form-field>
   </div>
 
-  TODO: x-axis form field
+  <div class="row">
+    <mat-form-field appearance="fill" class="col">
+      <mat-label>Discriminator (x-axis)</mat-label>
+
+      <mat-select #discriminator formControlName="discriminator" value="none">
+        <mat-option [value]="'none'">None</mat-option>
+        <mat-option [value]="'duration'">Duration</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="fill" class="col" *ngIf="discriminator.value === 'duration'">
+      <mat-label>Interval</mat-label>
+
+      <mat-select formControlName="duration">
+        <mat-option value="hour">Hour</mat-option>
+        <mat-option value="day">Day</mat-option>
+        <mat-option value="week">Week</mat-option>
+        <mat-option value="year">Year</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
 
   <div class="row">
     <mat-chip-listbox class="col">
 
-      <mat-chip *ngFor="let query of query.series">
+      <mat-chip *ngFor="let query of series; let i = index" (removed)="removeSeries.emit(i)">
         {{ query.name }}
+
+        <button matChipRemove>
+          <mat-icon>cancel</mat-icon>
+        </button>
       </mat-chip>
 
       <mat-chip (click)="addQuery.emit()">
@@ -24,6 +48,6 @@
     </mat-chip-listbox>
   </div>
 
-  <button (click)="load.emit()" class="mt-3" color="primary" mat-raised-button>Go</button>
+  <button [disabled]="invalidQuery" (click)="load.emit()" class="mt-3" color="primary" mat-raised-button>Generate chart</button>
 
-</div>
+</form>

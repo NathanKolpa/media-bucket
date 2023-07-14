@@ -1,7 +1,7 @@
-<div class="ms-4 me-4 mt-4">
+<div>
   <div class="row">
     <mat-form-field appearance="fill" class="col">
-      <mat-label>Search query</mat-label>
+      <mat-label>{{ title }}</mat-label>
 
       <mat-chip-grid #chips>
 
@@ -44,7 +44,8 @@
       </mat-autocomplete>
 
     </mat-form-field>
-    <mat-form-field appearance="fill" class="col-md-4 col-xl-2">
+
+    <mat-form-field appearance="fill" class="col-md-4 col-xl-2" *ngIf="!hideSortBy">
       <mat-label>Sort by</mat-label>
       <mat-select (valueChange)="setOrder($event)" [value]="_query?.order">
         <mat-option [value]="'newest'">Newest</mat-option>
@@ -55,7 +56,7 @@
     </mat-form-field>
   </div>
 
-  <button (click)="submit()" color="primary" mat-flat-button>
+  <button (click)="submit()" color="primary" mat-flat-button *ngIf="!hideSearchButton">
     Search
   </button>
 </div>

@@ -1,4 +1,4 @@
-<div class="content">
+<div class="content mat-app-background">
   <app-loadable-content (loadAgain)="reload()" [loadingState]="bucketLoadingState$ | async">
 
     <app-not-authenticated *ngIf="!(isAuthenticated$ | async); else content">

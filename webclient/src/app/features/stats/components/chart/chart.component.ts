@@ -9,9 +9,7 @@ import {ChartConfiguration, ChartDataset, ChartOptions} from "chart.js";
 })
 export class ChartComponent {
 
-  public options: ChartOptions<'line'> = {
-    responsive: true,
-  }
+  public options: ChartOptions<'line'> = {};
 
   public chartData: ChartConfiguration<'line'>['data'] | null = null;
 
@@ -20,6 +18,15 @@ export class ChartComponent {
     if (chart === null || chart.series.length <= 0) {
       this.chartData = null;
       return;
+    }
+
+    this.options.responsive = true;
+
+    this.options.plugins = {
+      title: {
+        text: chart.name == null ? [] : chart.name,
+        display: chart.name !== null
+      }
     }
 
     if (chart.discriminator.discriminator == 'duration' && chart.discriminator.duration !== null) {

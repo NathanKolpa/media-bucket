@@ -18,6 +18,8 @@ import {QueryFormComponent} from './components/query-form/query-form.component';
 import {ReactiveFormsModule} from "@angular/forms";
 import {LoadingModule} from "@shared/loading/loading.module";
 import 'chartjs-adapter-luxon';
+import {MatSelectModule} from "@angular/material/select";
+import {SearchBarModule} from "@shared/search-bar/search-bar.module";
 
 const routes: Routes = [
   {
@@ -35,21 +37,23 @@ const routes: Routes = [
     QueryAddModalComponent,
     QueryFormComponent,
   ],
-  imports: [
-    CommonModule,
-    RouterModule.forChild(routes),
-    StatsStoreModule,
+    imports: [
+        CommonModule,
+        RouterModule.forChild(routes),
+        StatsStoreModule,
 
-    NgChartsModule,
-    MatToolbarModule,
-    MatInputModule,
-    MatChipsModule,
-    MatButtonModule,
-    MatIconModule,
-    MatDialogModule,
-    ReactiveFormsModule,
-    LoadingModule
-  ]
+        NgChartsModule,
+        MatToolbarModule,
+        MatInputModule,
+        MatChipsModule,
+        MatButtonModule,
+        MatIconModule,
+        MatDialogModule,
+        ReactiveFormsModule,
+        LoadingModule,
+        MatSelectModule,
+        SearchBarModule
+    ]
 })
 export class StatsModule {
 }

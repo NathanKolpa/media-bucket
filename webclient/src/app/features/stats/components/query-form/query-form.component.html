@@ -1,12 +1,33 @@
 <form (submit)="submitForm()" [formGroup]="form">
   <div class="row">
     <mat-form-field appearance="fill" class="col">
-      <mat-label>Query name</mat-label>
+      <mat-label>Name</mat-label>
 
       <input
         formControlName="name"
         matInput>
     </mat-form-field>
+  </div>
+
+  <div class="row">
+    <mat-form-field appearance="fill" class="col">
+      <mat-label>Select (y-axis)</mat-label>
+
+      <mat-select formControlName="select">
+        <mat-option value="count">Count</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <div class="row">
+    <app-search-bar
+      [hideSortBy]="true"
+      [hideSearchButton]="true"
+      title="Filter"
+      [tags]="tags"
+      (searchTextChange)="searchTextChange.emit($event)"
+      [(query)]="filter">
+    </app-search-bar>
   </div>
 
   <button color="primary" mat-flat-button>Submit</button>

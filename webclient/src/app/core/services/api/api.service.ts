@@ -272,10 +272,19 @@ export class ApiService {
         break;
     }
 
+    let textItems = query.filter.items.filter(x => x.type == 'text').map((x: any) => x.str);
+    let text = null;
+    if (textItems.length > 0) {
+      text = textItems.join(' ');
+    }
+
     return this.authenticatedPost(auth, `/posts/graph`, {
       select,
       discriminator,
-      filter: {}
+      filter: {
+        tags: query.filter.items.filter(x => x.type == 'tag').map((x: any) => x.tag.id),
+        text
+      }
     }).pipe(
       map(json => new ChartSeries(query.name, json.points.map((x: any) => this.mapChartPoint(x))))
     )
