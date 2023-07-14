@@ -3,7 +3,7 @@ import {PostSearchQuery} from "./searchQuery";
 export type ChartDiscriminatorType = 'none' | 'duration';
 export type ChartSelect = 'count';
 
-export type ChartDiscriminatorDuration = 'hour' | 'day' | 'week' | 'year';
+export type ChartDiscriminatorDuration = 'hour' | 'day' | 'week' | 'month' | 'year';
 
 export class ChartDiscriminator {
   public constructor(private _discriminator: ChartDiscriminatorType, private _duration: ChartDiscriminatorDuration | null) {

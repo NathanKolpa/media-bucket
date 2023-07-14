@@ -258,6 +258,10 @@ export class ApiService {
         secs = 60 * 60 * 24 * 7;
         break;
 
+      case 'month':
+        secs = 60 * 60 * 24 * 365 / 12;
+        break;
+
       case 'year':
         secs = 60 * 60 * 24 * 365;
         break;
