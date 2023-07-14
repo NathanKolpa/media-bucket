@@ -278,11 +278,17 @@ export class ApiService {
       text = textItems.join(' ');
     }
 
+    let tagItems = query.filter.items.filter(x => x.type == 'tag').map((x: any) => x.tag.id);
+    let tags = null;
+    if (tagItems.length > 0) {
+      tags = tagItems;
+    }
+
     return this.authenticatedPost(auth, `/posts/graph`, {
       select,
       discriminator,
       filter: {
-        tags: query.filter.items.filter(x => x.type == 'tag').map((x: any) => x.tag.id),
+        tags,
         text
       }
     }).pipe(

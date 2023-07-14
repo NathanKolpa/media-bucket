@@ -9,9 +9,9 @@ import {ChartConfiguration, ChartDataset, ChartOptions} from "chart.js";
 })
 export class ChartComponent {
 
-  public options: ChartOptions<'line'> = {};
-
-  public chartData: ChartConfiguration<'line'>['data'] | null = null;
+  public options: any = {};
+  public chartData: any = null;
+  public type: any = null;
 
   @Input()
   public set chart(chart: Chart | null) {
@@ -21,6 +21,11 @@ export class ChartComponent {
     }
 
     this.options.responsive = true;
+
+    this.options.interaction = {
+      mode: 'index',
+      intersect: false,
+    };
 
     this.options.plugins = {
       title: {
@@ -40,13 +45,19 @@ export class ChartComponent {
       };
     }
 
-    this.chartData = {
-      datasets: chart.series.map(x => this.seriesToDataset(x))
+    if (chart.discriminator.discriminator == 'duration') {
+      this.type = 'line';
+      this.chartData = {
+        datasets: chart.series.map(x => this.lineSeries(x))
+      }
     }
-
+    else if (chart.discriminator.discriminator == 'none') {
+      this.type = 'bar';
+      this.chartData = this.barChart(chart);
+    }
   }
 
-  private seriesToDataset(chart: ChartSeries): ChartDataset<"line", any[]> {
+  private lineSeries(chart: ChartSeries): ChartDataset<"line", any[]> {
     return {
       label: chart.name,
       data: chart.points.map((point, i) => {
@@ -57,6 +68,18 @@ export class ChartComponent {
             return {y: point.y, x: point.x}
         }
       })
+    }
+  }
+
+  private barChart(chart: Chart): any {
+    return {
+      labels: chart.series.map(x => x.name),
+      datasets: [
+        {
+          label: 'Count',
+          data: chart.series.map(x => x.points[0].y)
+        }
+      ]
     }
   }
 }
