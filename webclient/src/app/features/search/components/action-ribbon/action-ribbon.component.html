@@ -4,7 +4,7 @@
     <mat-icon class="material-icons-outlined">cloud_upload</mat-icon>
   </button>
 
-  <button (click)="showUploadProgress.emit()" mat-icon-button>
+  <button (click)="showUploadProgress.emit()" mat-icon-button [disabled]="activeJobs == 0">
     <mat-icon [matBadgeHidden]="activeJobs == 0"
               [matBadge]="activeJobs"
               class="material-icons-outlined"
