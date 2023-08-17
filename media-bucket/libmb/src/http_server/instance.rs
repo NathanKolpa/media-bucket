@@ -142,7 +142,7 @@ impl ServerBucketInstance {
 
     fn new_session(&self, ip: IpAddr) -> AuthToken {
         let now = Utc::now();
-        let lifetime = Duration::days(3);
+        let lifetime = Duration::days(14);
 
         let token = AuthToken::new(ip, now.clone(), lifetime);
 
