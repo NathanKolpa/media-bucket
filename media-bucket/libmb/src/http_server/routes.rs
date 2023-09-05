@@ -5,7 +5,6 @@ use actix_web::http::header::ACCEPT;
 use actix_web::{web, HttpResponse, Responder, Scope};
 use std::path::PathBuf;
 use std::sync::Arc;
-use thiserror::__private::PathAsDisplay;
 
 mod buckets;
 mod content;
@@ -49,7 +48,7 @@ pub fn routes_with_static(file_root: PathBuf, index_file: String) -> Scope {
                         let (req, _) = req.into_parts();
                         let file = NamedFile::open_async(format!(
                             "{}/{index_file}",
-                            file_root.as_display()
+                            file_root.display()
                         ))
                         .await?;
                         let res = file.into_response(&req);
