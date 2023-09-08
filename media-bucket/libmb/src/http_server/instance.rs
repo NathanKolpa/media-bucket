@@ -112,28 +112,26 @@ impl ServerBucketInstance {
     }
 
     pub async fn login(&self, password: Option<&str>, ip: IpAddr) -> Result<String, LoginError> {
-        {
-            let instance = self.instance.read().unwrap();
+        let instance = self.instance.read().unwrap();
 
-            if let Some(bucket) = &*instance {
-                // the instance is loaded
-                if !bucket
-                    .data_source()
-                    .passwords()
-                    .is_valid_password(password)
-                    .await?
-                {
-                    return Err(LoginError::InvalidPassword);
-                }
-            } else {
-                // load the instance
-                drop(instance);
-
-                let bucket = Bucket::open(self.location.as_str(), password).await?;
-
-                let mut instance = self.instance.write().unwrap();
-                *instance = Some(Arc::new(bucket));
+        if let Some(bucket) = &*instance {
+            // the instance is loaded
+            if !bucket
+                .data_source()
+                .passwords()
+                .is_valid_password(password)
+                .await?
+            {
+                return Err(LoginError::InvalidPassword);
             }
+        } else {
+            // load the instance
+            drop(instance);
+
+            let bucket = Bucket::open(self.location.as_str(), password).await?;
+
+            let mut instance = self.instance.write().unwrap();
+            *instance = Some(Arc::new(bucket));
         }
 
         let new_token = self.new_session(ip).to_token(&self.token_secret);

@@ -46,11 +46,9 @@ pub fn routes_with_static(file_root: PathBuf, index_file: String) -> Scope {
                         }
 
                         let (req, _) = req.into_parts();
-                        let file = NamedFile::open_async(format!(
-                            "{}/{index_file}",
-                            file_root.display()
-                        ))
-                        .await?;
+                        let file =
+                            NamedFile::open_async(format!("{}/{index_file}", file_root.display()))
+                                .await?;
                         let res = file.into_response(&req);
                         Ok(ServiceResponse::new(req, res))
                     }

@@ -1,3 +1,4 @@
+use std::ops::DerefMut;
 use std::path::Path;
 use std::str::FromStr;
 use std::time::Duration;
@@ -55,7 +56,7 @@ impl SqliteIndex {
         let pool = Self::new_encrypted_pool(path, secret, false).await?;
 
         Self::prepare_db(&pool).await?;
-        Self::migrate(&pool).await?;
+        // Self::migrate(&pool).await?; TODO: this causes a compiler crash in routes/buckets.rs
 
         Ok(Self { pool })
     }
@@ -82,13 +83,12 @@ impl SqliteIndex {
 
         let mut connect_options =
             SqliteConnectOptions::from_str(path.to_str().ok_or(SqliteError::InvalidPath)?)?
+                .disable_statement_logging()
                 .create_if_missing(create)
                 .pragma("key", key)
                 .journal_mode(SqliteJournalMode::Wal)
                 .synchronous(SqliteSynchronous::Full)
                 .busy_timeout(Duration::from_secs(10));
-
-        connect_options.disable_statement_logging();
 
         Ok(SqlitePoolOptions::new()
             .max_connections(1)
@@ -108,7 +108,7 @@ impl SqliteIndex {
 
         conn.execute("PRAGMA foreign_keys = off").await?;
 
-        sqlx::migrate!("db/migrations").run(&mut conn).await?;
+        sqlx::migrate!("db/migrations").run(conn.deref_mut()).await?;
 
         conn.execute("PRAGMA foreign_keys = on").await?;
 
@@ -482,7 +482,7 @@ impl PostItemDataSource for SqliteIndex {
         let total_row_count: (i64,) =
             sqlx::query_as("SELECT COUNT(*) FROM post_items WHERE post_id = ?")
                 .bind(post_id as i64)
-                .fetch_one(&mut conn)
+                .fetch_one(conn.deref_mut())
                 .await?;
 
         let rows = sqlx::query(
@@ -492,7 +492,7 @@ impl PostItemDataSource for SqliteIndex {
         .bind(page.page_size() as i64)
         .bind(page.offset() as i64)
         .map(|r| Self::map_post_item(&r))
-        .fetch_all(&mut conn)
+        .fetch_all(conn.deref_mut())
         .await?;
 
         Ok(Page {
@@ -544,14 +544,14 @@ impl PostDataSource for SqliteIndex {
         let mut conn = self.pool.acquire().await?;
 
         let total_row_count: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM posts")
-            .fetch_one(&mut conn)
+            .fetch_one(conn.deref_mut())
             .await?;
 
         let rows = sqlx::query("SELECT * FROM posts LIMIT ? OFFSET ?")
             .bind(page.page_size() as i64)
             .bind(page.offset() as i64)
             .map(|r| Self::map_post(&r))
-            .fetch_all(&mut conn)
+            .fetch_all(conn.deref_mut())
             .await?;
 
         Ok(Page {
@@ -642,12 +642,12 @@ impl TagDataSource for SqliteIndex {
 
         sqlx::query("DELETE FROM tags_posts WHERE tag_id = ?")
             .bind(tag_id as i64)
-            .execute(&mut tx)
+            .execute(tx.deref_mut())
             .await?;
 
         sqlx::query("DELETE FROM tags WHERE tag_id = ?")
             .bind(tag_id as i64)
-            .execute(&mut tx)
+            .execute(tx.deref_mut())
             .await?;
 
         tx.commit().await?;
@@ -677,7 +677,7 @@ impl TagDataSource for SqliteIndex {
         let mut conn = self.pool.acquire().await?;
 
         let total_row_count: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM tags")
-            .fetch_one(&mut conn)
+            .fetch_one(conn.deref_mut())
             .await?;
 
         let query_is_empty = query.len() < 3;
@@ -718,7 +718,7 @@ impl TagDataSource for SqliteIndex {
             .bind(page.page_size() as i64)
             .bind(page.offset() as i64)
             .map(|r| Self::map_tag(&r))
-            .fetch_all(&mut conn)
+            .fetch_all(conn.deref_mut())
             .await?;
 
         Ok(Page {
@@ -831,7 +831,7 @@ impl CrossDataSource for SqliteIndex {
             .bind(page.page_size() as i64)
             .bind(page.offset() as i64)
             .map(|r| Self::map_search_post(&r))
-            .fetch_all(&mut conn)
+            .fetch_all(conn.deref_mut())
             .await?;
 
         let query_row_count_str =
@@ -840,7 +840,7 @@ impl CrossDataSource for SqliteIndex {
 
         let total_row_count: i64 = query_row_count
             .map(|r| r.get(0))
-            .fetch_one(&mut conn)
+            .fetch_one(conn.deref_mut())
             .await?;
 
         Ok(Page {
@@ -861,7 +861,7 @@ impl CrossDataSource for SqliteIndex {
         let total_row_count: (i64,) =
             sqlx::query_as("SELECT COUNT(*) FROM post_items WHERE post_id = ?")
                 .bind(post_id as i64)
-                .fetch_one(&mut conn)
+                .fetch_one(conn.deref_mut())
                 .await?;
 
         let rows = sqlx::query(
@@ -877,7 +877,7 @@ impl CrossDataSource for SqliteIndex {
             .bind(page.page_size() as i64)
             .bind(page.offset() as i64)
             .map(|r| Self::map_search_post_item(&r))
-            .fetch_all(&mut conn)
+            .fetch_all(conn.deref_mut())
             .await?;
 
         Ok(Page {
@@ -921,7 +921,7 @@ impl CrossDataSource for SqliteIndex {
         let mut tx = self.pool.begin().await?;
 
         let batch_id = sqlx::query("INSERT INTO import_batches DEFAULT VALUES")
-            .execute(&mut tx)
+            .execute(tx.deref_mut())
             .await?
             .last_insert_rowid();
 
@@ -938,7 +938,7 @@ impl CrossDataSource for SqliteIndex {
                 .bind(data.description.as_deref())
                 .bind(batch_id)
                 .bind(created_at)
-                .execute(&mut tx)
+                .execute(tx.deref_mut())
                 .await?
                 .last_insert_rowid();
 
@@ -1004,7 +1004,7 @@ impl CrossDataSource for SqliteIndex {
                 query = query.bind(Utc::now());
             }
 
-            query.execute(&mut tx).await?;
+            query.execute(tx.deref_mut()).await?;
         }
 
         if !data.tag_ids.is_empty() {
@@ -1034,7 +1034,7 @@ impl CrossDataSource for SqliteIndex {
                 }
             }
 
-            query.execute(&mut tx).await?;
+            query.execute(tx.deref_mut()).await?;
         }
 
         tx.commit().await?;
@@ -1045,11 +1045,11 @@ impl CrossDataSource for SqliteIndex {
     async fn update_full_post(&self, value: &Post, tags: &[u64]) -> Result<(), DataSourceError> {
         let mut tx = self.pool.begin().await?;
 
-        self.post_update(value, &mut tx).await?;
+        self.post_update(value, tx.deref_mut()).await?;
 
         sqlx::query("DELETE FROM tags_posts WHERE post_id = ?")
             .bind(value.id as i64)
-            .execute(&mut tx)
+            .execute(tx.deref_mut())
             .await?;
 
         if !tags.is_empty() {
@@ -1063,7 +1063,7 @@ impl CrossDataSource for SqliteIndex {
                 query = query.bind(value.id as i64).bind(*tag as i64);
             }
 
-            query.execute(&mut tx).await?;
+            query.execute(tx.deref_mut()).await?;
         }
 
         tx.commit().await?;
@@ -1075,17 +1075,17 @@ impl CrossDataSource for SqliteIndex {
 
         sqlx::query("DELETE FROM post_items WHERE post_id = ?")
             .bind(id as i64)
-            .execute(&mut tx)
+            .execute(tx.deref_mut())
             .await?;
 
         sqlx::query("DELETE FROM tags_posts WHERE post_id = ?")
             .bind(id as i64)
-            .execute(&mut tx)
+            .execute(tx.deref_mut())
             .await?;
 
         sqlx::query("DELETE FROM posts WHERE post_id = ?")
             .bind(id as i64)
-            .execute(&mut tx)
+            .execute(tx.deref_mut())
             .await?;
 
         tx.commit().await?;
@@ -1129,7 +1129,7 @@ impl CrossDataSource for SqliteIndex {
 
         let rows = graph_query
             .map(|r| Self::map_graph_point(&r))
-            .fetch_all(&mut conn)
+            .fetch_all(conn.deref_mut())
             .await?
             .into_iter()
             .collect::<Result<Vec<_>, DataSourceError>>()?;
