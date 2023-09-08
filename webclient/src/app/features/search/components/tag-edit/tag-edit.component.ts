@@ -1,7 +1,7 @@
 import {Component, EventEmitter, Input, OnDestroy, Output} from '@angular/core';
 import {PageParams, SelectedBucket, Tag} from "@core/models";
 import {FormControl} from "@angular/forms";
-import {auditTime, combineLatest, map, startWith, Subject, Subscription, switchMap} from "rxjs";
+import {auditTime, combineLatest, debounceTime, map, startWith, Subject, Subscription, switchMap} from "rxjs";
 import {ApiService} from "@core/services";
 import {MatSnackBar} from "@angular/material/snack-bar";
 
@@ -28,7 +28,7 @@ export class TagEditComponent implements OnDestroy {
   constructor(private api: ApiService, private snackBar: MatSnackBar) {
     let query = this.searchField.valueChanges.pipe(
       startWith(''),
-      auditTime(250)
+      debounceTime(100)
     );
 
     this.tagsSubscription = combineLatest([query, this.bucket$]).pipe(

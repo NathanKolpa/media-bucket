@@ -5,7 +5,7 @@ import * as searchActions from './search.actions';
 import {
   auditTime,
   catchError,
-  combineLatest,
+  combineLatest, debounceTime,
   filter,
   first,
   forkJoin,
@@ -55,7 +55,7 @@ export class SearchEffects {
 
   searchTextChange$ = createEffect(() => this.actions$.pipe(
     ofType(searchActions.searchTextChange),
-    auditTime(250),
+    debounceTime(100),
     switchMap(({bucket, query}) => this.api.searchTags(bucket.auth, new PageParams(25, 0), query ?? '').pipe(
       map(({page, tags}) => searchActions.searchTagSuccess({tags})),
       catchError(async failure => searchActions.searchTagFailure({failure}))

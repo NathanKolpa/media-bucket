@@ -81,7 +81,7 @@ impl SqliteIndex {
     ) -> Result<SqlitePool, SqliteError> {
         let key = format!("'{}'", hex::encode(secret.bytes()));
 
-        let mut connect_options =
+        let connect_options =
             SqliteConnectOptions::from_str(path.to_str().ok_or(SqliteError::InvalidPath)?)?
                 .disable_statement_logging()
                 .create_if_missing(create)
