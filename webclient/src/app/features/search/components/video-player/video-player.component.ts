@@ -10,6 +10,7 @@ import {
   ViewChild
 } from '@angular/core';
 import {Media} from "@core/models";
+import {Subject} from "rxjs";
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -54,9 +55,17 @@ export class VideoPlayerComponent implements AfterViewInit, OnDestroy {
       return;
     }
 
+    let volumeStr = localStorage.getItem('video_volume');
+    let volume = 0.25;
+
+    if(volumeStr != null && !isNaN(+volumeStr)) {
+      volume = +volumeStr;
+    }
+
     let element = this.videoPlayer.nativeElement;
 
     element.src = this._media?.url ?? '';
+    element.volume = volume;
     element.load();
 
     element.onended = () => {
@@ -66,6 +75,10 @@ export class VideoPlayerComponent implements AfterViewInit, OnDestroy {
         element.currentTime = 0;
         let _ = element.play();
       }
+    }
+
+    element.onvolumechange = (e) => {
+      localStorage.setItem('video_volume', element.volume + '');
     }
 
     let _ = element.play()
