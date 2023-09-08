@@ -2,8 +2,6 @@
 #![allow(dead_code)] // TODO remove me
 #![allow(unused_variables)] // TODO remove me
 
-//! The documentation was largely written by an OpenAI Assistant (https://openai.com/blog/openai-assistant/).
-
 pub use bucket::{Bucket, BucketError};
 
 mod bucket;
