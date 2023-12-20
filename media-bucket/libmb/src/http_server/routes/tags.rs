@@ -1,13 +1,13 @@
-use actix_web::{delete, get, post, web, Responder};
+use actix_web::{delete, get, post, web, Responder, put};
 use chrono::Utc;
 use log::info;
 use serde::Deserialize;
 
 use crate::data_source::PageParams;
-use crate::http_models::CreateTagRequest;
+use crate::http_models::{CreateTagRequest, UpdateTagRequest};
 use crate::http_server::instance::Session;
 use crate::http_server::web_error::WebError;
-use crate::model::Tag;
+use crate::model::{ManyToOne, Tag};
 
 #[derive(Deserialize)]
 pub struct SearchParams {
@@ -43,13 +43,39 @@ pub async fn store(
     let mut tag = Tag {
         id: 0,
         name: req.name.clone(),
-        group: None,
+        group: req.group.map(|id| ManyToOne::Id(id)),
         created_at: Utc::now(),
     };
 
     session.bucket().data_source().tags().add(&mut tag).await?;
 
-    info!("Created tag {} \"{}\"", tag.id, tag.name);
+    info!("Created tag {}", tag.id);
+
+    Ok(web::Json(tag))
+}
+
+#[put("/{id}")]
+pub async fn update(
+    session: Session,
+    req: web::Json<UpdateTagRequest>,
+    id: web::Path<(u64, u64)>,
+) -> Result<impl Responder, WebError> {
+    let id = id.into_inner().1;
+
+    let mut tag = session
+        .bucket()
+        .data_source()
+        .tags()
+        .get_by_id(id)
+        .await?
+        .ok_or(WebError::ResourceNotFound)?;
+
+    tag.group = req.group.map(|id| ManyToOne::Id(id));
+    tag.name = req.name.clone();
+
+    session.bucket().data_source().tags().update(&tag).await?;
+
+    info!("Updated tag {}", tag.id);
 
     Ok(web::Json(tag))
 }
@@ -71,7 +97,7 @@ pub async fn delete(
 
     session.bucket().data_source().tags().delete(tag.id).await?;
 
-    info!("Deleted tag {} \"{}\"", tag.id, tag.name);
+    info!("Deleted tag {}", tag.id);
 
     Ok(web::Json(tag))
 }

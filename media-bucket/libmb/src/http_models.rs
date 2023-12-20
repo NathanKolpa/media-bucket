@@ -36,7 +36,19 @@ pub struct CreateFullPostResponse {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct CreateTagGroupRequest {
+    pub name: String,
+    pub hex_color: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct CreateTagRequest {
+    pub name: String,
+    pub group: Option<u64>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct UpdateTagRequest {
     pub name: String,
     pub group: Option<u64>,
 }

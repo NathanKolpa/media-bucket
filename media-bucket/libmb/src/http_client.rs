@@ -11,12 +11,10 @@ use url::Url;
 use uuid::Uuid;
 
 use crate::data_source::*;
-use crate::http_models::{
-    AuthRequest, AuthResponse, BucketInfo, CreateFullPostResponse, CreateTagRequest, ErrorResponse,
-};
+use crate::http_models::{AuthRequest, AuthResponse, BucketInfo, CreateFullPostResponse, CreateTagGroupRequest, CreateTagRequest, ErrorResponse, UpdateTagRequest};
 use crate::model::{
     Content, CreateFullPost, Graph, ImportBatch, Media, Page, Post, PostDetail, PostGraphQuery,
-    PostItem, PostSearchQuery, SearchPost, SearchPostItem, Tag,
+    PostItem, PostSearchQuery, SearchPost, SearchPostItem, Tag, TagGroup,
 };
 
 const USER_AGENT: &'static str = "libmb/1.0";
@@ -286,6 +284,22 @@ impl TagDataSource for HttpDataSource {
         Ok(())
     }
 
+    async fn update(&self, value: &Tag) -> Result<(), DataSourceError> {
+        let res = self
+            .client
+            .post(format!("{}/tags/{}", self.base, value.id))
+            .json(&UpdateTagRequest {
+                name: value.name.clone(),
+                group: value.group.as_ref().map(|g| g.id()),
+            })
+            .send()
+            .await?;
+
+        res.json::<Tag>().await?;
+
+        Ok(())
+    }
+
     async fn delete(&self, tag_id: u64) -> Result<(), DataSourceError> {
         todo!()
     }
@@ -333,7 +347,50 @@ impl TagDataSource for HttpDataSource {
 }
 
 #[async_trait]
-impl TagGroupDataSource for HttpDataSource {}
+impl TagGroupDataSource for HttpDataSource {
+    async fn add(&self, value: &mut TagGroup) -> Result<(), DataSourceError> {
+        let res = self
+            .client
+            .post(format!("{}/tag_groups", self.base))
+            .json(&CreateTagGroupRequest {
+                name: value.name.clone(),
+                hex_color: value.hex_color.clone(),
+            })
+            .send()
+            .await?;
+
+        let new_tag = res.json::<TagGroup>().await?;
+
+        value.id = new_tag.id;
+
+        Ok(())
+    }
+
+    async fn search(
+        &self,
+        page: &PageParams,
+        query: &str,
+        exact: bool,
+    ) -> Result<Page<TagGroup>, DataSourceError> {
+        let mut url = format!("{}/tag_groups", self.base)
+            .parse::<Url>()
+            .expect("Cannot parse url");
+
+        url.query_pairs_mut()
+            .append_pair("offset", page.offset().to_string().as_str())
+            .append_pair("size", page.page_size().to_string().as_str())
+            .append_pair("exact", if exact { "true" } else { "false" })
+            .append_pair("query", query);
+
+        Ok(self
+            .client
+            .get(url)
+            .send()
+            .await?
+            .json::<Page<TagGroup>>()
+            .await?)
+    }
+}
 
 #[async_trait]
 impl PasswordDataSource for HttpDataSource {

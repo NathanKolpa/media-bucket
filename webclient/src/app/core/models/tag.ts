@@ -16,7 +16,7 @@ export class Tag {
 }
 
 export class TagGroup {
-  constructor(private _id: number, private _name: string) {
+  constructor(private _id: number, private _name: string, private _color: string) {
   }
 
   get id(): number {
@@ -25,5 +25,9 @@ export class TagGroup {
 
   get name(): string {
     return this._name;
+  }
+
+  get color(): string {
+    return this._color;
   }
 }
