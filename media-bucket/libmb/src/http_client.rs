@@ -12,10 +12,7 @@ use uuid::Uuid;
 
 use crate::data_source::*;
 use crate::http_models::{AuthRequest, AuthResponse, BucketInfo, CreateFullPostResponse, CreateTagGroupRequest, CreateTagRequest, ErrorResponse, UpdateTagRequest};
-use crate::model::{
-    Content, CreateFullPost, Graph, ImportBatch, Media, Page, Post, PostDetail, PostGraphQuery,
-    PostItem, PostSearchQuery, SearchPost, SearchPostItem, Tag, TagGroup,
-};
+use crate::model::{Content, CreateFullPost, Graph, ImportBatch, Media, Page, Post, PostDetail, PostGraphQuery, PostItem, PostSearchQuery, PostSearchQueryOrder, SearchPost, SearchPostItem, Tag, TagGroup};
 
 const USER_AGENT: &'static str = "libmb/1.0";
 
@@ -448,6 +445,17 @@ impl CrossDataSource for HttpDataSource {
 
             if let Some(text) = query.text.as_deref() {
                 query_pairs.append_pair("text", text);
+            }
+
+            if let Some(order) = query.order.as_ref() {
+                let order_text = match order {
+                    PostSearchQueryOrder::Newest => "newest",
+                    PostSearchQueryOrder::Oldest => "oldest",
+                    PostSearchQueryOrder::Relevant => "relevant",
+                    PostSearchQueryOrder::Random(_) => todo!()
+                };
+
+                query_pairs.append_pair("order", order_text);
             }
         }
 
