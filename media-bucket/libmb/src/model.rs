@@ -220,6 +220,8 @@ impl ManyToOne<u64, Post> {
 pub struct TagGroup {
     pub id: u64,
     pub name: String,
+    pub hex_color: String,
+    pub created_at: DateTime<Utc>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

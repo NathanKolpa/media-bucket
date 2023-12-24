@@ -24,7 +24,7 @@ import {
   PostSearchQuery,
   SearchPost,
   SearchPostItem,
-  Tag,
+  Tag, TagGroup,
   Upload
 } from "@core/models";
 import {environment} from "@src/environments/environment";
@@ -545,8 +545,17 @@ export class ApiService {
     )
   }
 
+  private mapGroup(json: any): TagGroup {
+    return new TagGroup(json.id, json.name, json.hex_color);
+  }
+
   private mapTag(json: any): Tag {
-    return new Tag(json.id, json.name, null);
+    let group = null;
+    if (typeof json.group?.obj === 'object') {
+      group = this.mapGroup(json.group.obj);
+    }
+
+    return new Tag(json.id, json.name, group);
   }
 
   private mapPost(json: any): Post {

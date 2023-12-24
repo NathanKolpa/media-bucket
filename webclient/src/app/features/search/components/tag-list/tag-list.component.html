@@ -1,4 +1,14 @@
-<mat-chip-listbox *ngFor="let group of tagGroups">
+<mat-chip-listbox *ngFor="let group of tagGroups" [class]="showGroups ? 'ps-2' : ''">
+
+  <div class="w-100  ps-2" *ngIf="showGroups">
+    <h4 class="mb-0" *ngIf="group.group as group" [style]="{ 'color': group.color }">
+      {{ group.name }}
+    </h4>
+
+    <h4 class="mb-0" *ngIf="group.group == null">
+      Other
+    </h4>
+  </div>
 
 
   <app-tag (clicked)="clickTag.emit(tag)"

@@ -172,6 +172,7 @@ pub trait PostDataSource: Sync + Send {
 #[async_trait]
 pub trait TagDataSource: Sync + Send {
     async fn add(&self, value: &mut Tag) -> Result<(), DataSourceError>;
+    async fn update(&self, value: &Tag) -> Result<(), DataSourceError>;
     async fn delete(&self, tag_id: u64) -> Result<(), DataSourceError>;
     async fn get_by_id(&self, id: u64) -> Result<Option<Tag>, DataSourceError>;
     async fn search(
@@ -186,7 +187,15 @@ pub trait TagDataSource: Sync + Send {
 }
 
 #[async_trait]
-pub trait TagGroupDataSource: Sync + Send {}
+pub trait TagGroupDataSource: Sync + Send {
+    async fn add(&self, value: &mut TagGroup) -> Result<(), DataSourceError>;
+    async fn search(
+        &self,
+        page: &PageParams,
+        query: &str,
+        exact: bool,
+    ) -> Result<Page<TagGroup>, DataSourceError>;
+}
 
 #[async_trait]
 pub trait PasswordDataSource: Sync + Send {

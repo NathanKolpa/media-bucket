@@ -26,6 +26,9 @@ export class TagListComponent {
   public clickTag = new EventEmitter<Tag>();
 
   @Input()
+  public showGroups = false;
+
+  @Input()
   public set tags(tags: Tag[]) {
     let groups: ReverseTagGroup[] = [];
 
@@ -45,6 +48,28 @@ export class TagListComponent {
 
       groups.push(newGroup);
     }
+
+    groups.sort((a,b) => {
+      if (a.group == null && b.group == null) {
+        return 0;
+      }
+
+      if (a.group == null) {
+        return 1;
+      }
+
+      if (b.group == null) {
+        return -1;
+      }
+
+      if ( a.group.name < b.group?.name ){
+        return -1;
+      }
+      if (a.group.name > b.group?.name){
+        return 1;
+      }
+      return 0;
+    });
 
     this.tagGroups = groups;
   }

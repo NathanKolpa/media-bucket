@@ -4,7 +4,7 @@ use std::str::FromStr;
 use std::time::Duration;
 
 use async_trait::async_trait;
-use chrono::Utc;
+use chrono::{DateTime, Utc};
 use futures::TryStreamExt;
 use mediatype::MediaTypeBuf;
 use sqlx::sqlite::{
@@ -108,7 +108,9 @@ impl SqliteIndex {
 
         conn.execute("PRAGMA foreign_keys = off").await?;
 
-        sqlx::migrate!("db/migrations").run(conn.deref_mut()).await?;
+        sqlx::migrate!("db/migrations")
+            .run(conn.deref_mut())
+            .await?;
 
         conn.execute("PRAGMA foreign_keys = on").await?;
 
@@ -192,6 +194,39 @@ impl SqliteIndex {
             id: row.try_get::<'_, i64, _>("tag_id")? as u64,
             name: row.try_get("name")?,
             group: group.map(|g| ManyToOne::Id(g as u64)),
+            created_at: row.try_get("created_at")?,
+        })
+    }
+
+    fn map_full_tag(row: &SqliteRow) -> Result<Tag, DataSourceError> {
+        let group: Option<i64> = row.try_get("group_id")?;
+        let group_color: Option<String> = row.try_get("color")?;
+        let group_name: Option<String> = row.try_get("g_name")?;
+        let group_created_at: Option<DateTime<Utc>> = row.try_get("g_created_at")?;
+
+        Ok(Tag {
+            id: row.try_get::<'_, i64, _>("tag_id")? as u64,
+            name: row.try_get("name")?,
+            group: match (group, group_color, group_name, group_created_at) {
+                (Some(group_id), Some(group_color), Some(group_name), Some(group_created_at)) => {
+                    Some(ManyToOne::Obj(TagGroup {
+                        id: group_id as u64,
+                        name: group_name,
+                        hex_color: group_color,
+                        created_at: group_created_at,
+                    }))
+                }
+                _ => None,
+            },
+            created_at: row.try_get("created_at")?,
+        })
+    }
+
+    fn map_tag_group(row: &SqliteRow) -> Result<TagGroup, DataSourceError> {
+        Ok(TagGroup {
+            id: row.try_get::<'_, i64, _>("group_id")? as u64,
+            name: row.try_get("name")?,
+            hex_color: row.try_get("color")?,
             created_at: row.try_get("created_at")?,
         })
     }
@@ -625,14 +660,26 @@ impl ImportBatchDataSource for SqliteIndex {
 #[async_trait]
 impl TagDataSource for SqliteIndex {
     async fn add(&self, value: &mut Tag) -> Result<(), DataSourceError> {
-        let id = sqlx::query("INSERT INTO tags(name, group_id, created_at) VALUES(?, NULL, ?)")
+        let id = sqlx::query("INSERT INTO tags(name, group_id, created_at) VALUES(?, ?, ?)")
             .bind(value.name.as_str())
+            .bind(value.group.as_ref().map(|g| g.id() as i64))
             .bind(value.created_at)
             .execute(&self.pool)
             .await?
             .last_insert_rowid();
 
         value.id = id as u64;
+
+        Ok(())
+    }
+
+    async fn update(&self, value: &Tag) -> Result<(), DataSourceError> {
+        sqlx::query("UPDATE tags SET name = ?, group_id = ? WHERE tag_id = ?")
+            .bind(value.name.as_str())
+            .bind(value.group.as_ref().map(|g| g.id() as i64))
+            .bind(value.id as i64)
+            .execute(&self.pool)
+            .await?;
 
         Ok(())
     }
@@ -731,14 +778,14 @@ impl TagDataSource for SqliteIndex {
 
     async fn get_all_from_post(&self, post_id: u64) -> Result<Vec<Tag>, DataSourceError> {
         let rows = sqlx::query(
-            "SELECT * FROM tags_posts tp JOIN tags t ON t.tag_id = tp.tag_id WHERE post_id = ?",
+            "SELECT t.*, g.name as g_name, g.color as color, g.created_at as g_created_at FROM tags_posts tp JOIN tags t ON t.tag_id = tp.tag_id LEFT JOIN tag_group g ON t.group_id = g.group_id WHERE post_id = ?",
         )
         .bind(post_id as i64)
-        .map(|r| Self::map_tag(&r))
+        .map(|r| Self::map_full_tag(&r))
         .fetch_all(&self.pool)
         .await?;
 
-        Ok(rows.into_iter().filter_map(|x| x.ok()).collect())
+        Ok(rows.into_iter().filter_map(|x| Some(x.unwrap())).collect())
     }
 
     async fn add_tag_to_post(&self, tag_id: u64, post_id: u64) -> Result<(), DataSourceError> {
@@ -763,7 +810,82 @@ impl TagDataSource for SqliteIndex {
 }
 
 #[async_trait]
-impl TagGroupDataSource for SqliteIndex {}
+impl TagGroupDataSource for SqliteIndex {
+    async fn add(&self, value: &mut TagGroup) -> Result<(), DataSourceError> {
+        let id = sqlx::query("INSERT INTO tag_group(name, color, created_at) VALUES(?, ?, ?)")
+            .bind(value.name.as_str())
+            .bind(value.hex_color.as_str())
+            .bind(value.created_at)
+            .execute(&self.pool)
+            .await?
+            .last_insert_rowid();
+
+        value.id = id as u64;
+
+        Ok(())
+    }
+
+    async fn search(
+        &self,
+        page: &PageParams,
+        query: &str,
+        exact: bool,
+    ) -> Result<Page<TagGroup>, DataSourceError> {
+        let mut conn = self.pool.acquire().await?;
+
+        let total_row_count: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM tag_group")
+            .fetch_one(conn.deref_mut())
+            .await?;
+
+        let query_is_empty = query.len() < 3;
+
+        let where_clause = if exact {
+            " WHERE name = ?"
+        } else {
+            if query_is_empty {
+                " WHERE name LIKE ?"
+            } else {
+                "(?)"
+            }
+        };
+
+        let query_str =
+            format!("SELECT * FROM tag_groups_vtab {where_clause} ORDER BY rank LIMIT ? OFFSET ?");
+
+        let mut sql_query = sqlx::query(query_str.as_str());
+
+        if exact {
+            sql_query = sql_query.bind(query);
+        } else {
+            if !query_is_empty {
+                let value = query
+                    .trim()
+                    .split(' ')
+                    .map(|word| format!("\"{word}\""))
+                    .collect::<Vec<String>>()
+                    .join(" OR ");
+
+                sql_query = sql_query.bind(value);
+            } else {
+                sql_query = sql_query.bind(format!("%{query}%"))
+            }
+        }
+
+        let rows = sql_query
+            .bind(page.page_size() as i64)
+            .bind(page.offset() as i64)
+            .map(|r| Self::map_tag_group(&r))
+            .fetch_all(conn.deref_mut())
+            .await?;
+
+        Ok(Page {
+            page_size: page.page_size(),
+            page_number: page.offset(),
+            total_row_count: total_row_count.0 as usize,
+            data: rows.into_iter().filter_map(|x| x.ok()).collect(),
+        })
+    }
+}
 
 #[async_trait]
 impl CrossDataSource for SqliteIndex {

@@ -8,6 +8,7 @@ use std::sync::Arc;
 
 mod buckets;
 mod content;
+mod groups;
 mod media;
 mod posts;
 mod tags;
@@ -84,10 +85,16 @@ pub fn routes() -> Scope {
                                 .service(posts::update),
                         )
                         .service(
+                            web::scope("/tag_groups")
+                                .service(groups::index)
+                                .service(groups::store),
+                        )
+                        .service(
                             web::scope("/tags")
                                 .service(tags::index)
                                 .service(tags::delete)
-                                .service(tags::store),
+                                .service(tags::store)
+                                .service(tags::update),
                         )
                         .service(
                             web::scope("/content")
