@@ -81,7 +81,8 @@ const feature = createFeature({
 
     on(searchActions.toggleInfo, (state) => ({
       ...state,
-      showSidebar: !state.showSidebar
+      showSidebar: !state.showSidebar,
+      sidebarPost: !state.showSidebar ? state.sidebarPost : null
     })),
     on(searchActions.closeInfo, (state) => ({
       ...state,
