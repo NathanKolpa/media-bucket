@@ -85,6 +85,10 @@ impl PageParams {
     pub fn offset(&self) -> usize {
         self.offset
     }
+
+    pub fn next(&self) -> Self {
+        PageParams::new(self.page_size, self.offset + self.page_size)
+    }
 }
 
 pub trait FileInput: AsyncWrite + Sync + Send {}
