@@ -34,6 +34,9 @@ export class UploadListComponent implements AfterViewInit {
   private range: ListRange | null = null;
   private viewportSub: Subscription | null = null;
   private dragItem: number | null = null;
+  private hideCompleted = false;
+
+  private original: Upload[] = []
 
   constructor() {
 
@@ -41,9 +44,18 @@ export class UploadListComponent implements AfterViewInit {
 
   @Input()
   public set uploads(value: Upload[]) {
-    let copy = value
+    this.original = value;
+    this.updateList();
+  }
+
+  updateList() {
+    let hideCompleted = this.hideCompleted;
+
+    let copy = this.original
       .map((upload, index) => ({upload, index}))
-      .filter(x => x.upload.state !== 'deleted');
+      .filter(x => x.upload.state !== 'deleted')
+      .filter(x => !(hideCompleted && x.upload.state == 'done'));
+
     copy.sort((a, b) => a.upload.position - b.upload.position);
     this.sortedUploads = copy;
   }
@@ -71,5 +83,10 @@ export class UploadListComponent implements AfterViewInit {
 
   trackBy(item: any): number {
     return item.index;
+  }
+
+  setHideCompleted(value: boolean) {
+    this.hideCompleted = value;
+    this.updateList();
   }
 }

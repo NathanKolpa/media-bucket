@@ -1,6 +1,5 @@
 <div class="actions d-flex">
-
-
+  <mat-checkbox (change)="setHideCompleted($event.checked)">Hide completed files</mat-checkbox>
 </div>
 <mat-list #list (cdkDropListDropped)="drop($event)" cdkDropList role="list">
   <cdk-virtual-scroll-viewport #viewport [itemSize]="73" style="height: 500px">
