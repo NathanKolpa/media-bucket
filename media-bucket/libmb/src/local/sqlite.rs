@@ -56,7 +56,7 @@ impl SqliteIndex {
         let pool = Self::new_encrypted_pool(path, secret, false).await?;
 
         Self::prepare_db(&pool).await?;
-        // Self::migrate(&pool).await?; TODO: this causes a compiler crash in routes/buckets.rs
+        Self::migrate(&pool).await?;
 
         Ok(Self { pool })
     }
