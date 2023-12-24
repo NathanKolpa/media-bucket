@@ -287,7 +287,7 @@ impl TagDataSource for HttpDataSource {
     async fn update(&self, value: &Tag) -> Result<(), DataSourceError> {
         let res = self
             .client
-            .post(format!("{}/tags/{}", self.base, value.id))
+            .put(format!("{}/tags/{}", self.base, value.id))
             .json(&UpdateTagRequest {
                 name: value.name.clone(),
                 group: value.group.as_ref().map(|g| g.id()),
