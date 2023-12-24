@@ -311,8 +311,18 @@ export class ApiService {
   private async runQueueLoop() {
     let next: QueuedFile | undefined = undefined;
 
-    while (next = this.queue.shift()) {
-      await this.uploadQueuedFile(next);
+    while (this.queue.length > 0) {
+      let batch = [];
+
+      while (next = this.queue.shift()) {
+        batch.push(this.uploadQueuedFile(next));
+
+        if (batch.length > 8) {
+          break;
+        }
+      }
+
+      await Promise.all(batch);
     }
 
     this.workerPromise = null;
