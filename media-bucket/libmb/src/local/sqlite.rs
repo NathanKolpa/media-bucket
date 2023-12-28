@@ -921,26 +921,32 @@ impl CrossDataSource for SqliteIndex {
     ) -> Result<Page<SearchPost>, DataSourceError> {
         let mut conn = self.pool.acquire().await?;
 
-        let order = match query.order {
-            Some(PostSearchQueryOrder::Newest) | None => "p.created_at DESC",
-            Some(PostSearchQueryOrder::Oldest) => "p.created_at ASC",
-            Some(PostSearchQueryOrder::Relevant) => "rank ASC, p.created_at DESC",
-            Some(PostSearchQueryOrder::Random(_)) => "substr(p.post_id * ?, length(p.post_id) + 2)",
+        let order = match (query.order, query.text.is_some()) {
+            (Some(PostSearchQueryOrder::Newest), _) | (None, _) | (Some(PostSearchQueryOrder::Relevant), false) => "p.created_at DESC",
+            (Some(PostSearchQueryOrder::Oldest), _) => "p.created_at ASC",
+            (Some(PostSearchQueryOrder::Relevant), true) => "rank ASC, p.created_at DESC",
+            (Some(PostSearchQueryOrder::Random(_)), _) => "substr(p.post_id * ?, length(p.post_id) + 2)",
+        };
+
+        let table = if query.text.is_none() {
+            "posts"
+        } else {
+            "posts_vtab"
         };
 
         let after_where = format!("ORDER BY {order} LIMIT ? OFFSET ?");
 
-        let search_query_str = SqliteIndex::create_search_query_str(query, "SELECT p.*, m.*, pi.original_name,
+        let search_query_str = SqliteIndex::create_search_query_str(query, &format!("SELECT p.*, m.*, pi.original_name,
         (SELECT COUNT(*) FROM post_items pi WHERE pi.post_id = p.post_id) as 'item_count',
         (SELECT SUM(c.duration) FROM post_items pi JOIN media c ON pi.content_id = c.media_id WHERE pi.post_id = p.post_id) as 'total_duration',
         (SELECT COUNT(*) FROM media WHERE media_id IN (SELECT content_id FROM post_items WHERE post_id = p.post_id) AND mime_type = 'image' AND mime_sub_type != 'gif') as 'contains_image',
         (SELECT COUNT(*) FROM media WHERE media_id IN (SELECT content_id FROM post_items WHERE post_id = p.post_id) AND mime_type = 'video') as 'contains_video',
         (SELECT COUNT(*) FROM media WHERE media_id IN (SELECT content_id FROM post_items WHERE post_id = p.post_id) AND mime_type = 'application' AND mime_sub_type != 'pdf') as 'contains_document',
         (SELECT COUNT(*) FROM media WHERE media_id IN (SELECT content_id FROM post_items WHERE post_id = p.post_id) AND mime_type = 'image' AND mime_sub_type = 'gif') as 'contains_moving_image'
-        FROM posts_vtab p
+        FROM {table} p
         LEFT JOIN (SELECT * FROM post_items ORDER BY item_order ASC) pi ON pi.post_id = p.post_id AND pi.item_order = 0
         LEFT JOIN content c ON pi.content_id = c.content_id
-        LEFT JOIN media m ON c.thumbnail_id = m.media_id", &after_where);
+        LEFT JOIN media m ON c.thumbnail_id = m.media_id"), &after_where);
 
         let mut search_query =
             SqliteIndex::add_search_query_values(query, search_query_str.as_str());
@@ -957,7 +963,7 @@ impl CrossDataSource for SqliteIndex {
             .await?;
 
         let query_row_count_str =
-            SqliteIndex::create_search_query_str(query, "SELECT COUNT(*) FROM posts_vtab p", "");
+            SqliteIndex::create_search_query_str(query, &format!("SELECT COUNT(*) FROM {table} p"), "");
         let query_row_count = SqliteIndex::add_search_query_values(query, &query_row_count_str);
 
         let total_row_count: i64 = query_row_count

@@ -282,7 +282,7 @@ pub struct CreateFullPost {
     pub flatten: bool,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq)]
 pub enum PostSearchQueryOrder {
     Newest,
     Oldest,
