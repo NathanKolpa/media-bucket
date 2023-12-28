@@ -329,6 +329,7 @@ pub enum GraphDiscriminator {
 #[derive(Debug, Serialize, Deserialize)]
 pub enum GraphSelect {
     Count,
+
 }
 
 #[derive(Debug, Serialize, Deserialize)]

@@ -1225,7 +1225,7 @@ impl CrossDataSource for SqliteIndex {
         let mut conn = self.pool.acquire().await?;
 
         let select = match query.select {
-            GraphSelect::Count => "COUNT(*) * 1.0",
+            GraphSelect::Count => "SUM(COUNT(*) * 1.0) over (ROWS UNBOUNDED PRECEDING)",
         };
 
         let y_axis = match query.discriminator {

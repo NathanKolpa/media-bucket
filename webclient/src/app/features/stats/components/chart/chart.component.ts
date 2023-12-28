@@ -60,6 +60,7 @@ export class ChartComponent {
   private lineSeries(chart: ChartSeries): ChartDataset<"line", any[]> {
     return {
       label: chart.name,
+      stepped: true,
       data: chart.points.map((point, i) => {
         switch (point.type) {
           case 'none':
