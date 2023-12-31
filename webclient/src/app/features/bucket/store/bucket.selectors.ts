@@ -41,5 +41,7 @@ export const isAuthenticated = createSelector(
 );
 
 export {
-  selectBucketLoadingState
+  selectBucketLoadingState,
+  selectDetails,
+  selectDetailsLoadingState
 } from './bucket.reducer'

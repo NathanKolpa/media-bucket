@@ -10,6 +10,7 @@ use tokio::time::sleep;
 
 use crate::http_server::instance::{InstanceDataSource, ServerBucketInstance, Session};
 use crate::http_server::web_error::WebError;
+use crate::model::BucketDetails;
 
 impl From<&ServerBucketInstance> for BucketInfo {
     fn from(value: &ServerBucketInstance) -> Self {
@@ -41,6 +42,32 @@ pub async fn show(
     let instance = buckets.get_by_id(*id).ok_or(WebError::ResourceNotFound)?;
 
     Ok(web::Json(BucketInfo::from(instance.deref())))
+}
+
+#[get("/details")]
+pub async fn bucket_details(
+    session: Session,
+) -> Result<impl Responder, WebError> {
+
+    let total_file_size = session
+        .bucket()
+        .data_source()
+        .media()
+        .get_total_size()
+        .await?;
+
+    let file_count = session
+        .bucket()
+        .data_source()
+        .media()
+        .get_count()
+        .await?;
+
+    Ok(web::Json(BucketDetails {
+        total_file_size,
+        file_count,
+        sessions_created: session.instance().sessions_created()
+    }))
 }
 
 #[post("/{id}/auth")]

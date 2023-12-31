@@ -1,16 +1,20 @@
 import {createFeature, createReducer, on} from "@ngrx/store";
-import {Bucket, LoadingState} from "@core/models";
+import {Bucket, BucketDetails, LoadingState} from "@core/models";
 import * as bucketActions from './bucket.actions';
 
 interface State {
   bucketLoadingState: LoadingState
-  bucket: Bucket | null
+  bucket: Bucket | null,
+  details: BucketDetails | null
+  detailsLoadingState: LoadingState
 }
 
 
 const initialState: State = {
   bucketLoadingState: LoadingState.initial(),
-  bucket: null
+  bucket: null,
+  details: null,
+  detailsLoadingState: LoadingState.initial()
 };
 
 const feature = createFeature({
@@ -30,6 +34,19 @@ const feature = createFeature({
       ...state,
       bucketLoadingState: state.bucketLoadingState.fail(failure)
     })),
+    on(bucketActions.loadBucketDetails, (state) => ({
+      ...state,
+      detailsLoadingState: state.detailsLoadingState.loading()
+    })),
+    on(bucketActions.loadBucketDetailsSuccess, (state, {details}) => ({
+      ...state,
+      detailsLoadingState: state.detailsLoadingState.success(),
+      details
+    })),
+    on(bucketActions.loadBucketDetailsFailure, (state, {failure}) => ({
+      ...state,
+      detailsLoadingState: state.detailsLoadingState.fail(failure)
+    })),
   )
 });
 
@@ -38,6 +55,8 @@ export const {
   reducer,
   selectBucket,
   selectBucketLoadingState,
+  selectDetails,
+  selectDetailsLoadingState,
   selectBucketState
 } = feature;
 

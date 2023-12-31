@@ -67,6 +67,7 @@ pub fn routes() -> Scope {
                 .service(buckets::show)
                 .service(
                     web::scope("/{bucket_id}")
+                        .service(buckets::bucket_details)
                         .service(
                             web::scope("/media")
                                 .service(media::file)
@@ -85,7 +86,7 @@ pub fn routes() -> Scope {
                                 .service(posts::update),
                         )
                         .service(
-                            web::scope("/tag_groups")
+                            web::scope("/tag-groups")
                                 .service(groups::index)
                                 .service(groups::store),
                         )

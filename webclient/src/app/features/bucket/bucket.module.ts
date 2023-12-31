@@ -11,6 +11,9 @@ import {MatIconModule} from "@angular/material/icon";
 import {MatMenuModule} from "@angular/material/menu";
 import {NotAuthenticatedComponent} from './components/not-authenticated/not-authenticated.component';
 import {MatDividerModule} from "@angular/material/divider";
+import {MatDialogModule} from "@angular/material/dialog";
+import { BucketDetailsDialogComponent } from './containers/bucket-details-dialog/bucket-details-dialog.component';
+import {PipesModule} from "@shared/pipes/pipes.module";
 
 const routes: Routes = [
   {
@@ -36,6 +39,7 @@ const routes: Routes = [
     BucketPageComponent,
     HeaderComponent,
     NotAuthenticatedComponent,
+    BucketDetailsDialogComponent,
   ],
   imports: [
     CommonModule,
@@ -48,6 +52,8 @@ const routes: Routes = [
     MatMenuModule,
     MatIconModule,
     MatDividerModule,
+    MatDialogModule,
+    PipesModule
   ]
 })
 export class BucketModule {

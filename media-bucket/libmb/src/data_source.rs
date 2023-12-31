@@ -137,6 +137,9 @@ pub trait MediaDataSource: Sync + Send {
     async fn remove(&self, value: &Media) -> Result<(), DataSourceError>;
     async fn get_by_id(&self, id: u64) -> Result<Option<Media>, DataSourceError>;
     async fn get_by_sha256(&self, sha256: &str) -> Result<Option<Media>, DataSourceError>;
+
+    async fn get_total_size(&self) -> Result<u64, DataSourceError>;
+    async fn get_count(&self) -> Result<u64, DataSourceError>;
 }
 
 #[async_trait]

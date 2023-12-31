@@ -2,8 +2,12 @@ import {Injectable} from "@angular/core";
 import {Actions, createEffect, ofType} from "@ngrx/effects";
 import {ApiService} from "@core/services";
 import * as bucketActions from './bucket.actions';
-import {catchError, map, switchMap} from "rxjs";
+import {catchError, map, switchMap, tap} from "rxjs";
 import {authActions} from "@core/store/auth";
+import {MatDialog} from "@angular/material/dialog";
+import {
+  BucketDetailsDialogComponent
+} from "@features/bucket/containers/bucket-details-dialog/bucket-details-dialog.component";
 
 @Injectable()
 export class BucketEffects {
@@ -21,6 +25,22 @@ export class BucketEffects {
     map(({auth}) => authActions.logout({auth}))
   ));
 
-  public constructor(private actions$: Actions, private api: ApiService) {
+  $showGeneralInfo = createEffect(() => this.actions$.pipe(
+    ofType(bucketActions.showGeneralInfo),
+    tap(() => {
+      this.dialog.open(BucketDetailsDialogComponent);
+    }),
+    map(({auth}) => bucketActions.loadBucketDetails({auth}))
+  ));
+
+  loadBucketDetails$ = createEffect(() => this.actions$.pipe(
+    ofType(bucketActions.loadBucketDetails),
+    switchMap(({auth}) => this.api.getBucketDetails(auth).pipe(
+      map(details => bucketActions.loadBucketDetailsSuccess({details})),
+      catchError(async failure => bucketActions.loadBucketDetailsFailure({failure})),
+    ))
+  ));
+
+  public constructor(private actions$: Actions, private api: ApiService, private dialog: MatDialog) {
   }
 }

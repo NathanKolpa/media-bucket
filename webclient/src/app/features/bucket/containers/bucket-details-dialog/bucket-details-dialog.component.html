@@ -1,0 +1,29 @@
+<div class="dialog-container">
+  <h2 mat-dialog-title>General info</h2>
+  <mat-dialog-content>
+
+    <app-loadable-content [loadingState]="bucketLoadingState$ | async">
+      <ng-container *ngIf="bucket$ | async as bucket">
+        <app-loadable-content (loadAgain)="reloadDetails(bucket.auth)" [loadingState]="detailsLoadingState$ | async">
+          <ng-container *ngIf="details$ | async as details">
+
+
+            <p>Name: "{{ bucket.bucket.name }}"</p>
+            <p>Encrypted: {{ bucket.bucket.encrypted ? 'Yes' : 'No' }}</p>
+            <p>Password Protected: {{ bucket.bucket.passwordProtected ? 'Yes' : 'No' }}</p>
+            <p>Files: {{ details.fileCount }} ({{ details.totalFileSize | bytes }})</p>
+            <p>Sessions created: {{ details.sessionsCreated }}</p>
+
+          </ng-container>
+        </app-loadable-content>
+      </ng-container>
+    </app-loadable-content>
+
+  </mat-dialog-content>
+  <mat-dialog-actions class="w-100">
+    <div class="w-100 d-flex justify-content-end">
+      <button mat-button mat-dialog-close>Close</button>
+    </div>
+
+  </mat-dialog-actions>
+</div>

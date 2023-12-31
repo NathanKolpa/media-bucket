@@ -72,4 +72,8 @@ export class BucketPageComponent implements OnDestroy {
   logout(auth: Auth) {
     this.store.dispatch(bucketActions.logout({auth}));
   }
+
+  showGeneralInfo(auth: Auth) {
+    this.store.dispatch(bucketActions.showGeneralInfo({auth}));
+  }
 }

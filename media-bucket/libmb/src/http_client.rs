@@ -11,8 +11,14 @@ use url::Url;
 use uuid::Uuid;
 
 use crate::data_source::*;
-use crate::http_models::{AuthRequest, AuthResponse, BucketInfo, CreateFullPostResponse, CreateTagGroupRequest, CreateTagRequest, ErrorResponse, UpdateTagRequest};
-use crate::model::{Content, CreateFullPost, Graph, ImportBatch, Media, Page, Post, PostDetail, PostGraphQuery, PostItem, PostSearchQuery, PostSearchQueryOrder, SearchPost, SearchPostItem, Tag, TagGroup};
+use crate::http_models::{
+    AuthRequest, AuthResponse, BucketInfo, CreateFullPostResponse, CreateTagGroupRequest,
+    CreateTagRequest, ErrorResponse, UpdateTagRequest,
+};
+use crate::model::{
+    Content, CreateFullPost, Graph, ImportBatch, Media, Page, Post, PostDetail, PostGraphQuery,
+    PostItem, PostSearchQuery, PostSearchQueryOrder, SearchPost, SearchPostItem, Tag, TagGroup,
+};
 
 const USER_AGENT: &'static str = "libmb/1.0";
 
@@ -189,6 +195,14 @@ impl MediaDataSource for HttpDataSource {
     }
 
     async fn get_by_sha256(&self, sha256: &str) -> Result<Option<Media>, DataSourceError> {
+        todo!()
+    }
+
+    async fn get_total_size(&self) -> Result<u64, DataSourceError> {
+        todo!()
+    }
+
+    async fn get_count(&self) -> Result<u64, DataSourceError> {
         todo!()
     }
 }
@@ -452,7 +466,7 @@ impl CrossDataSource for HttpDataSource {
                     PostSearchQueryOrder::Newest => "newest",
                     PostSearchQueryOrder::Oldest => "oldest",
                     PostSearchQueryOrder::Relevant => "relevant",
-                    PostSearchQueryOrder::Random(_) => todo!()
+                    PostSearchQueryOrder::Random(_) => todo!(),
                 };
 
                 query_pairs.append_pair("order", order_text);

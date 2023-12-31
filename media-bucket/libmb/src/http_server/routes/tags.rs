@@ -1,4 +1,4 @@
-use actix_web::{delete, get, post, web, Responder, put};
+use actix_web::{delete, get, post, put, web, Responder};
 use chrono::Utc;
 use log::info;
 use serde::Deserialize;

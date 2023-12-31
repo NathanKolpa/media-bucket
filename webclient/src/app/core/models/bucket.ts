@@ -33,3 +33,20 @@ export interface SelectedBucket {
   bucket: Bucket;
   auth: Auth;
 }
+
+export class BucketDetails {
+  public constructor(private _totalFileSize: number, private _fileCount: number, private _sessionsCreated: number) {
+  }
+
+  get totalFileSize(): number {
+    return this._totalFileSize;
+  }
+
+  get fileCount(): number {
+    return this._fileCount;
+  }
+
+  get sessionsCreated(): number {
+    return this._sessionsCreated;
+  }
+}

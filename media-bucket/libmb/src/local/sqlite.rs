@@ -474,6 +474,22 @@ impl MediaDataSource for SqliteIndex {
             Ok(None)
         }
     }
+
+    async fn get_total_size(&self) -> Result<u64, DataSourceError> {
+        let total_size: (i64,) = sqlx::query_as("SELECT SUM(file_size) FROM media")
+            .fetch_one(&self.pool)
+            .await?;
+
+        Ok(total_size.0 as u64)
+    }
+
+    async fn get_count(&self) -> Result<u64, DataSourceError> {
+        let count: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM media")
+            .fetch_one(&self.pool)
+            .await?;
+
+        Ok(count.0 as u64)
+    }
 }
 
 #[async_trait]
@@ -922,10 +938,14 @@ impl CrossDataSource for SqliteIndex {
         let mut conn = self.pool.acquire().await?;
 
         let order = match (query.order, query.text.is_some()) {
-            (Some(PostSearchQueryOrder::Newest), _) | (None, _) | (Some(PostSearchQueryOrder::Relevant), false) => "p.created_at DESC",
+            (Some(PostSearchQueryOrder::Newest), _)
+            | (None, _)
+            | (Some(PostSearchQueryOrder::Relevant), false) => "p.created_at DESC",
             (Some(PostSearchQueryOrder::Oldest), _) => "p.created_at ASC",
             (Some(PostSearchQueryOrder::Relevant), true) => "rank ASC, p.created_at DESC",
-            (Some(PostSearchQueryOrder::Random(_)), _) => "substr(p.post_id * ?, length(p.post_id) + 2)",
+            (Some(PostSearchQueryOrder::Random(_)), _) => {
+                "substr(p.post_id * ?, length(p.post_id) + 2)"
+            }
         };
 
         let table = if query.text.is_none() {
@@ -962,8 +982,11 @@ impl CrossDataSource for SqliteIndex {
             .fetch_all(conn.deref_mut())
             .await?;
 
-        let query_row_count_str =
-            SqliteIndex::create_search_query_str(query, &format!("SELECT COUNT(*) FROM {table} p"), "");
+        let query_row_count_str = SqliteIndex::create_search_query_str(
+            query,
+            &format!("SELECT COUNT(*) FROM {table} p"),
+            "",
+        );
         let query_row_count = SqliteIndex::add_search_query_values(query, &query_row_count_str);
 
         let total_row_count: i64 = query_row_count

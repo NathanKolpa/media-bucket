@@ -329,7 +329,6 @@ pub enum GraphDiscriminator {
 #[derive(Debug, Serialize, Deserialize)]
 pub enum GraphSelect {
     Count,
-
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -337,4 +336,11 @@ pub struct PostGraphQuery {
     pub filter: PostSearchQuery,
     pub discriminator: GraphDiscriminator,
     pub select: GraphSelect,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct BucketDetails {
+    pub sessions_created: u64,
+    pub total_file_size: u64,
+    pub file_count: u64,
 }

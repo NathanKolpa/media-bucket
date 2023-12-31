@@ -15,4 +15,7 @@ export class HeaderComponent {
   @Output()
   public logout = new EventEmitter();
 
+
+  @Output()
+  public showGeneralInfo = new EventEmitter();
 }

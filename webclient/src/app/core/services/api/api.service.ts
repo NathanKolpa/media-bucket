@@ -4,7 +4,7 @@ import {audit, catchError, first, forkJoin, interval, map, Observable, Subject, 
 import {
   ApiFailure,
   Auth,
-  Bucket,
+  Bucket, BucketDetails,
   Chart,
   ChartDiscriminator,
   ChartPoint,
@@ -132,6 +132,14 @@ export class ApiService {
     return this.authenticatedGet(auth, `/media/${id}`).pipe(
       map((json) => {
         return this.mapMedia(auth, json)
+      })
+    )
+  }
+
+  public getBucketDetails(auth: Auth): Observable<BucketDetails> {
+    return this.authenticatedGet(auth, `/details`).pipe(
+      map((json) => {
+        return this.mapBucketDetails(json)
       })
     )
   }
@@ -557,6 +565,10 @@ export class ApiService {
 
   private mapGroup(json: any): TagGroup {
     return new TagGroup(json.id, json.name, json.hex_color);
+  }
+
+  private mapBucketDetails(json: any): BucketDetails {
+    return new BucketDetails(json.total_file_size, json.file_count, json.sessions_created);
   }
 
   private mapTag(json: any): Tag {

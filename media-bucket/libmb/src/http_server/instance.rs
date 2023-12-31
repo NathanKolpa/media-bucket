@@ -3,10 +3,11 @@ use std::fmt::{Display, Formatter};
 use std::net::IpAddr;
 use std::ops::Deref;
 use std::sync::{Arc, RwLock};
+use std::sync::atomic::{AtomicU64, Ordering};
 
 use chrono::{DateTime, Duration, Utc};
 use rand::distributions::Alphanumeric;
-use rand::{thread_rng, Rng};
+use rand::{thread_rng, Rng, random};
 use thiserror::Error;
 
 use crate::data_source::DataSourceError;
@@ -74,6 +75,7 @@ pub struct ServerBucketInstance {
     password_protected: bool,
     instance: RwLock<Option<Arc<Bucket>>>,
     token_secret: [u8; 32],
+    sessions_created: AtomicU64
 }
 
 impl ServerBucketInstance {
@@ -84,7 +86,8 @@ impl ServerBucketInstance {
             location,
             name,
             instance: Default::default(),
-            token_secret: thread_rng().gen(),
+            token_secret: random(),
+            sessions_created: AtomicU64::new(0),
         })
     }
 
@@ -149,7 +152,13 @@ impl ServerBucketInstance {
             created_at: now,
         };
 
+        self.sessions_created.fetch_add(1, Ordering::Relaxed);
+
         token
+    }
+
+    pub fn sessions_created(&self) -> u64 {
+        self.sessions_created.load(Ordering::Relaxed)
     }
 
     fn random_token() -> String {
