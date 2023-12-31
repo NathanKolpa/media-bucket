@@ -1,6 +1,6 @@
 <mat-toolbar *ngIf="bucket as bucket" class="mat-elevation-z6 position-relative" color="primary" style="z-index: 1000">
 
-  <a [routerLink]="['/buckets', bucket.id]" mat-button>
+  <a mat-button (click)="showGeneralInfo.emit()">
      <span>
       {{ bucket.name }}
     </span>
@@ -18,15 +18,15 @@
 
   <mat-menu #menu="matMenu">
 
+    <a [routerLink]="['/buckets', bucket.id]" mat-menu-item>
+      <mat-icon>search</mat-icon>
+      <span>Search</span>
+    </a>
+
     <a [routerLink]="['/buckets', bucket.id, 'stats']" mat-menu-item>
       <mat-icon>query_stats</mat-icon>
       <span>Statistics</span>
     </a>
-
-    <button mat-menu-item (click)="showGeneralInfo.emit()">
-      <mat-icon>info</mat-icon>
-      <span>General Info</span>
-    </button>
 
     <mat-divider></mat-divider>
 
