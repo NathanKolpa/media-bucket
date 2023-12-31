@@ -1,10 +1,10 @@
 <mat-toolbar class="mat-elevation-z6 position-relative" style="z-index: 1000">
 
-  <button (click)="uploadFiles.emit()" mat-icon-button>
+  <button (click)="uploadFiles.emit()" mat-icon-button matTooltip="Upload files">
     <mat-icon class="material-icons-outlined">cloud_upload</mat-icon>
   </button>
 
-  <button (click)="showUploadProgress.emit()" mat-icon-button [disabled]="activeJobs == 0">
+  <button (click)="showUploadProgress.emit()" mat-icon-button [disabled]="activeJobs == 0" matTooltip="Active uploads">
     <mat-icon [matBadgeHidden]="activeJobs == 0"
               [matBadge]="activeJobs"
               class="material-icons-outlined"
@@ -12,18 +12,24 @@
     </mat-icon>
   </button>
 
+  <mat-divider [vertical]="true"></mat-divider>
+
+  <button mat-icon-button matTooltip="Manage tags">
+    <mat-icon class="material-icons-outlined">sell</mat-icon>
+  </button>
+
   <div class="spacer"></div>
 
   <ng-container *ngIf="showPostActions && selectedPost">
-    <button (click)="deleteSelected.emit(selectedPost)" mat-icon-button>
+    <button (click)="deleteSelected.emit(selectedPost)" mat-icon-button matTooltip="Delete selected post1">
       <mat-icon class="material-icons-outlined">delete</mat-icon>
     </button>
 
-    <mat-divider [vertical]="true"></mat-divider>
+    <button (click)="toggleInfo.emit()" mat-icon-button matTooltip="Close selected post">
+      <mat-icon class="material-icons-outlined">close</mat-icon>
+    </button>
   </ng-container>
 
-  <button (click)="toggleInfo.emit()" [disabled]="selectedPost == null" mat-icon-button>
-    <mat-icon class="material-icons-outlined">info</mat-icon>
-  </button>
+
 
 </mat-toolbar>

@@ -14,6 +14,7 @@ import {MatDividerModule} from "@angular/material/divider";
 import {MatDialogModule} from "@angular/material/dialog";
 import { BucketDetailsDialogComponent } from './containers/bucket-details-dialog/bucket-details-dialog.component';
 import {PipesModule} from "@shared/pipes/pipes.module";
+import {MatTooltipModule} from "@angular/material/tooltip";
 
 const routes: Routes = [
   {
@@ -53,7 +54,8 @@ const routes: Routes = [
     MatIconModule,
     MatDividerModule,
     MatDialogModule,
-    PipesModule
+    PipesModule,
+    MatTooltipModule
   ]
 })
 export class BucketModule {
