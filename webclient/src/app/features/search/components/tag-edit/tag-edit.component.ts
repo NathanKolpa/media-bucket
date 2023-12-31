@@ -28,7 +28,7 @@ export class TagEditComponent implements OnDestroy {
   constructor(private api: ApiService, private snackBar: MatSnackBar) {
     let query = this.searchField.valueChanges.pipe(
       startWith(''),
-      debounceTime(100)
+      auditTime(250)
     );
 
     this.tagsSubscription = combineLatest([query, this.bucket$]).pipe(

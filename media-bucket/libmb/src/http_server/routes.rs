@@ -93,13 +93,14 @@ pub fn routes() -> Scope {
                         .service(
                             web::scope("/tags")
                                 .service(tags::index)
+                                .service(tags::show)
                                 .service(tags::delete)
                                 .service(tags::store)
                                 .service(tags::update),
                         )
                         .service(
                             web::scope("/content")
-                                .app_data(web::PayloadConfig::new(1000 * 1000 * 1000 * 100)) // 100 GB
+                                .app_data(web::PayloadConfig::new(1000 * 1000 * 1000 * 1000)) // 1 TB
                                 .service(content::store),
                         ),
                 ),

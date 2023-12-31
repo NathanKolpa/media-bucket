@@ -1,6 +1,10 @@
 <mat-chip-row (click)="clicked.emit()" (removed)="removeTag.emit()" *ngIf="tag as tag">
   {{ tag.name }}
 
+  <small *ngIf="tag.linkedPosts as linkedPosts">
+    ({{ linkedPosts }})
+  </small>
+
   <button *ngIf="showDelete" matChipRemove>
     <mat-icon>cancel</mat-icon>
   </button>

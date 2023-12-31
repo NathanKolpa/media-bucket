@@ -1,0 +1,42 @@
+<cdk-virtual-scroll-viewport #viewport [itemSize]="73" (scrolledIndexChange)="scrolledIndexChange()"
+                             class="h-100 d-block">
+  <ng-content>
+  </ng-content>
+
+  <small *ngIf="resultCount !== null" class="ms-2 mt-3 mb-0">
+    <i>Results: {{ resultCount }}</i>
+  </small>
+
+  <mat-selection-list #list [multiple]="false"
+                      (selectionChange)="list.selectedOptions.hasValue() ? selectTag.emit(list.selectedOptions.selected[0].value) : selectTag.emit(null)">
+
+    <ng-container
+      *cdkVirtualFor="let tag of tags; let i = index; let isLast = last; trackBy: trackBy; templateCacheSize: 0"
+      class="h-100">
+      <mat-list-option [value]="tag.id" [selected]="tag.id == selectedTag?.id">
+        <mat-icon matListItemIcon *ngIf="tag.group !== null" [style]="{ color: tag.group.color }"
+                  [matTooltip]="tag.group.name">label
+        </mat-icon>
+        <mat-icon matListItemIcon *ngIf="tag.group === null" matTooltip="Not grouped">label_off</mat-icon>
+
+        <div matListItemTitle>
+          {{ tag.name }}
+
+          <small class="float-end">
+            {{ tag.linkedPosts }} linked post(s)
+          </small>
+        </div>
+
+
+      </mat-list-option>
+      <mat-divider *ngIf="!isLast"></mat-divider>
+    </ng-container>
+
+  </mat-selection-list>
+
+
+  <app-loadable-content (loadAgain)="requestNextData.emit()" [loadingState]="nextLoadingState"
+                        class="h-100 d-block mt-4">
+  </app-loadable-content>
+
+</cdk-virtual-scroll-viewport>

@@ -24,8 +24,8 @@ pub async fn index(
     let tags = session
         .bucket()
         .data_source()
-        .tags()
-        .search(
+        .cross()
+        .search_tags(
             &page,
             params.query.as_deref().unwrap_or(""),
             params.exact.unwrap_or(false),
@@ -33,6 +33,24 @@ pub async fn index(
         .await?;
 
     Ok(web::Json(tags))
+}
+
+#[get("/{id}")]
+pub async fn show(
+    session: Session,
+    id: web::Path<(u64, u64)>,
+) -> Result<impl Responder, WebError> {
+    let id = id.into_inner().1;
+
+    let tag = session
+        .bucket()
+        .data_source()
+        .cross()
+        .get_tag_detail(id)
+        .await?
+        .ok_or(WebError::ResourceNotFound)?;
+
+    Ok(web::Json(tag))
 }
 
 #[post("")]

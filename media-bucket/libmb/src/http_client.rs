@@ -15,10 +15,7 @@ use crate::http_models::{
     AuthRequest, AuthResponse, BucketInfo, CreateFullPostResponse, CreateTagGroupRequest,
     CreateTagRequest, ErrorResponse, UpdateTagRequest,
 };
-use crate::model::{
-    Content, CreateFullPost, Graph, ImportBatch, Media, Page, Post, PostDetail, PostGraphQuery,
-    PostItem, PostSearchQuery, PostSearchQueryOrder, SearchPost, SearchPostItem, Tag, TagGroup,
-};
+use crate::model::{Content, CreateFullPost, Graph, ImportBatch, Media, Page, Post, PostDetail, PostGraphQuery, PostItem, PostSearchQuery, PostSearchQueryOrder, SearchPost, SearchPostItem, SearchTag, Tag, TagDetail, TagGroup};
 
 const USER_AGENT: &'static str = "libmb/1.0";
 
@@ -319,35 +316,6 @@ impl TagDataSource for HttpDataSource {
         todo!()
     }
 
-    async fn search(
-        &self,
-        page: &PageParams,
-        query: &str,
-        exact: bool,
-    ) -> Result<Page<Tag>, DataSourceError> {
-        let mut url = format!("{}/tags", self.base)
-            .parse::<Url>()
-            .expect("Cannot parse url");
-
-        url.query_pairs_mut()
-            .append_pair("offset", page.offset().to_string().as_str())
-            .append_pair("size", page.page_size().to_string().as_str())
-            .append_pair("exact", if exact { "true" } else { "false" })
-            .append_pair("query", query);
-
-        Ok(self
-            .client
-            .get(url)
-            .send()
-            .await?
-            .json::<Page<Tag>>()
-            .await?)
-    }
-
-    async fn get_all_from_post(&self, post_id: u64) -> Result<Vec<Tag>, DataSourceError> {
-        todo!()
-    }
-
     async fn add_tag_to_post(&self, tag_id: u64, post_id: u64) -> Result<(), DataSourceError> {
         todo!()
     }
@@ -438,7 +406,7 @@ impl CrossDataSource for HttpDataSource {
         todo!()
     }
 
-    async fn search(
+    async fn search_posts(
         &self,
         query: &PostSearchQuery,
         page: &PageParams,
@@ -514,6 +482,31 @@ impl CrossDataSource for HttpDataSource {
         Ok((body.batch, body.posts))
     }
 
+    async fn search_tags(
+        &self,
+        page: &PageParams,
+        query: &str,
+        exact: bool,
+    ) -> Result<Page<SearchTag>, DataSourceError> {
+        let mut url = format!("{}/tags", self.base)
+            .parse::<Url>()
+            .expect("Cannot parse url");
+
+        url.query_pairs_mut()
+            .append_pair("offset", page.offset().to_string().as_str())
+            .append_pair("size", page.page_size().to_string().as_str())
+            .append_pair("exact", if exact { "true" } else { "false" })
+            .append_pair("query", query);
+
+        Ok(self
+            .client
+            .get(url)
+            .send()
+            .await?
+            .json::<Page<SearchTag>>()
+            .await?)
+    }
+
     async fn update_full_post(&self, value: &Post, tags: &[u64]) -> Result<(), DataSourceError> {
         todo!()
     }
@@ -523,6 +516,14 @@ impl CrossDataSource for HttpDataSource {
     }
 
     async fn graph_post(&self, query: &PostGraphQuery) -> Result<Graph, DataSourceError> {
+        todo!()
+    }
+
+    async fn get_tags_from_post(&self, post_id: u64) -> Result<Vec<SearchTag>, DataSourceError> {
+        todo!()
+    }
+
+    async fn get_tag_detail(&self, tag_id: u64) -> Result<Option<TagDetail>, DataSourceError> {
         todo!()
     }
 }

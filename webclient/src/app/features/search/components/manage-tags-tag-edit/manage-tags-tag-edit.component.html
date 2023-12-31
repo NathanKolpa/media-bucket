@@ -1,0 +1,35 @@
+<app-loadable-content (loadAgain)="reload.emit()" [loadingState]="detailLoadingState"
+                      class="h-100 pt-3 overflow-auto">
+
+  <div *ngIf="tag == null" class="d-flex h-100">
+    <p class="justify-content-center align-self-center text-center w-100">Select or create a tag to edit it</p>
+  </div>
+
+  <ng-container *ngIf="tag as tag">
+    <p>Tag name: {{ tag.name }}</p>
+    <p [title]="tag.createdAt.toLocaleString()">Created: {{ tag.createdAt | ago }}</p>
+    <p>
+      Group:
+
+      <i *ngIf="tag.group == null">None</i>
+      <span *ngIf="tag.group as group">{{ group.name }} {{ group.color }}</span>
+    </p>
+
+    <mat-divider class="mt-4 mb-4"></mat-divider>
+
+    <form  [formGroup]="form">
+      <div class="row">
+        <mat-form-field appearance="outline" class="mb-2">
+          <mat-label>Name</mat-label>
+          <input formControlName="name" matInput>
+        </mat-form-field>
+      </div>
+
+      <button color="primary" [disabled]="form.invalid || !form.dirty" mat-flat-button>Save</button>
+
+
+    </form>
+
+  </ng-container>
+
+</app-loadable-content>

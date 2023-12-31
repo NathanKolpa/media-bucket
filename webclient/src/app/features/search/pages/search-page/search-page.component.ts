@@ -90,6 +90,10 @@ export class SearchPageComponent implements OnDestroy, ConfirmComponent {
     }
   }
 
+  openManageTags(bucket: SelectedBucket) {
+    this.store.dispatch(searchActions.openManageTags({bucket}));
+  }
+
   searchTextChange(bucket: SelectedBucket, query: string | null) {
     this.store.dispatch(searchActions.searchTextChange({bucket, query}));
   }

@@ -182,13 +182,6 @@ pub trait TagDataSource: Sync + Send {
     async fn update(&self, value: &Tag) -> Result<(), DataSourceError>;
     async fn delete(&self, tag_id: u64) -> Result<(), DataSourceError>;
     async fn get_by_id(&self, id: u64) -> Result<Option<Tag>, DataSourceError>;
-    async fn search(
-        &self,
-        page: &PageParams,
-        query: &str,
-        exact: bool,
-    ) -> Result<Page<Tag>, DataSourceError>;
-    async fn get_all_from_post(&self, post_id: u64) -> Result<Vec<Tag>, DataSourceError>;
     async fn add_tag_to_post(&self, tag_id: u64, post_id: u64) -> Result<(), DataSourceError>;
     async fn remove_tag_to_post(&self, tag_id: u64, post_id: u64) -> Result<(), DataSourceError>;
 }
@@ -247,7 +240,7 @@ pub trait MediaImportDataSource: Sync + Send {
 #[async_trait]
 pub trait CrossDataSource: Sync + Send {
     async fn get_post_detail(&self, post_id: u64) -> Result<Option<PostDetail>, DataSourceError>;
-    async fn search(
+    async fn search_posts(
         &self,
         query: &PostSearchQuery,
         page: &PageParams,
@@ -267,9 +260,20 @@ pub trait CrossDataSource: Sync + Send {
         new_post: CreateFullPost,
     ) -> Result<(ImportBatch, Vec<Post>), DataSourceError>;
 
+    async fn search_tags(
+        &self,
+        page: &PageParams,
+        query: &str,
+        exact: bool,
+    ) -> Result<Page<SearchTag>, DataSourceError>;
+
     async fn update_full_post(&self, value: &Post, tags: &[u64]) -> Result<(), DataSourceError>;
 
     async fn cascade_delete_post(&self, id: u64) -> Result<(), DataSourceError>;
 
     async fn graph_post(&self, query: &PostGraphQuery) -> Result<Graph, DataSourceError>;
+
+    async fn get_tags_from_post(&self, post_id: u64) -> Result<Vec<SearchTag>, DataSourceError>;
+
+    async fn get_tag_detail(&self, tag_id: u64) -> Result<Option<TagDetail>, DataSourceError>;
 }

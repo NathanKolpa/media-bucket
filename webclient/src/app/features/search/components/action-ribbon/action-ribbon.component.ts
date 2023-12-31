@@ -29,4 +29,7 @@ export class ActionRibbonComponent {
 
   @Input()
   public selectedPost: Post | null = null;
+
+  @Output()
+  public openManageTags = new EventEmitter();
 }

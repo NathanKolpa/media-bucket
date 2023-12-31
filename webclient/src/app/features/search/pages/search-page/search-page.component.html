@@ -1,6 +1,7 @@
 <main *ngIf="bucket$ | async as bucket" class="d-flex flex-column h-100">
   <app-action-ribbon
     (deleteSelected)="deletePost(bucket, $event)"
+    (openManageTags)="openManageTags(bucket)"
     (showUploadProgress)="showUploadProgress()"
     (toggleInfo)="toggleInfo()"
     (uploadFiles)="showUploadDialog()"

@@ -49,6 +49,19 @@ export class TagListComponent {
       groups.push(newGroup);
     }
 
+    for (let group of groups) {
+      group.tags.sort((a, b) => {
+
+
+        if ((a.linkedPosts || 0) > (b.linkedPosts || 0)) {
+          return -1;
+        }
+
+        return 1;
+      })
+    }
+
+
     groups.sort((a,b) => {
       if (a.group == null && b.group == null) {
         return 0;

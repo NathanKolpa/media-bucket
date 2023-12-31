@@ -5,7 +5,8 @@ import * as searchActions from './search.actions';
 import {
   auditTime,
   catchError,
-  combineLatest, debounceTime,
+  combineLatest,
+  debounceTime,
   filter,
   first,
   forkJoin,
@@ -30,6 +31,7 @@ import {PageParams} from "@core/models";
 import {
   ConfirmDeletePostDialogComponent
 } from "@features/search/components/confirm-delete-post-dialog/confirm-delete-post-dialog.component";
+import {ManageTagsDialogComponent} from "@features/search/containers/manage-tags-dialog/manage-tags-dialog.component";
 
 @Injectable()
 export class SearchEffects {
@@ -53,9 +55,20 @@ export class SearchEffects {
     ))
   ));
 
+  loadNextLoadTagEditNextSearchTags$ = createEffect(() => this.actions$.pipe(
+    ofType(searchActions.loadTagEditNextSearchTags, searchActions.tagEditSearchQueryChange),
+    withLatestFrom(this.store.select(fromSearch.selectNextTagEditSearchPage)),
+    withLatestFrom(this.store.select(fromSearch.selectTagEditSearchText)),
+    auditTime(250),
+    switchMap(([[action, page], query]) => this.api.searchTags(action.bucket.auth, page, query || "").pipe(
+      map(({page, tags}) => searchActions.loadTagEditNextSearchTagsSuccess({page, tags})),
+      catchError(async failure => searchActions.loadTagEditNextSearchTagsFailure({failure}))
+    ))
+  ));
+
   searchTextChange$ = createEffect(() => this.actions$.pipe(
     ofType(searchActions.searchTextChange),
-    debounceTime(100),
+    auditTime(250),
     switchMap(({bucket, query}) => this.api.searchTags(bucket.auth, new PageParams(25, 0), query ?? '').pipe(
       map(({page, tags}) => searchActions.searchTagSuccess({tags})),
       catchError(async failure => searchActions.searchTagFailure({failure}))
@@ -107,6 +120,14 @@ export class SearchEffects {
     ))
   ));
 
+  loadTagDetail$ = createEffect(() => this.actions$.pipe(
+    ofType(searchActions.tagEditSelectTag),
+    switchMap(({tagId, bucket}) => this.api.getTagById(bucket.auth, tagId).pipe(
+      map((tag) => searchActions.tagEditSelectTagSuccess({tag})),
+      catchError(async failure => searchActions.tagEditSelectTagFailure({failure}))
+    ))
+  ));
+
   refreshLoaded$ = createEffect(() => this.actions$.pipe(
     ofType(searchActions.refreshLoaded),
     withLatestFrom(this.store.select(fromSearch.selectTotalPosts)),
@@ -134,6 +155,14 @@ export class SearchEffects {
     ))
   ));
 
+  openManageTags$ = createEffect(() => this.actions$.pipe(
+    ofType(searchActions.openManageTags),
+    tap(() => {
+      this.dialog.open(ManageTagsDialogComponent);
+    }),
+  ), {dispatch: false});
+
+
   requestPostDelete$ = createEffect(() => this.actions$.pipe(
     ofType(searchActions.requestPostDelete),
     switchMap(({post, bucket}) => this.dialog.open(ConfirmDeletePostDialogComponent, {data: post}).afterClosed().pipe(
@@ -152,7 +181,9 @@ export class SearchEffects {
                  tags,
                  bucket
                }) => this.api.updatePost(bucket.auth, postId, title, description, source, tags.map(x => x.id)).pipe(
-      map((post) => searchActions.updatePostSuccess({post, tags})),
+      switchMap((post) => this.api.getPostById(bucket.auth, post.id).pipe(
+        map((detail) => searchActions.updatePostSuccess({post, tags, detail})),
+      )),
       catchError(async failure => searchActions.updatePostFailure({failure}))
     ))
   ));

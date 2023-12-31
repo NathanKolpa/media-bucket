@@ -60,10 +60,19 @@ export const selectNextPage = createSelector(
   }
 )
 
+
+
 export const selectNextItemPage = createSelector(
   selectSearchState,
   (state) => {
     return new PageParams(state.pageSize, state.itemList.length);
+  }
+)
+
+export const selectNextTagEditSearchPage = createSelector(
+  selectSearchState,
+  (state) => {
+    return new PageParams(state.pageSize, state.tagEditSearchTags.length);
   }
 )
 
@@ -88,5 +97,11 @@ export {
   selectViewedPostMode,
   selectItemList,
   selectPostCount,
-  selectItemListLoadingState
+  selectItemListLoadingState,
+  selectTagEditSearchText,
+  selectTagEditSearchLoadingState,
+  selectTagEditSearchTagCount,
+  selectTagEditSearchTags,
+  selectTagEditSelectedTagLoadingState,
+  selectTagEditSelectedTag
 } from './search.reducer'

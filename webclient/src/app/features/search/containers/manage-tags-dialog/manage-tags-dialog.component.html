@@ -1,0 +1,44 @@
+<div *ngIf="(bucket$ | async) || null as bucket" class="dialog-container d-flex flex-column">
+  <h2 mat-dialog-title class="">Manage Tags</h2>
+  <mat-dialog-content class="p-3 flex-grow-1">
+
+    <div class="row h-100">
+
+      <div class="col-xl-7 order-xl-0 order-1">
+
+        <app-manage-tags-search-results [nextLoadingState]="searchLoadingState$ | async"
+                                        [tags]="(searchResults$ | async) || []"
+                                        (requestNextData)="loadNext(bucket)"
+                                        [selectedTag]="selectedTag$ | async"
+                                        (selectTag)="changeSelectedTag(bucket, $event)"
+                                        [resultCount]="searchResultCount$ | async">
+          <mat-form-field appearance="fill" class="w-100">
+            <mat-label>Search</mat-label>
+            <input
+              #input
+              (input)="changeSearchQuery(bucket, input.value)"
+              matInput
+              placeholder="Search for tags">
+          </mat-form-field>
+        </app-manage-tags-search-results>
+
+      </div>
+
+      <div class="col-xl-5 order-xl-1 order-0">
+        <app-manage-tags-tag-edit (reload)="reloadSelectedTag(bucket)"
+                                  [tag]="selectedTag$ | async"
+                                  [detailLoadingState]="selectedTagLoadingState$ | async">
+        </app-manage-tags-tag-edit>
+      </div>
+
+    </div>
+
+  </mat-dialog-content>
+
+
+  <mat-dialog-actions class="w-100">
+    <div class="w-100 d-flex justify-content-end">
+      <button [mat-dialog-close]="true" mat-button>Close</button>
+    </div>
+  </mat-dialog-actions>
+</div>

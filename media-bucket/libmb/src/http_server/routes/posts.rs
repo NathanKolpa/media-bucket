@@ -33,7 +33,7 @@ pub async fn index(
         .bucket()
         .data_source()
         .cross()
-        .search(&query, &page)
+        .search_posts(&query, &page)
         .await?;
 
     Ok(web::Json(posts))

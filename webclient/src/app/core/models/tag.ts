@@ -1,5 +1,7 @@
+import {group} from "@angular/animations";
+
 export class Tag {
-  constructor(private _id: number, private _name: string, private _group: TagGroup | null) {
+  constructor(private _id: number, private _name: string, private _group: TagGroup | null, private _linkedPosts: number | null, private _createdAt: Date) {
   }
 
   get id(): number {
@@ -12,6 +14,14 @@ export class Tag {
 
   get group(): TagGroup | null {
     return this._group;
+  }
+
+  get linkedPosts(): number | null {
+    return this._linkedPosts;
+  }
+
+  get createdAt(): Date {
+    return this._createdAt;
   }
 }
 
@@ -29,5 +39,12 @@ export class TagGroup {
 
   get color(): string {
     return this._color;
+  }
+}
+
+export class TagDetail extends Tag {
+
+  constructor(id: number, name: string, group: TagGroup | null, linkedPosts: number | null, createdAt: Date, private _implies: Tag[]) {
+    super(id, name, group, linkedPosts, createdAt);
   }
 }

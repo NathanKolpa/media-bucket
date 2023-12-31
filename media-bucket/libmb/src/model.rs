@@ -232,12 +232,24 @@ pub struct Tag {
     pub created_at: DateTime<Utc>,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SearchTag {
+    pub tag: Tag,
+    pub linked_posts: u64
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct TagDetail {
+    pub tag: Tag,
+}
+
+
 // Joins
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PostDetail {
     pub post: Post,
-    pub tags: Vec<Tag>,
+    pub tags: Vec<SearchTag>,
     pub item_count: usize,
 }
 

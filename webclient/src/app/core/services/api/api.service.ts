@@ -24,7 +24,7 @@ import {
   PostSearchQuery,
   SearchPost,
   SearchPostItem,
-  Tag, TagGroup,
+  Tag, TagDetail, TagGroup,
   Upload
 } from "@core/models";
 import {environment} from "@src/environments/environment";
@@ -83,6 +83,14 @@ export class ApiService {
     )
   }
 
+  public getTagById(auth: Auth, id: number): Observable<TagDetail> {
+    return this.authenticatedGet(auth, `/tags/${id}`).pipe(
+      map((json) => {
+        return this.mapTagDetail(json)
+      })
+    )
+  }
+
   public deletePost(auth: Auth, id: number): Observable<any> {
     return this.authenticatedDelete(auth, `/posts/${id}`)
   }
@@ -91,7 +99,7 @@ export class ApiService {
     return this.authenticatedGet(auth, `/tags?offset=${encodeURIComponent(pageParams.offset)}&size=${encodeURIComponent(pageParams.pageSize)}&query=${encodeURIComponent(query)}`).pipe(
       map((json) => {
         return {
-          tags: json.data.map((t: any) => this.mapTag(t)),
+          tags: json.data.map((t: any) => this.mapSearchTag(t)),
           page: this.mapPage(json)
         }
       })
@@ -559,7 +567,7 @@ export class ApiService {
       json.post.description,
       new Date(json.post.created_at),
       json.item_count,
-      json.tags.map((x: any) => this.mapTag(x))
+      json.tags.map((x: any) => this.mapSearchTag(x))
     )
   }
 
@@ -571,13 +579,19 @@ export class ApiService {
     return new BucketDetails(json.total_file_size, json.file_count, json.sessions_created);
   }
 
+  private mapSearchTag(json: any): Tag {
+    let tag = this.mapTag(json.tag);
+
+    return new Tag(tag.id, tag.name, tag.group, json.linked_posts, tag.createdAt);
+  }
+
   private mapTag(json: any): Tag {
     let group = null;
     if (typeof json.group?.obj === 'object') {
       group = this.mapGroup(json.group.obj);
     }
 
-    return new Tag(json.id, json.name, group);
+    return new Tag(json.id, json.name, group, null, new Date(json.created_at));
   }
 
   private mapPost(json: any): Post {
@@ -609,5 +623,11 @@ export class ApiService {
       json.position,
       this.mapMedia(auth, json.content.obj.content.obj),
     );
+  }
+
+  private mapTagDetail(json: any): TagDetail {
+    let tag = this.mapTag(json.tag);
+
+    return new TagDetail(tag.id, tag.name, tag.group, tag.linkedPosts, tag.createdAt, []);
   }
 }

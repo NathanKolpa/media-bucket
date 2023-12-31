@@ -1,8 +1,18 @@
 import {createFeature, createReducer, on} from "@ngrx/store";
-import {LoadingState, PostDetail, PostItemDetail, SearchPost, SearchPostItem, Tag, UploadJob} from "@core/models";
+import {
+  LoadingState,
+  PostDetail,
+  PostItemDetail,
+  SearchPost,
+  SearchPostItem,
+  Tag,
+  TagDetail,
+  UploadJob
+} from "@core/models";
 import {createEntityAdapter, EntityState} from "@ngrx/entity";
 import * as searchActions from "./search.actions";
 import {PostSearchQuery} from "@core/models/searchQuery";
+import {tagEditSelectTag} from "./search.actions";
 
 interface State {
   searchText: string | null,
@@ -27,6 +37,13 @@ interface State {
 
   showFinishedJobs: boolean,
   uploadJobs: EntityState<UploadJob>,
+
+  tagEditSearchText: string | null,
+  tagEditSearchTags: Tag[]
+  tagEditSearchLoadingState: LoadingState
+  tagEditSearchTagCount: number | null,
+  tagEditSelectedTag: TagDetail | null,
+  tagEditSelectedTagLoadingState: LoadingState
 }
 
 const uploadJobAdapter = createEntityAdapter<UploadJob>();
@@ -52,7 +69,14 @@ const initialState: State = {
   itemListLoadingState: LoadingState.initial(),
   viewedPostMode: 'preview',
   showFinishedJobs: false,
-  uploadJobs: uploadJobAdapter.getInitialState()
+  uploadJobs: uploadJobAdapter.getInitialState(),
+
+  tagEditSearchText: null,
+  tagEditSearchTags: [],
+  tagEditSearchLoadingState: LoadingState.initial(),
+  tagEditSearchTagCount: null,
+  tagEditSelectedTag: null,
+  tagEditSelectedTagLoadingState: LoadingState.initial()
 };
 
 const feature = createFeature({
@@ -281,10 +305,10 @@ const feature = createFeature({
       itemListLoadingState: state.itemListLoadingState.fail(failure)
     })),
 
-    on(searchActions.updatePostSuccess, (state, {post, tags}) => ({
+    on(searchActions.updatePostSuccess, (state, {post, detail}) => ({
       ...state,
       sidebarPost: state.sidebarPost?.id == post.id ?
-        new PostDetail(state.sidebarPost.id, post.source, post.title, post.description, post.createdAt, state.sidebarPost.itemCount, tags) : state.sidebarPost,
+        detail : state.sidebarPost,
       posts: state.posts.map(searchPost => {
         if (searchPost.id != post.id) {
           return searchPost
@@ -292,7 +316,60 @@ const feature = createFeature({
 
         return new SearchPost(searchPost.id, post.source, post.title, post.description, post.createdAt, searchPost.itemCount, searchPost.containsDocument, searchPost.containsImages, searchPost.containsVideos, searchPost.containsMovingImages, searchPost.duration, searchPost.thumbnail, searchPost.filename)
       })
-    }))
+    })),
+
+    on(searchActions.openManageTags, (state) => ({
+      ...state,
+      tagEditSearchTags: [],
+      tagEditSearchLoadingState: LoadingState.initial(),
+      tagEditSearchTagCount: null
+    })),
+
+    on(searchActions.loadTagEditNextSearchTags, (state) => ({
+      ...state,
+      tagEditSearchLoadingState: state.tagEditSearchLoadingState.loading()
+    })),
+
+    on(searchActions.loadTagEditNextSearchTagsSuccess, (state, { tags, page }) => ({
+      ...state,
+      tagEditSearchLoadingState: state.tagEditSearchLoadingState.success(),
+      tagEditSearchTags: [...state.tagEditSearchTags, ...tags],
+      tagEditSearchTagCount: page.totalRows
+    })),
+
+    on(searchActions.loadTagEditNextSearchTagsFailure, (state, {failure}) => ({
+      ...state,
+      tagEditSearchLoadingState: state.tagEditSearchLoadingState.fail(failure)
+    })),
+
+    on(searchActions.tagEditSearchQueryChange, (state, {query}) => ({
+      ...state,
+      tagEditSearchTags: [],
+      tagEditSearchText: query,
+      tagEditSearchLoadingState: state.tagEditSearchLoadingState.loading(),
+      tagEditSearchTagCount: null
+    })),
+
+    on(searchActions.tagEditClearSelected, (state) => ({
+      ...state,
+      tagEditSelectedTag: null
+    })),
+
+    on(searchActions.tagEditSelectTag, (state) => ({
+      ...state,
+      tagEditSelectedTagLoadingState: state.tagEditSelectedTagLoadingState.loading()
+    })),
+
+    on(searchActions.tagEditSelectTagSuccess, (state, { tag }) => ({
+      ...state,
+      tagEditSelectedTagLoadingState: state.tagEditSelectedTagLoadingState.success(),
+      tagEditSelectedTag: tag
+    })),
+
+    on(searchActions.tagEditSelectTagFailure, (state, { failure }) => ({
+      ...state,
+      tagEditSelectedTagLoadingState: state.tagEditSelectedTagLoadingState.fail(failure),
+    })),
   )
 });
 
@@ -313,7 +390,13 @@ export const {
   selectViewedPostMode,
   selectSearchQuery,
   selectPostCount,
-  selectItemListLoadingState
+  selectItemListLoadingState,
+  selectTagEditSearchText,
+  selectTagEditSearchLoadingState,
+  selectTagEditSearchTagCount,
+  selectTagEditSearchTags,
+  selectTagEditSelectedTagLoadingState,
+  selectTagEditSelectedTag
 } = feature;
 
 export const uploadJobSelectors = uploadJobAdapter.getSelectors();

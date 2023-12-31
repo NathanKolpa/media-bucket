@@ -198,11 +198,18 @@ impl SqliteIndex {
         })
     }
 
+    fn map_search_tag(row: &SqliteRow) -> Result<SearchTag, DataSourceError> {
+        Ok(SearchTag {
+            tag: Self::map_full_tag(row)?,
+            linked_posts: row.try_get::<'_, i64, _>("linked_posts")? as u64
+        })
+    }
+
     fn map_full_tag(row: &SqliteRow) -> Result<Tag, DataSourceError> {
-        let group: Option<i64> = row.try_get("group_id")?;
-        let group_color: Option<String> = row.try_get("color")?;
-        let group_name: Option<String> = row.try_get("g_name")?;
-        let group_created_at: Option<DateTime<Utc>> = row.try_get("g_created_at")?;
+        let group: Option<i64> = row.try_get("group_id").ok();
+        let group_color: Option<String> = row.try_get("color").ok();
+        let group_name: Option<String> = row.try_get("g_name").ok();
+        let group_created_at: Option<DateTime<Utc>> = row.try_get("g_created_at").ok();
 
         Ok(Tag {
             id: row.try_get::<'_, i64, _>("tag_id")? as u64,
@@ -731,79 +738,6 @@ impl TagDataSource for SqliteIndex {
         }
     }
 
-    async fn search(
-        &self,
-        page: &PageParams,
-        query: &str,
-        exact: bool,
-    ) -> Result<Page<Tag>, DataSourceError> {
-        let mut conn = self.pool.acquire().await?;
-
-        let total_row_count: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM tags")
-            .fetch_one(conn.deref_mut())
-            .await?;
-
-        let query_is_empty = query.len() < 3;
-
-        let where_clause = if exact {
-            " WHERE name = ?"
-        } else {
-            if query_is_empty {
-                " WHERE name LIKE ?"
-            } else {
-                "(?)"
-            }
-        };
-
-        let query_str =
-            format!("SELECT * FROM tags_vtab {where_clause} ORDER BY rank LIMIT ? OFFSET ?");
-
-        let mut sql_query = sqlx::query(query_str.as_str());
-
-        if exact {
-            sql_query = sql_query.bind(query);
-        } else {
-            if !query_is_empty {
-                let value = query
-                    .trim()
-                    .split(' ')
-                    .map(|word| format!("\"{word}\""))
-                    .collect::<Vec<String>>()
-                    .join(" OR ");
-
-                sql_query = sql_query.bind(value);
-            } else {
-                sql_query = sql_query.bind(format!("%{query}%"))
-            }
-        }
-
-        let rows = sql_query
-            .bind(page.page_size() as i64)
-            .bind(page.offset() as i64)
-            .map(|r| Self::map_tag(&r))
-            .fetch_all(conn.deref_mut())
-            .await?;
-
-        Ok(Page {
-            page_size: page.page_size(),
-            page_number: page.offset(),
-            total_row_count: total_row_count.0 as usize,
-            data: rows.into_iter().filter_map(|x| x.ok()).collect(),
-        })
-    }
-
-    async fn get_all_from_post(&self, post_id: u64) -> Result<Vec<Tag>, DataSourceError> {
-        let rows = sqlx::query(
-            "SELECT t.*, g.name as g_name, g.color as color, g.created_at as g_created_at FROM tags_posts tp JOIN tags t ON t.tag_id = tp.tag_id LEFT JOIN tag_group g ON t.group_id = g.group_id WHERE post_id = ?",
-        )
-        .bind(post_id as i64)
-        .map(|r| Self::map_full_tag(&r))
-        .fetch_all(&self.pool)
-        .await?;
-
-        Ok(rows.into_iter().filter_map(|x| Some(x.unwrap())).collect())
-    }
-
     async fn add_tag_to_post(&self, tag_id: u64, post_id: u64) -> Result<(), DataSourceError> {
         sqlx::query("INSERT INTO tags_posts(tag_id, post_id) VALUES(?, ?)")
             .bind(tag_id as i64)
@@ -861,7 +795,7 @@ impl TagGroupDataSource for SqliteIndex {
             if query_is_empty {
                 " WHERE name LIKE ?"
             } else {
-                "(?)"
+                "WHERE tag_groups_vtab MATCH (?)"
             }
         };
 
@@ -877,7 +811,7 @@ impl TagGroupDataSource for SqliteIndex {
                 let value = query
                     .trim()
                     .split(' ')
-                    .map(|word| format!("\"{word}\""))
+                    .map(|word| format!("{{name}}: \"{word}\""))
                     .collect::<Vec<String>>()
                     .join(" OR ");
 
@@ -918,7 +852,7 @@ impl CrossDataSource for SqliteIndex {
             drop(row);
             drop(get_post_query);
 
-            let tags = TagDataSource::get_all_from_post(self, post_id).await?;
+            let tags = CrossDataSource::get_tags_from_post(self, post_id).await?;
 
             Ok(Some(PostDetail {
                 post,
@@ -930,7 +864,7 @@ impl CrossDataSource for SqliteIndex {
         }
     }
 
-    async fn search(
+    async fn search_posts(
         &self,
         query: &PostSearchQuery,
         page: &PageParams,
@@ -1009,7 +943,7 @@ impl CrossDataSource for SqliteIndex {
     ) -> Result<Page<SearchPostItem>, DataSourceError> {
         let mut conn = self.pool.acquire().await?;
 
-        let total_row_count: (i64,) =
+        let total_row_count: (i64, ) =
             sqlx::query_as("SELECT COUNT(*) FROM post_items WHERE post_id = ?")
                 .bind(post_id as i64)
                 .fetch_one(conn.deref_mut())
@@ -1051,10 +985,10 @@ impl CrossDataSource for SqliteIndex {
             LEFT JOIN media m ON m.media_id = pi.content_id
             WHERE pi.post_id = ? AND pi.item_order = ?",
         )
-        .bind(post_id as i64)
-        .bind(position as i64)
-        .map(|r| Self::map_full_post_item(&r))
-        .fetch(&self.pool);
+            .bind(post_id as i64)
+            .bind(position as i64)
+            .map(|r| Self::map_full_post_item(&r))
+            .fetch(&self.pool);
 
         if let Some(row) = rows.try_next().await? {
             Ok(Some(row?))
@@ -1193,6 +1127,67 @@ impl CrossDataSource for SqliteIndex {
         Ok((batch, posts))
     }
 
+    async fn search_tags(
+        &self,
+        page: &PageParams,
+        query: &str,
+        exact: bool,
+    ) -> Result<Page<SearchTag>, DataSourceError> {
+        let mut conn = self.pool.acquire().await?;
+
+        let total_row_count: (i64, ) = sqlx::query_as("SELECT COUNT(*) FROM tags")
+            .fetch_one(conn.deref_mut())
+            .await?;
+
+        let query_is_empty = query.len() < 3;
+
+        let where_clause = if exact {
+            " WHERE t.name = ?"
+        } else {
+            if query_is_empty {
+                " WHERE t.name LIKE ?"
+            } else {
+                "WHERE tags_vtab MATCH (?)"
+            }
+        };
+
+        let query_str =
+            format!("SELECT t.*, (SELECT COUNT(*) FROM tags_posts tpc WHERE tpc.tag_id = t.tag_id) as 'linked_posts' FROM tags_vtab t {where_clause} ORDER BY rank, t.created_at DESC LIMIT ? OFFSET ?");
+
+        let mut sql_query = sqlx::query(query_str.as_str());
+
+        if exact {
+            sql_query = sql_query.bind(query);
+        } else {
+            if !query_is_empty {
+                let value = query
+                    .trim()
+                    .split(' ')
+                    .map(|word| format!("{{name}}: \"{word}\""))
+                    .collect::<Vec<String>>()
+                    .join(" OR ");
+
+                sql_query = sql_query.bind(value);
+            } else {
+                sql_query = sql_query.bind(format!("%{query}%"))
+            }
+        }
+
+        let rows = sql_query
+            .bind(page.page_size() as i64)
+            .bind(page.offset() as i64)
+            .map(|r| Self::map_search_tag(&r))
+            .fetch_all(conn.deref_mut())
+            .await?;
+
+        Ok(Page {
+            page_size: page.page_size(),
+            page_number: page.offset(),
+            total_row_count: total_row_count.0 as usize,
+            data: rows.into_iter().filter_map(|x| x.ok()).collect(),
+        })
+    }
+
     async fn update_full_post(&self, value: &Post, tags: &[u64]) -> Result<(), DataSourceError> {
         let mut tx = self.pool.begin().await?;
 
@@ -1285,5 +1280,38 @@ impl CrossDataSource for SqliteIndex {
             .into_iter()
             .collect::<Result<Vec<_>, DataSourceError>>()?;
         Ok(Graph { points: rows })
+    }
+
+    async fn get_tags_from_post(&self, post_id: u64) -> Result<Vec<SearchTag>, DataSourceError> {
+        let rows = sqlx::query(
+            "SELECT t.*, g.name as g_name, g.color as color, g.created_at as g_created_at, (SELECT COUNT(*) FROM tags_posts tpc WHERE tpc.tag_id = t.tag_id) as 'linked_posts' FROM tags_posts tp JOIN tags t ON t.tag_id = tp.tag_id LEFT JOIN tag_group g ON t.group_id = g.group_id WHERE post_id = ?",
+        )
+            .bind(post_id as i64)
+            .map(|r| Self::map_search_tag(&r))
+            .fetch_all(&self.pool)
+            .await?;
+
+        Ok(rows.into_iter().filter_map(|x| Some(x.unwrap())).collect())
+    }
+
+    async fn get_tag_detail(&self, tag_id: u64) -> Result<Option<TagDetail>, DataSourceError> {
+        let mut get_tag_query = sqlx::query(
+            "SELECT t.*, g.name as g_name, g.color as color, g.created_at as g_created_at FROM tags tp JOIN tags t ON t.tag_id = tp.tag_id LEFT JOIN tag_group g ON t.group_id = g.group_id WHERE t.tag_id = ?",
+        )
+            .bind(tag_id as i64)
+            .fetch(&self.pool);
+
+        if let Some(row) = get_tag_query.try_next().await? {
+            let tag = Self::map_full_tag(&row)?;
+
+            drop(row);
+            drop(get_tag_query);
+
+            Ok(Some(TagDetail {
+                tag,
+            }))
+        } else {
+            Ok(None)
+        }
     }
 }

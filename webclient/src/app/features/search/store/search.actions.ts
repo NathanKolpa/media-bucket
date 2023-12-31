@@ -10,7 +10,7 @@ import {
   SearchPost,
   SearchPostItem,
   SelectedBucket,
-  Tag,
+  Tag, TagDetail,
   UploadJob
 } from "@core/models";
 
@@ -71,5 +71,19 @@ export const loadNextPostItemListSuccess = createAction('[Search] load next post
 export const loadNextPostItemListFailure = createAction('[Search] load next post item failure', props<{ failure: Failure }>());
 
 export const updatePost = createAction('[Search] update post', props<{ bucket: SelectedBucket, postId: number, title: string | null, description: string | null, source: string | null, tags: Tag[] }>());
-export const updatePostSuccess = createAction('[Search] update post success', props<{ post: Post, tags: Tag[] }>());
+export const updatePostSuccess = createAction('[Search] update post success', props<{ post: Post, tags: Tag[], detail: PostDetail }>());
 export const updatePostFailure = createAction('[Search] update post failure', props<{ failure: Failure }>());
+
+export const openManageTags = createAction('[Search] open manage tags', props<{ bucket: SelectedBucket }>());
+
+export const loadTagEditNextSearchTags = createAction('[Search] load tag edit next search tags', props<{ bucket: SelectedBucket }>());
+export const loadTagEditNextSearchTagsSuccess = createAction('[Search] load tag edit next search tags success', props<{ page: Page, tags: Tag[] }>());
+export const loadTagEditNextSearchTagsFailure = createAction('[Search] load tag edit next search tags failure', props<{ failure: Failure }>());
+
+export const tagEditSearchQueryChange = createAction('[Search] tag edit search query change', props<{ bucket: SelectedBucket, query: string | null }>());
+
+export const tagEditSelectTag = createAction('[Search] tag edit select tag', props<{ bucket: SelectedBucket, tagId: number }>())
+export const tagEditSelectTagSuccess = createAction('[Search] tag edit select tag success', props<{ tag: TagDetail }>());
+export const tagEditSelectTagFailure = createAction('[Search] tag edit select tag failure', props<{ failure: Failure }>());
+
+export const tagEditClearSelected = createAction('[Search] tag edit clear selected tag', props<{ bucket: SelectedBucket }>())

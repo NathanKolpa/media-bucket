@@ -44,7 +44,7 @@ import {UploadProgressDialogComponent} from './containers/upload-progress-dialog
 import {MatProgressBarModule} from "@angular/material/progress-bar";
 import {MatBadgeModule} from "@angular/material/badge";
 import {
-  ConfirmDeletePostDialogComponent
+    ConfirmDeletePostDialogComponent
 } from './components/confirm-delete-post-dialog/confirm-delete-post-dialog.component';
 import {VideoPlayerComponent} from './components/video-player/video-player.component';
 import {ConfirmGuard} from "@core/services";
@@ -54,78 +54,84 @@ import {ImageViewerComponent} from './components/image-viewer/image-viewer.compo
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {MatSelectModule} from "@angular/material/select";
 import {SearchBarModule} from "@shared/search-bar/search-bar.module";
+import {ManageTagsDialogComponent} from './containers/manage-tags-dialog/manage-tags-dialog.component';
+import { ManageTagsSearchResultsComponent } from './components/manage-tags-search-results/manage-tags-search-results.component';
+import { ManageTagsTagEditComponent } from './components/manage-tags-tag-edit/manage-tags-tag-edit.component';
 
 const routes: Routes = [
-  {
-    path: '',
-    component: SearchPageComponent,
-    canDeactivate: [ConfirmGuard]
-  }
+    {
+        path: '',
+        component: SearchPageComponent,
+        canDeactivate: [ConfirmGuard]
+    }
 ]
 
 @NgModule({
-  declarations: [
-    SearchPageComponent,
-    SearchResultsComponent,
-    ListingComponent,
-    PostDetailSidebarComponent,
-    ActionRibbonComponent,
-    PostDetailDialogComponent,
-    MediaDisplayComponent,
-    PostInfoComponent,
-    UploadDialogComponent,
-    PostInfoFormFieldsComponent,
-    FileUploadBoxComponent,
-    UploadListComponent,
-    CreatePostFormComponent,
-    TagListComponent,
-    TagEditComponent,
-    UploadProgressDialogComponent,
-    ConfirmDeletePostDialogComponent,
-    VideoPlayerComponent,
-    TagComponent,
-    PdfViewerComponent,
-    ImageViewerComponent,
-  ],
-  exports: [
-    SearchPageComponent
-  ],
-  imports: [
-    CommonModule,
-    RouterModule.forChild(routes),
-    SearchStoreModule,
+    declarations: [
+        SearchPageComponent,
+        SearchResultsComponent,
+        ListingComponent,
+        PostDetailSidebarComponent,
+        ActionRibbonComponent,
+        PostDetailDialogComponent,
+        MediaDisplayComponent,
+        PostInfoComponent,
+        UploadDialogComponent,
+        PostInfoFormFieldsComponent,
+        FileUploadBoxComponent,
+        UploadListComponent,
+        CreatePostFormComponent,
+        TagListComponent,
+        TagEditComponent,
+        UploadProgressDialogComponent,
+        ConfirmDeletePostDialogComponent,
+        VideoPlayerComponent,
+        TagComponent,
+        PdfViewerComponent,
+        ImageViewerComponent,
+        ManageTagsDialogComponent,
+        ManageTagsSearchResultsComponent,
+        ManageTagsTagEditComponent,
+    ],
+    exports: [
+        SearchPageComponent
+    ],
+    imports: [
+        CommonModule,
+        RouterModule.forChild(routes),
+        SearchStoreModule,
 
-    PdfJsViewerModule,
+        PdfJsViewerModule,
 
-    ScrollingModule,
-    MatDialogModule,
-    MatCardModule,
-    MatIconModule,
-    PipesModule,
-    LoadingModule,
-    MatSidenavModule,
-    MatButtonModule,
-    MatToolbarModule,
-    MatRippleModule,
-    MatTabsModule,
-    MatMenuModule,
-    MatListModule,
-    ReactiveFormsModule,
-    MatCheckboxModule,
-    MatInputModule,
-    MatRadioModule,
-    MatExpansionModule,
-    CdkDropList,
-    CdkDrag,
-    MatSnackBarModule,
-    MatChipsModule,
-    MatAutocompleteModule,
-    MatProgressBarModule,
-    MatBadgeModule,
-    MatTooltipModule,
-    MatSelectModule,
-    SearchBarModule
-  ]
+        ScrollingModule,
+        MatDialogModule,
+        MatCardModule,
+        MatIconModule,
+        PipesModule,
+        LoadingModule,
+        MatSidenavModule,
+        MatButtonModule,
+        MatToolbarModule,
+        MatRippleModule,
+        MatTabsModule,
+        MatMenuModule,
+        MatListModule,
+        ReactiveFormsModule,
+        MatCheckboxModule,
+        MatInputModule,
+        MatRadioModule,
+        MatExpansionModule,
+        CdkDropList,
+        CdkDrag,
+        MatSnackBarModule,
+        MatChipsModule,
+        MatAutocompleteModule,
+        MatProgressBarModule,
+        MatBadgeModule,
+        MatTooltipModule,
+        MatSelectModule,
+        SearchBarModule,
+    ]
 })
 export class SearchModule {
 }

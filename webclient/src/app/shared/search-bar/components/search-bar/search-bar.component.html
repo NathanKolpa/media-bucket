@@ -39,7 +39,7 @@
 
         <mat-option (onSelectionChange)="addTag(tag)"
                     *ngFor="let tag of tags">
-          Tag: {{ tag.name }}
+          Tag: {{ tag.name }}  <small>({{ tag.linkedPosts }})</small>
         </mat-option>
       </mat-autocomplete>
 
