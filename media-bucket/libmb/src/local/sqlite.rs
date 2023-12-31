@@ -201,7 +201,7 @@ impl SqliteIndex {
     fn map_search_tag(row: &SqliteRow) -> Result<SearchTag, DataSourceError> {
         Ok(SearchTag {
             tag: Self::map_full_tag(row)?,
-            linked_posts: row.try_get::<'_, i64, _>("linked_posts")? as u64
+            linked_posts: row.try_get::<'_, i64, _>("linked_posts")? as u64,
         })
     }
 
@@ -943,7 +943,7 @@ impl CrossDataSource for SqliteIndex {
     ) -> Result<Page<SearchPostItem>, DataSourceError> {
         let mut conn = self.pool.acquire().await?;
 
-        let total_row_count: (i64, ) =
+        let total_row_count: (i64,) =
             sqlx::query_as("SELECT COUNT(*) FROM post_items WHERE post_id = ?")
                 .bind(post_id as i64)
                 .fetch_one(conn.deref_mut())
@@ -985,10 +985,10 @@ impl CrossDataSource for SqliteIndex {
             LEFT JOIN media m ON m.media_id = pi.content_id
             WHERE pi.post_id = ? AND pi.item_order = ?",
         )
-            .bind(post_id as i64)
-            .bind(position as i64)
-            .map(|r| Self::map_full_post_item(&r))
-            .fetch(&self.pool);
+        .bind(post_id as i64)
+        .bind(position as i64)
+        .map(|r| Self::map_full_post_item(&r))
+        .fetch(&self.pool);
 
         if let Some(row) = rows.try_next().await? {
             Ok(Some(row?))
@@ -1135,7 +1135,7 @@ impl CrossDataSource for SqliteIndex {
     ) -> Result<Page<SearchTag>, DataSourceError> {
         let mut conn = self.pool.acquire().await?;
 
-        let total_row_count: (i64, ) = sqlx::query_as("SELECT COUNT(*) FROM tags")
+        let total_row_count: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM tags")
             .fetch_one(conn.deref_mut())
             .await?;
 
@@ -1145,7 +1145,8 @@ impl CrossDataSource for SqliteIndex {
             " WHERE t.name = ?"
         } else {
             if query_is_empty {
-                " WHERE t.name LIKE ?"
+                //" WHERE t.name LIKE ?"
+                ""
             } else {
                 "WHERE tags_vtab MATCH (?)"
             }
@@ -1307,9 +1308,7 @@ impl CrossDataSource for SqliteIndex {
             drop(row);
             drop(get_tag_query);
 
-            Ok(Some(TagDetail {
-                tag,
-            }))
+            Ok(Some(TagDetail { tag }))
         } else {
             Ok(None)
         }
