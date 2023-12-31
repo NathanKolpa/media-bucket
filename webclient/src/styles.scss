@@ -1,3 +1,9 @@
+$roboto-font-path: "../fonts" !default;
+@import "roboto-fontface/css/roboto/sass/roboto-fontface";
+
+$material-icons-font-path: '../iconfont/';
+@import 'material-icons/iconfont/material-icons.scss';
+
 @import "@angular/material/prebuilt-themes/pink-bluegrey.css";
 
 @import "bootstrap/scss/bootstrap-grid.scss";
