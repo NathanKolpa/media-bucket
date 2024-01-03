@@ -45,10 +45,7 @@ pub async fn show(
 }
 
 #[get("/details")]
-pub async fn bucket_details(
-    session: Session,
-) -> Result<impl Responder, WebError> {
-
+pub async fn bucket_details(session: Session) -> Result<impl Responder, WebError> {
     let total_file_size = session
         .bucket()
         .data_source()
@@ -56,17 +53,12 @@ pub async fn bucket_details(
         .get_total_size()
         .await?;
 
-    let file_count = session
-        .bucket()
-        .data_source()
-        .media()
-        .get_count()
-        .await?;
+    let file_count = session.bucket().data_source().media().get_count().await?;
 
     Ok(web::Json(BucketDetails {
         total_file_size,
         file_count,
-        sessions_created: session.instance().sessions_created()
+        sessions_created: session.instance().sessions_created(),
     }))
 }
 

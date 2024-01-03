@@ -36,10 +36,7 @@ pub async fn index(
 }
 
 #[get("/{id}")]
-pub async fn show(
-    session: Session,
-    id: web::Path<(u64, u64)>,
-) -> Result<impl Responder, WebError> {
+pub async fn show(session: Session, id: web::Path<(u64, u64)>) -> Result<impl Responder, WebError> {
     let id = id.into_inner().1;
 
     let tag = session

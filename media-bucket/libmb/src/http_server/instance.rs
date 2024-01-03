@@ -2,12 +2,12 @@ use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 use std::net::IpAddr;
 use std::ops::Deref;
-use std::sync::{Arc, RwLock};
 use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::{Arc, RwLock};
 
 use chrono::{DateTime, Duration, Utc};
 use rand::distributions::Alphanumeric;
-use rand::{thread_rng, Rng, random};
+use rand::{random, thread_rng, Rng};
 use thiserror::Error;
 
 use crate::data_source::DataSourceError;
@@ -75,7 +75,7 @@ pub struct ServerBucketInstance {
     password_protected: bool,
     instance: RwLock<Option<Arc<Bucket>>>,
     token_secret: [u8; 32],
-    sessions_created: AtomicU64
+    sessions_created: AtomicU64,
 }
 
 impl ServerBucketInstance {

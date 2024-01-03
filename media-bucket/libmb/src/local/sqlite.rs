@@ -267,7 +267,7 @@ impl SqliteIndex {
                     return Err(DataSourceError::SQLError(sqlx::Error::ColumnDecode {
                         source: "map_graph_point".into(),
                         index: String::from("2"),
-                    }))
+                    }));
                 }
             },
         })
@@ -1141,37 +1141,44 @@ impl CrossDataSource for SqliteIndex {
 
         let query_is_empty = query.len() < 3;
 
-        let where_clause = if exact {
-            " WHERE t.name = ?"
+        let where_clause = if query.is_empty() {
+            ""
         } else {
-            if query_is_empty {
-                " WHERE t.name LIKE ?"
+            if exact {
+                " WHERE t.name = ?"
             } else {
-                "WHERE tags_vtab MATCH (?)"
+                if query_is_empty {
+                    " WHERE t.name LIKE ?"
+                } else {
+                    "WHERE tags_vtab MATCH (?)"
+                }
             }
         };
 
         let query_str =
-            format!("SELECT t.*, (SELECT COUNT(*) FROM tags_posts tpc WHERE tpc.tag_id = t.tag_id) as 'linked_posts' FROM tags_vtab t {where_clause} ORDER BY rank, t.created_at DESC LIMIT ? OFFSET ?");
+            format!("SELECT t.*, (SELECT COUNT(tpc.*) FROM tags_posts tpc WHERE tpc.tag_id = t.tag_id) as 'linked_posts' FROM tags_vtab t {where_clause} ORDER BY rank, t.created_at DESC LIMIT ? OFFSET ?");
 
         let mut sql_query = sqlx::query(query_str.as_str());
 
-        if exact {
-            sql_query = sql_query.bind(query);
-        } else {
-            if !query_is_empty {
-                let value = query
-                    .trim()
-                    .split(' ')
-                    .map(|word| format!("{{name}}: \"{word}\""))
-                    .collect::<Vec<String>>()
-                    .join(" OR ");
-
-                sql_query = sql_query.bind(value);
+        if !query.is_empty() {
+            if exact {
+                sql_query = sql_query.bind(query);
             } else {
-                sql_query = sql_query.bind(format!("%{query}%"))
+                if !query_is_empty {
+                    let value = query
+                        .trim()
+                        .split(' ')
+                        .map(|word| format!("{{name}}: \"{word}\""))
+                        .collect::<Vec<String>>()
+                        .join(" OR ");
+
+                    sql_query = sql_query.bind(value);
+                } else {
+                    sql_query = sql_query.bind(format!("%{query}%"))
+                }
             }
         }
+
 
         let rows = sql_query
             .bind(page.page_size() as i64)

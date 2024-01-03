@@ -15,7 +15,11 @@ use crate::http_models::{
     AuthRequest, AuthResponse, BucketInfo, CreateFullPostResponse, CreateTagGroupRequest,
     CreateTagRequest, ErrorResponse, UpdateTagRequest,
 };
-use crate::model::{Content, CreateFullPost, Graph, ImportBatch, Media, Page, Post, PostDetail, PostGraphQuery, PostItem, PostSearchQuery, PostSearchQueryOrder, SearchPost, SearchPostItem, SearchTag, Tag, TagDetail, TagGroup};
+use crate::model::{
+    Content, CreateFullPost, Graph, ImportBatch, Media, Page, Post, PostDetail, PostGraphQuery,
+    PostItem, PostSearchQuery, PostSearchQueryOrder, SearchPost, SearchPostItem, SearchTag, Tag,
+    TagDetail, TagGroup,
+};
 
 const USER_AGENT: &'static str = "libmb/1.0";
 

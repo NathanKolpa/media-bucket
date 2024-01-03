@@ -235,14 +235,13 @@ pub struct Tag {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SearchTag {
     pub tag: Tag,
-    pub linked_posts: u64
+    pub linked_posts: u64,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct TagDetail {
     pub tag: Tag,
 }
-
 
 // Joins
 
