@@ -45,6 +45,10 @@ pub enum DataSourceError {
     #[error("HTTP error: {0}")]
     HttpError(#[from] reqwest::Error),
 
+    #[cfg(feature = "http-client")]
+    #[error("HTTP protocol error: {0} in text \"{1}\"")]
+    HttpProtocolError(serde_json::Error, String),
+
     #[error("Unhandled error: {message} -> {inner_error:?}")]
     UnhandledError {
         message: String,

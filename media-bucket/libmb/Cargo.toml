@@ -5,7 +5,8 @@ edition = "2021"
 
 [features]
 http-client = [
-    "reqwest"
+    "reqwest",
+    "serde_json"
 ]
 
 http-server = [

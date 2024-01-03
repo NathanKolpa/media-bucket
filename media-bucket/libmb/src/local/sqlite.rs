@@ -91,7 +91,7 @@ impl SqliteIndex {
                 .busy_timeout(Duration::from_secs(10));
 
         Ok(SqlitePoolOptions::new()
-            .max_connections(128)
+            .max_connections(1)
             .acquire_timeout(Duration::from_secs(60 * 60 * 6))
             .connect_with(connect_options)
             .await?)

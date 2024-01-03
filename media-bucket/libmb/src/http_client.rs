@@ -11,10 +11,7 @@ use url::Url;
 use uuid::Uuid;
 
 use crate::data_source::*;
-use crate::http_models::{
-    AuthRequest, AuthResponse, BucketInfo, CreateFullPostResponse, CreateTagGroupRequest,
-    CreateTagRequest, ErrorResponse, UpdateTagRequest,
-};
+use crate::http_models::{AuthRequest, AuthResponse, BucketInfo, CreateFullPostResponse, CreateTagGroupRequest, CreateTagRequest, ErrorResponse, UpdateTagRequest};
 use crate::model::{
     Content, CreateFullPost, Graph, ImportBatch, Media, Page, Post, PostDetail, PostGraphQuery,
     PostItem, PostSearchQuery, PostSearchQueryOrder, SearchPost, SearchPostItem, SearchTag, Tag,
@@ -43,8 +40,8 @@ pub enum HttpDataSourceError {
     #[error("Api error")]
     ApiError(ErrorResponse),
 
-    #[error("Json response error")]
-    JsonResponseError(reqwest::Error),
+    #[error("{0}")]
+    DataSourceError(#[from] DataSourceError),
 }
 
 pub struct HttpDataSource {
@@ -69,18 +66,32 @@ impl HttpDataSource {
             .await
             .map_err(|e| HttpDataSourceError::FetchBucketError(e))?;
 
-        let auth_response = Self::send_request::<AuthResponse>(
-            open_client.post(format!("{url}/auth")).json(&AuthRequest {
+        let auth_response = open_client
+            .post(format!("{url}/auth"))
+            .json(&AuthRequest {
                 password: password.map(|s| s.to_string()),
-            }),
-        )
-        .await
-        .map_err(|e| HttpDataSourceError::LoginError(e))?
-        .map_err(|e| match e.status {
-            422 => HttpDataSourceError::PasswordRequired,
-            401 => HttpDataSourceError::InvalidPassword,
-            _ => HttpDataSourceError::ApiError(e),
-        })?;
+            })
+            .send()
+            .await
+            .map_err(|e| HttpDataSourceError::LoginError(e))?;
+
+        if !auth_response.status().is_success() {
+            return Err(match auth_response.status().as_u16() {
+                422 => HttpDataSourceError::PasswordRequired,
+                401 => HttpDataSourceError::InvalidPassword,
+                _ => HttpDataSourceError::ApiError(
+                    auth_response
+                        .json()
+                        .await
+                        .map_err(|e| HttpDataSourceError::LoginError(e))?,
+                ),
+            });
+        }
+
+        let auth_response: AuthResponse = auth_response
+            .json()
+            .await
+            .map_err(|e| HttpDataSourceError::LoginError(e))?;
 
         let mut default_headers = HeaderMap::new();
         default_headers.insert(AUTHORIZATION, auth_response.token.parse().unwrap());
@@ -102,23 +113,21 @@ impl HttpDataSource {
         self.info.encrypted
     }
 
-    async fn send_request<T: DeserializeOwned>(
-        req: RequestBuilder,
-    ) -> Result<Result<T, ErrorResponse>, reqwest::Error> {
-        let res = req.send().await?;
+    async fn send_request<T: DeserializeOwned>(req: RequestBuilder) -> Result<T, DataSourceError> {
+        let res = req
+            .send()
+            .await
+            .map_err(|err| DataSourceError::HttpError(err))?;
 
         if res.status().is_success() {
-            Ok(Ok(res.json::<T>().await?))
-        } else {
-            Ok(Err(res.json::<ErrorResponse>().await?))
-        }
-    }
+            let body_text = res.text().await?;
+            let data = serde_json::from_str(&body_text)
+                .map_err(|err| DataSourceError::HttpProtocolError(err, body_text))?;
 
-    async fn send_api_call<T: DeserializeOwned>(req: RequestBuilder) -> Result<T, DataSourceError> {
-        Self::send_request::<T>(req)
-            .await
-            .map_err(|e| DataSourceError::HttpError(e))?
-            .map_err(|err_res| err_res.into())
+            Ok(data)
+        } else {
+            Err(res.json::<ErrorResponse>().await?.into())
+        }
     }
 }
 
@@ -287,7 +296,7 @@ impl ImportBatchDataSource for HttpDataSource {
 impl TagDataSource for HttpDataSource {
     async fn add(&self, value: &mut Tag) -> Result<(), DataSourceError> {
         let new_tag: Tag =
-            HttpDataSource::send_api_call(self.client.post(format!("{}/tags", self.base)).json(
+            HttpDataSource::send_request(self.client.post(format!("{}/tags", self.base)).json(
                 &CreateTagRequest {
                     name: value.name.clone(),
                     group: value.group.as_ref().map(|g| g.id()),
@@ -301,7 +310,7 @@ impl TagDataSource for HttpDataSource {
     }
 
     async fn update(&self, value: &Tag) -> Result<(), DataSourceError> {
-        let res: Tag = HttpDataSource::send_api_call(
+        let res: Tag = HttpDataSource::send_request(
             self.client
                 .put(format!("{}/tags/{}", self.base, value.id))
                 .json(&UpdateTagRequest {
@@ -334,9 +343,9 @@ impl TagDataSource for HttpDataSource {
 #[async_trait]
 impl TagGroupDataSource for HttpDataSource {
     async fn add(&self, value: &mut TagGroup) -> Result<(), DataSourceError> {
-        let new_tag: TagGroup = HttpDataSource::send_api_call(
+        let new_tag: TagGroup = HttpDataSource::send_request(
             self.client
-                .post(format!("{}/tag_groups", self.base))
+                .post(format!("{}/tag-groups", self.base))
                 .json(&CreateTagGroupRequest {
                     name: value.name.clone(),
                     hex_color: value.hex_color.clone(),
@@ -355,7 +364,7 @@ impl TagGroupDataSource for HttpDataSource {
         query: &str,
         exact: bool,
     ) -> Result<Page<TagGroup>, DataSourceError> {
-        let mut url = format!("{}/tag_groups", self.base)
+        let mut url = format!("{}/tag-groups", self.base)
             .parse::<Url>()
             .expect("Cannot parse url");
 
@@ -365,7 +374,7 @@ impl TagGroupDataSource for HttpDataSource {
             .append_pair("exact", if exact { "true" } else { "false" })
             .append_pair("query", query);
 
-        HttpDataSource::send_api_call(self.client.get(url)).await
+        HttpDataSource::send_request(self.client.get(url)).await
     }
 }
 
@@ -385,7 +394,7 @@ impl MediaImportDataSource for HttpDataSource {
     ) -> Result<Content, MediaImportError> {
         let file = File::open(stream).await?;
 
-        HttpDataSource::send_api_call(
+        HttpDataSource::send_request(
             self.client
                 .post(format!("{}/content", self.base))
                 .header(CONTENT_TYPE, mime.as_str())
@@ -437,7 +446,7 @@ impl CrossDataSource for HttpDataSource {
             }
         }
 
-        HttpDataSource::send_api_call(self.client.get(url)).await
+        HttpDataSource::send_request(self.client.get(url)).await
     }
 
     async fn search_items(
@@ -460,7 +469,7 @@ impl CrossDataSource for HttpDataSource {
         &self,
         new_post: CreateFullPost,
     ) -> Result<(ImportBatch, Vec<Post>), DataSourceError> {
-        let body: CreateFullPostResponse = HttpDataSource::send_api_call(
+        let body: CreateFullPostResponse = HttpDataSource::send_request(
             self.client
                 .post(format!("{}/posts", self.base))
                 .json(&new_post),
@@ -486,7 +495,7 @@ impl CrossDataSource for HttpDataSource {
             .append_pair("exact", if exact { "true" } else { "false" })
             .append_pair("query", query);
 
-        HttpDataSource::send_api_call(self.client.get(url)).await
+        HttpDataSource::send_request(self.client.get(url)).await
     }
 
     async fn update_full_post(&self, value: &Post, tags: &[u64]) -> Result<(), DataSourceError> {
