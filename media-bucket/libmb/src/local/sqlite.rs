@@ -1145,8 +1145,7 @@ impl CrossDataSource for SqliteIndex {
             " WHERE t.name = ?"
         } else {
             if query_is_empty {
-                //" WHERE t.name LIKE ?"
-                ""
+                " WHERE t.name LIKE ?"
             } else {
                 "WHERE tags_vtab MATCH (?)"
             }

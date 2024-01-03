@@ -1,0 +1,1 @@
+CREATE INDEX media_file_size_index ON media(file_size);
