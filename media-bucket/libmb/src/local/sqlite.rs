@@ -1156,7 +1156,7 @@ impl CrossDataSource for SqliteIndex {
         };
 
         let query_str =
-            format!("SELECT t.*, (SELECT COUNT(tpc.*) FROM tags_posts tpc WHERE tpc.tag_id = t.tag_id) as 'linked_posts' FROM tags_vtab t {where_clause} ORDER BY rank, t.created_at DESC LIMIT ? OFFSET ?");
+            format!("SELECT t.*, (SELECT COUNT(*) FROM tags_posts tpc WHERE tpc.tag_id = t.tag_id) as 'linked_posts' FROM tags_vtab t {where_clause} ORDER BY rank, t.created_at DESC LIMIT ? OFFSET ?");
 
         let mut sql_query = sqlx::query(query_str.as_str());
 
