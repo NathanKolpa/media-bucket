@@ -113,6 +113,13 @@ impl HttpDataSource {
             Ok(Err(res.json::<ErrorResponse>().await?))
         }
     }
+
+    async fn send_api_call<T: DeserializeOwned>(req: RequestBuilder) -> Result<T, DataSourceError> {
+        Self::send_request::<T>(req)
+            .await
+            .map_err(|e| DataSourceError::HttpError(e))?
+            .map_err(|err_res| err_res.into())
+    }
 }
 
 #[async_trait]
@@ -279,17 +286,14 @@ impl ImportBatchDataSource for HttpDataSource {
 #[async_trait]
 impl TagDataSource for HttpDataSource {
     async fn add(&self, value: &mut Tag) -> Result<(), DataSourceError> {
-        let res = self
-            .client
-            .post(format!("{}/tags", self.base))
-            .json(&CreateTagRequest {
-                name: value.name.clone(),
-                group: value.group.as_ref().map(|g| g.id()),
-            })
-            .send()
+        let new_tag: Tag =
+            HttpDataSource::send_api_call(self.client.post(format!("{}/tags", self.base)).json(
+                &CreateTagRequest {
+                    name: value.name.clone(),
+                    group: value.group.as_ref().map(|g| g.id()),
+                },
+            ))
             .await?;
-
-        let new_tag = res.json::<Tag>().await?;
 
         value.id = new_tag.id;
 
@@ -297,17 +301,15 @@ impl TagDataSource for HttpDataSource {
     }
 
     async fn update(&self, value: &Tag) -> Result<(), DataSourceError> {
-        let res = self
-            .client
-            .put(format!("{}/tags/{}", self.base, value.id))
-            .json(&UpdateTagRequest {
-                name: value.name.clone(),
-                group: value.group.as_ref().map(|g| g.id()),
-            })
-            .send()
-            .await?;
-
-        res.json::<Tag>().await?;
+        let res: Tag = HttpDataSource::send_api_call(
+            self.client
+                .put(format!("{}/tags/{}", self.base, value.id))
+                .json(&UpdateTagRequest {
+                    name: value.name.clone(),
+                    group: value.group.as_ref().map(|g| g.id()),
+                }),
+        )
+        .await?;
 
         Ok(())
     }
@@ -332,17 +334,15 @@ impl TagDataSource for HttpDataSource {
 #[async_trait]
 impl TagGroupDataSource for HttpDataSource {
     async fn add(&self, value: &mut TagGroup) -> Result<(), DataSourceError> {
-        let res = self
-            .client
-            .post(format!("{}/tag_groups", self.base))
-            .json(&CreateTagGroupRequest {
-                name: value.name.clone(),
-                hex_color: value.hex_color.clone(),
-            })
-            .send()
-            .await?;
-
-        let new_tag = res.json::<TagGroup>().await?;
+        let new_tag: TagGroup = HttpDataSource::send_api_call(
+            self.client
+                .post(format!("{}/tag_groups", self.base))
+                .json(&CreateTagGroupRequest {
+                    name: value.name.clone(),
+                    hex_color: value.hex_color.clone(),
+                }),
+        )
+        .await?;
 
         value.id = new_tag.id;
 
@@ -365,13 +365,7 @@ impl TagGroupDataSource for HttpDataSource {
             .append_pair("exact", if exact { "true" } else { "false" })
             .append_pair("query", query);
 
-        Ok(self
-            .client
-            .get(url)
-            .send()
-            .await?
-            .json::<Page<TagGroup>>()
-            .await?)
+        HttpDataSource::send_api_call(self.client.get(url)).await
     }
 }
 
@@ -391,16 +385,14 @@ impl MediaImportDataSource for HttpDataSource {
     ) -> Result<Content, MediaImportError> {
         let file = File::open(stream).await?;
 
-        self.client
-            .post(format!("{}/content", self.base))
-            .header(CONTENT_TYPE, mime.as_str())
-            .body(file)
-            .send()
-            .await
-            .map_err(|e| MediaImportError::DataSourceError(e.into()))?
-            .json::<Content>()
-            .await
-            .map_err(|e| MediaImportError::DataSourceError(e.into()))
+        HttpDataSource::send_api_call(
+            self.client
+                .post(format!("{}/content", self.base))
+                .header(CONTENT_TYPE, mime.as_str())
+                .body(file),
+        )
+        .await
+        .map_err(|err| MediaImportError::DataSourceError(err))
     }
 }
 
@@ -445,13 +437,7 @@ impl CrossDataSource for HttpDataSource {
             }
         }
 
-        Ok(self
-            .client
-            .get(url)
-            .send()
-            .await?
-            .json::<Page<SearchPost>>()
-            .await?)
+        HttpDataSource::send_api_call(self.client.get(url)).await
     }
 
     async fn search_items(
@@ -474,14 +460,12 @@ impl CrossDataSource for HttpDataSource {
         &self,
         new_post: CreateFullPost,
     ) -> Result<(ImportBatch, Vec<Post>), DataSourceError> {
-        let res = self
-            .client
-            .post(format!("{}/posts", self.base))
-            .json(&new_post)
-            .send()
-            .await?;
-
-        let body = res.json::<CreateFullPostResponse>().await?;
+        let body: CreateFullPostResponse = HttpDataSource::send_api_call(
+            self.client
+                .post(format!("{}/posts", self.base))
+                .json(&new_post),
+        )
+        .await?;
 
         Ok((body.batch, body.posts))
     }
@@ -502,13 +486,7 @@ impl CrossDataSource for HttpDataSource {
             .append_pair("exact", if exact { "true" } else { "false" })
             .append_pair("query", query);
 
-        Ok(self
-            .client
-            .get(url)
-            .send()
-            .await?
-            .json::<Page<SearchTag>>()
-            .await?)
+        HttpDataSource::send_api_call(self.client.get(url)).await
     }
 
     async fn update_full_post(&self, value: &Post, tags: &[u64]) -> Result<(), DataSourceError> {

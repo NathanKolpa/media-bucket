@@ -44,6 +44,12 @@ pub enum DataSourceError {
     #[cfg(feature = "http-client")]
     #[error("HTTP error: {0}")]
     HttpError(#[from] reqwest::Error),
+
+    #[error("Unhandled error: {message} -> {inner_error:?}")]
+    UnhandledError {
+        message: String,
+        inner_error: Option<String>,
+    },
 }
 
 /// A struct representing pagination parameters.

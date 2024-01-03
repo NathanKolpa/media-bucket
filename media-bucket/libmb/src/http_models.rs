@@ -1,3 +1,4 @@
+use crate::data_source::DataSourceError;
 use crate::model::*;
 use serde::{Deserialize, Serialize};
 use url::Url;
@@ -27,6 +28,19 @@ pub struct ErrorResponse {
     pub status_text: String,
     pub message: String,
     pub inner_error: Option<String>,
+}
+
+impl Into<DataSourceError> for ErrorResponse {
+    fn into(self) -> DataSourceError {
+        match self.status {
+            404 => DataSourceError::NotFound,
+            409 => DataSourceError::Duplicate,
+            _ => DataSourceError::UnhandledError {
+                message: self.message,
+                inner_error: self.inner_error,
+            },
+        }
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]

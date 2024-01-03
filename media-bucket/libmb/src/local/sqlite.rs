@@ -1179,7 +1179,6 @@ impl CrossDataSource for SqliteIndex {
             }
         }
 
-
         let rows = sql_query
             .bind(page.page_size() as i64)
             .bind(page.offset() as i64)
