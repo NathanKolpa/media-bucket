@@ -40,7 +40,8 @@ pub enum SqliteError {
 /// The `Sqlite` struct also manages a pool of database connections.
 /// This allows the application to efficiently reuse connections and improve performance.
 pub struct SqliteIndex {
-    pool: SqlitePool,
+    read_pool: SqlitePool,
+    write_pool: SqlitePool,
 }
 
 impl SqliteIndex {
@@ -53,12 +54,12 @@ impl SqliteIndex {
             return Err(SqliteError::CannotFindDatabaseFile);
         }
 
-        let pool = Self::new_encrypted_pool(path, secret, false).await?;
+        let (write_pool, read_pool) = Self::new_pools(path, secret).await?;
 
-        Self::prepare_db(&pool).await?;
-        Self::migrate(&pool).await?;
+        Self::prepare_db(&write_pool).await?;
+        Self::migrate(&write_pool).await?;
 
-        Ok(Self { pool })
+        Ok(Self { read_pool, write_pool })
     }
 
     #[cfg(feature = "encryption")]
@@ -66,11 +67,22 @@ impl SqliteIndex {
         path: &Path,
         secret: crate::local::secret::Secret,
     ) -> Result<Self, SqliteError> {
-        let pool = Self::new_encrypted_pool(path, secret, true).await?;
+        let (write_pool, read_pool) = Self::new_pools(path, secret).await?;
 
-        Self::migrate(&pool).await?;
+        Self::migrate(&write_pool).await?;
 
-        Ok(Self { pool })
+        Ok(Self { read_pool, write_pool })
+    }
+
+    #[cfg(feature = "encryption")]
+    async fn new_pools(
+        path: &Path,
+        secret: crate::local::secret::Secret,
+    ) -> Result<(SqlitePool, SqlitePool), SqliteError> {
+        let write_pool = Self::new_encrypted_pool(path, secret.clone(), false, false, 1).await?;
+        let read_pool = Self::new_encrypted_pool(path, secret, false, true, 64).await?;
+
+        Ok((write_pool, read_pool))
     }
 
     #[cfg(feature = "encryption")]
@@ -78,6 +90,8 @@ impl SqliteIndex {
         path: &Path,
         secret: crate::local::secret::Secret,
         create: bool,
+        readonly: bool,
+        max_conns: u32
     ) -> Result<SqlitePool, SqliteError> {
         let key = format!("'{}'", hex::encode(secret.bytes()));
 
@@ -88,10 +102,11 @@ impl SqliteIndex {
                 .pragma("key", key)
                 .journal_mode(SqliteJournalMode::Wal)
                 .synchronous(SqliteSynchronous::Full)
+                .read_only(readonly)
                 .busy_timeout(Duration::from_secs(10));
 
         Ok(SqlitePoolOptions::new()
-            .max_connections(1)
+            .max_connections(max_conns)
             .acquire_timeout(Duration::from_secs(60 * 60 * 6))
             .connect_with(connect_options)
             .await?)
@@ -438,7 +453,7 @@ impl MediaDataSource for SqliteIndex {
             .bind(value.metadata.page_size().map(|s| s.width))
             .bind(value.metadata.page_size().map(|s| s.height))
             .bind(value.metadata.video_encoding())
-            .execute(&self.pool)
+            .execute(&self.write_pool)
             .await?
             .last_insert_rowid();
 
@@ -450,7 +465,7 @@ impl MediaDataSource for SqliteIndex {
     async fn remove(&self, value: &Media) -> Result<(), DataSourceError> {
         sqlx::query("DELETE FROM media WHERE media_id = ?")
             .bind(value.id as i64)
-            .execute(&self.pool)
+            .execute(&self.write_pool)
             .await?;
 
         Ok(())
@@ -460,7 +475,7 @@ impl MediaDataSource for SqliteIndex {
         let mut rows = sqlx::query("SELECT * FROM media WHERE media_id = ?")
             .bind(id as i64)
             .map(|r| Self::map_media(&r))
-            .fetch(&self.pool);
+            .fetch(&self.read_pool);
 
         if let Some(row) = rows.try_next().await? {
             Ok(Some(row?))
@@ -473,7 +488,7 @@ impl MediaDataSource for SqliteIndex {
         let mut rows = sqlx::query("SELECT * FROM media WHERE sha256 = ?")
             .bind(sha256)
             .map(|r| Self::map_media(&r))
-            .fetch(&self.pool);
+            .fetch(&self.read_pool);
 
         if let Some(row) = rows.try_next().await? {
             Ok(Some(row?))
@@ -484,7 +499,7 @@ impl MediaDataSource for SqliteIndex {
 
     async fn get_total_size(&self) -> Result<u64, DataSourceError> {
         let total_size: (i64,) = sqlx::query_as("SELECT SUM(file_size) FROM media")
-            .fetch_one(&self.pool)
+            .fetch_one(&self.read_pool)
             .await?;
 
         Ok(total_size.0 as u64)
@@ -492,7 +507,7 @@ impl MediaDataSource for SqliteIndex {
 
     async fn get_count(&self) -> Result<u64, DataSourceError> {
         let count: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM media")
-            .fetch_one(&self.pool)
+            .fetch_one(&self.read_pool)
             .await?;
 
         Ok(count.0 as u64)
@@ -506,7 +521,7 @@ impl PostItemDataSource for SqliteIndex {
             .bind(value.post.id() as i64)
             .bind(value.position)
             .bind(value.content.id() as i64)
-            .execute(&self.pool)
+            .execute(&self.write_pool)
             .await?;
 
         Ok(())
@@ -521,7 +536,7 @@ impl PostItemDataSource for SqliteIndex {
             .bind(post_item as i64)
             .bind(position)
             .map(|r| Self::map_post_item(&r))
-            .fetch(&self.pool);
+            .fetch(&self.read_pool);
 
         if let Some(row) = rows.try_next().await? {
             Ok(Some(row?))
@@ -535,7 +550,7 @@ impl PostItemDataSource for SqliteIndex {
         post_id: u64,
         page: PageParams,
     ) -> Result<Page<PostItem>, DataSourceError> {
-        let mut conn = self.pool.acquire().await?;
+        let mut conn = self.read_pool.acquire().await?;
 
         let total_row_count: (i64,) =
             sqlx::query_as("SELECT COUNT(*) FROM post_items WHERE post_id = ?")
@@ -571,7 +586,7 @@ impl PostDataSource for SqliteIndex {
             .bind(value.description.as_deref())
             .bind(value.import_batch.id() as i64)
             .bind(value.created_at)
-            .execute(&self.pool)
+            .execute(&self.write_pool)
             .await?
             .last_insert_rowid();
 
@@ -581,7 +596,7 @@ impl PostDataSource for SqliteIndex {
     }
 
     async fn update(&self, value: &Post) -> Result<(), DataSourceError> {
-        self.post_update(value, &self.pool).await?;
+        self.post_update(value, &self.write_pool).await?;
         Ok(())
     }
 
@@ -589,7 +604,7 @@ impl PostDataSource for SqliteIndex {
         let mut rows = sqlx::query(" SELECT * FROM posts WHERE post_id = ?")
             .bind(id as i64)
             .map(|r| Self::map_post(&r))
-            .fetch(&self.pool);
+            .fetch(&self.read_pool);
 
         if let Some(row) = rows.try_next().await? {
             Ok(Some(row?))
@@ -599,7 +614,7 @@ impl PostDataSource for SqliteIndex {
     }
 
     async fn get_page(&self, page: PageParams) -> Result<Page<Post>, DataSourceError> {
-        let mut conn = self.pool.acquire().await?;
+        let mut conn = self.read_pool.acquire().await?;
 
         let total_row_count: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM posts")
             .fetch_one(conn.deref_mut())
@@ -630,7 +645,7 @@ impl ContentDataSource for SqliteIndex {
         .bind(value.content.id() as i64)
         .bind(value.thumbnail.id() as i64)
         .bind(Option::<i64>::None)
-        .execute(&self.pool)
+        .execute(&self.write_pool)
         .await?;
 
         Ok(())
@@ -640,7 +655,7 @@ impl ContentDataSource for SqliteIndex {
         let mut rows = sqlx::query("SELECT * FROM content WHERE content_id = ?")
             .bind(id as i64)
             .map(|r| Self::map_content(&r))
-            .fetch(&self.pool);
+            .fetch(&self.read_pool);
 
         if let Some(row) = rows.try_next().await? {
             Ok(Some(row?))
@@ -657,7 +672,7 @@ impl ContentDataSource for SqliteIndex {
         sqlx::query("UPDATE content SET thumbnail_id = ? WHERE content_id = ?")
             .bind(new_id as i64)
             .bind(content.content.id() as i64)
-            .execute(&self.pool)
+            .execute(&self.write_pool)
             .await?;
 
         content.thumbnail = ManyToOne::Id(new_id);
@@ -670,7 +685,7 @@ impl ContentDataSource for SqliteIndex {
 impl ImportBatchDataSource for SqliteIndex {
     async fn add(&self, value: &mut ImportBatch) -> Result<(), DataSourceError> {
         let id = sqlx::query("INSERT INTO import_batches DEFAULT VALUES")
-            .execute(&self.pool)
+            .execute(&self.write_pool)
             .await?
             .last_insert_rowid();
 
@@ -687,7 +702,7 @@ impl TagDataSource for SqliteIndex {
             .bind(value.name.as_str())
             .bind(value.group.as_ref().map(|g| g.id() as i64))
             .bind(value.created_at)
-            .execute(&self.pool)
+            .execute(&self.write_pool)
             .await?
             .last_insert_rowid();
 
@@ -701,14 +716,14 @@ impl TagDataSource for SqliteIndex {
             .bind(value.name.as_str())
             .bind(value.group.as_ref().map(|g| g.id() as i64))
             .bind(value.id as i64)
-            .execute(&self.pool)
+            .execute(&self.write_pool)
             .await?;
 
         Ok(())
     }
 
     async fn delete(&self, tag_id: u64) -> Result<(), DataSourceError> {
-        let mut tx = self.pool.begin().await?;
+        let mut tx = self.write_pool.begin().await?;
 
         sqlx::query("DELETE FROM tags_posts WHERE tag_id = ?")
             .bind(tag_id as i64)
@@ -729,7 +744,7 @@ impl TagDataSource for SqliteIndex {
         let mut rows = sqlx::query("SELECT * FROM tags WHERE tag_id = ?")
             .bind(id as i64)
             .map(|r| Self::map_tag(&r))
-            .fetch(&self.pool);
+            .fetch(&self.read_pool);
 
         if let Some(row) = rows.try_next().await? {
             Ok(Some(row?))
@@ -742,7 +757,7 @@ impl TagDataSource for SqliteIndex {
         sqlx::query("INSERT INTO tags_posts(tag_id, post_id) VALUES(?, ?)")
             .bind(tag_id as i64)
             .bind(post_id as i64)
-            .execute(&self.pool)
+            .execute(&self.write_pool)
             .await?;
 
         Ok(())
@@ -752,7 +767,7 @@ impl TagDataSource for SqliteIndex {
         sqlx::query("DELETE FROM tags_posts WHERE tag_id = ? AND post_id = ?")
             .bind(tag_id as i64)
             .bind(post_id as i64)
-            .execute(&self.pool)
+            .execute(&self.write_pool)
             .await?;
 
         Ok(())
@@ -766,7 +781,7 @@ impl TagGroupDataSource for SqliteIndex {
             .bind(value.name.as_str())
             .bind(value.hex_color.as_str())
             .bind(value.created_at)
-            .execute(&self.pool)
+            .execute(&self.write_pool)
             .await?
             .last_insert_rowid();
 
@@ -781,7 +796,7 @@ impl TagGroupDataSource for SqliteIndex {
         query: &str,
         exact: bool,
     ) -> Result<Page<TagGroup>, DataSourceError> {
-        let mut conn = self.pool.acquire().await?;
+        let mut conn = self.read_pool.acquire().await?;
 
         let total_row_count: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM tag_group")
             .fetch_one(conn.deref_mut())
@@ -842,7 +857,7 @@ impl CrossDataSource for SqliteIndex {
     async fn get_post_detail(&self, post_id: u64) -> Result<Option<PostDetail>, DataSourceError> {
         let mut get_post_query = sqlx::query(" SELECT *, (SELECT COUNT(*) FROM post_items pi WHERE pi.post_id = p.post_id) as 'item_count' FROM posts p WHERE p.post_id = ?")
             .bind(post_id as i64)
-            .fetch(&self.pool);
+            .fetch(&self.read_pool);
 
         if let Some(row) = get_post_query.try_next().await? {
             let post = Self::map_post(&row)?;
@@ -869,7 +884,7 @@ impl CrossDataSource for SqliteIndex {
         query: &PostSearchQuery,
         page: &PageParams,
     ) -> Result<Page<SearchPost>, DataSourceError> {
-        let mut conn = self.pool.acquire().await?;
+        let mut conn = self.read_pool.acquire().await?;
 
         let order = match (query.order, query.text.is_some()) {
             (Some(PostSearchQueryOrder::Newest), _)
@@ -941,7 +956,7 @@ impl CrossDataSource for SqliteIndex {
         post_id: u64,
         page: PageParams,
     ) -> Result<Page<SearchPostItem>, DataSourceError> {
-        let mut conn = self.pool.acquire().await?;
+        let mut conn = self.read_pool.acquire().await?;
 
         let total_row_count: (i64,) =
             sqlx::query_as("SELECT COUNT(*) FROM post_items WHERE post_id = ?")
@@ -988,7 +1003,7 @@ impl CrossDataSource for SqliteIndex {
         .bind(post_id as i64)
         .bind(position as i64)
         .map(|r| Self::map_full_post_item(&r))
-        .fetch(&self.pool);
+        .fetch(&self.read_pool);
 
         if let Some(row) = rows.try_next().await? {
             Ok(Some(row?))
@@ -1003,7 +1018,7 @@ impl CrossDataSource for SqliteIndex {
     ) -> Result<(ImportBatch, Vec<Post>), DataSourceError> {
         let created_at = data.created_at.unwrap_or_else(Utc::now);
 
-        let mut tx = self.pool.begin().await?;
+        let mut tx = self.write_pool.begin().await?;
 
         let batch_id = sqlx::query("INSERT INTO import_batches DEFAULT VALUES")
             .execute(tx.deref_mut())
@@ -1133,7 +1148,7 @@ impl CrossDataSource for SqliteIndex {
         query: &str,
         exact: bool,
     ) -> Result<Page<SearchTag>, DataSourceError> {
-        let mut conn = self.pool.acquire().await?;
+        let mut conn = self.read_pool.acquire().await?;
 
         let total_row_count: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM tags")
             .fetch_one(conn.deref_mut())
@@ -1195,7 +1210,7 @@ impl CrossDataSource for SqliteIndex {
     }
 
     async fn update_full_post(&self, value: &Post, tags: &[u64]) -> Result<(), DataSourceError> {
-        let mut tx = self.pool.begin().await?;
+        let mut tx = self.write_pool.begin().await?;
 
         self.post_update(value, tx.deref_mut()).await?;
 
@@ -1223,7 +1238,7 @@ impl CrossDataSource for SqliteIndex {
     }
 
     async fn cascade_delete_post(&self, id: u64) -> Result<(), DataSourceError> {
-        let mut tx = self.pool.begin().await?;
+        let mut tx = self.write_pool.begin().await?;
 
         sqlx::query("DELETE FROM post_items WHERE post_id = ?")
             .bind(id as i64)
@@ -1246,7 +1261,7 @@ impl CrossDataSource for SqliteIndex {
     }
 
     async fn graph_post(&self, query: &PostGraphQuery) -> Result<Graph, DataSourceError> {
-        let mut conn = self.pool.acquire().await?;
+        let mut conn = self.read_pool.acquire().await?;
 
         let select = match query.select {
             GraphSelect::Count => "SUM(COUNT(*) * 1.0) over (ROWS UNBOUNDED PRECEDING)",
@@ -1294,7 +1309,7 @@ impl CrossDataSource for SqliteIndex {
         )
             .bind(post_id as i64)
             .map(|r| Self::map_search_tag(&r))
-            .fetch_all(&self.pool)
+            .fetch_all(&self.read_pool)
             .await?;
 
         Ok(rows.into_iter().filter_map(|x| Some(x.unwrap())).collect())
@@ -1305,7 +1320,7 @@ impl CrossDataSource for SqliteIndex {
             "SELECT t.*, g.name as g_name, g.color as color, g.created_at as g_created_at FROM tags tp JOIN tags t ON t.tag_id = tp.tag_id LEFT JOIN tag_group g ON t.group_id = g.group_id WHERE t.tag_id = ?",
         )
             .bind(tag_id as i64)
-            .fetch(&self.pool);
+            .fetch(&self.read_pool);
 
         if let Some(row) = get_tag_query.try_next().await? {
             let tag = Self::map_full_tag(&row)?;
