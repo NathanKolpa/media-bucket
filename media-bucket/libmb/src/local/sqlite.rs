@@ -54,12 +54,15 @@ impl SqliteIndex {
             return Err(SqliteError::CannotFindDatabaseFile);
         }
 
-        let (write_pool, read_pool) = Self::new_pools(path, secret).await?;
+        let (write_pool, read_pool) = Self::new_pools(path, secret, false).await?;
 
         Self::prepare_db(&write_pool).await?;
         Self::migrate(&write_pool).await?;
 
-        Ok(Self { read_pool, write_pool })
+        Ok(Self {
+            read_pool,
+            write_pool,
+        })
     }
 
     #[cfg(feature = "encryption")]
@@ -67,19 +70,23 @@ impl SqliteIndex {
         path: &Path,
         secret: crate::local::secret::Secret,
     ) -> Result<Self, SqliteError> {
-        let (write_pool, read_pool) = Self::new_pools(path, secret).await?;
+        let (write_pool, read_pool) = Self::new_pools(path, secret, true).await?;
 
         Self::migrate(&write_pool).await?;
 
-        Ok(Self { read_pool, write_pool })
+        Ok(Self {
+            read_pool,
+            write_pool,
+        })
     }
 
     #[cfg(feature = "encryption")]
     async fn new_pools(
         path: &Path,
         secret: crate::local::secret::Secret,
+        create: bool,
     ) -> Result<(SqlitePool, SqlitePool), SqliteError> {
-        let write_pool = Self::new_encrypted_pool(path, secret.clone(), false, false, 1).await?;
+        let write_pool = Self::new_encrypted_pool(path, secret.clone(), create, false, 1).await?;
         let read_pool = Self::new_encrypted_pool(path, secret, false, true, 64).await?;
 
         Ok((write_pool, read_pool))
@@ -91,7 +98,7 @@ impl SqliteIndex {
         secret: crate::local::secret::Secret,
         create: bool,
         readonly: bool,
-        max_conns: u32
+        max_conns: u32,
     ) -> Result<SqlitePool, SqliteError> {
         let key = format!("'{}'", hex::encode(secret.bytes()));
 
