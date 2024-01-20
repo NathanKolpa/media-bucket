@@ -1,8 +1,9 @@
-import {ChangeDetectionStrategy, Component} from '@angular/core';
-import {fromBucket} from '@features/bucket/store';
-import {Store} from "@ngrx/store";
-import {SelectedBucket, Tag} from "@core/models";
-import {fromSearch, searchActions} from '@features/search/store';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { fromBucket } from '@features/bucket/store';
+import { Store } from "@ngrx/store";
+import { SelectedBucket, Tag } from "@core/models";
+import { fromSearch, searchActions } from '@features/search/store';
+import { MatDialogRef } from '@angular/material/dialog';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -23,29 +24,34 @@ export class ManageTagsDialogComponent {
   lastTagId: number | null = null;
 
   changeSearchQuery(bucket: SelectedBucket, query: string | null) {
-    this.store.dispatch(searchActions.tagEditSearchQueryChange({query, bucket}));
+    this.store.dispatch(searchActions.tagEditSearchQueryChange({ query, bucket }));
   }
 
   loadNext(bucket: SelectedBucket) {
-    this.store.dispatch(searchActions.loadTagEditNextSearchTags({bucket}))
+    this.store.dispatch(searchActions.loadTagEditNextSearchTags({ bucket }))
   }
 
   changeSelectedTag(bucket: SelectedBucket, tagId: number | null) {
     if (tagId !== null) {
-      this.store.dispatch(searchActions.tagEditSelectTag({bucket, tagId}))
+      this.store.dispatch(searchActions.tagEditSelectTag({ bucket, tagId }))
       this.lastTagId = tagId;
     } else {
-      this.store.dispatch(searchActions.tagEditClearSelected({bucket}));
+      this.store.dispatch(searchActions.tagEditClearSelected({ bucket }));
       this.lastTagId = null;
     }
   }
 
   reloadSelectedTag(bucket: SelectedBucket) {
     if (this.lastTagId !== null) {
-      this.store.dispatch(searchActions.tagEditSelectTag({bucket, tagId: this.lastTagId}))
+      this.store.dispatch(searchActions.tagEditSelectTag({ bucket, tagId: this.lastTagId }))
     }
   }
 
-  constructor(private store: Store) {
+  viewLinkedPosts(bucket: SelectedBucket, tag: Tag) {
+    this.store.dispatch(searchActions.viewTagLinkedPosts({ bucket, tag }));
+    this.dialogRef.close();
+  }
+
+  constructor(private store: Store, public dialogRef: MatDialogRef<ManageTagsDialogComponent>) {
   }
 }

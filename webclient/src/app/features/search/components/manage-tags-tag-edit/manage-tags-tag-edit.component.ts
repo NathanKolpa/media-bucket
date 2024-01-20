@@ -1,6 +1,6 @@
-import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
-import {LoadingState, TagDetail} from "@core/models";
-import {FormControl, FormGroup, Validators} from "@angular/forms";
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import { LoadingState, TagDetail } from "@core/models";
+import { FormControl, FormGroup, Validators } from "@angular/forms";
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -9,6 +9,8 @@ import {FormControl, FormGroup, Validators} from "@angular/forms";
   styleUrls: ['./manage-tags-tag-edit.component.scss']
 })
 export class ManageTagsTagEditComponent {
+  @Output()
+  public viewLinkedPosts = new EventEmitter<TagDetail>();
 
   get tag(): TagDetail | null {
     return this._tag;
@@ -18,7 +20,7 @@ export class ManageTagsTagEditComponent {
   set tag(value: TagDetail | null) {
     this._tag = value;
 
-    if(value == null) {
+    if (value == null) {
       return;
     }
 

@@ -1,4 +1,4 @@
-import {Tag} from "./tag";
+import { Tag } from "./tag";
 
 export type SearchQueryItem =
   { type: 'tag', tag: Tag }
@@ -31,6 +31,10 @@ export class PostSearchQuery {
     return new PostSearchQuery(this._items, this._order, Math.random());
   }
 
+  public setTag(tag: Tag): PostSearchQuery {
+    return new PostSearchQuery([{ tag, type: 'tag' }], this._order, this._seed);
+  }
+
   public addTag(tag: Tag): PostSearchQuery {
     return new PostSearchQuery([...this._items.filter(x => {
       if (x.type != 'tag') {
@@ -38,7 +42,7 @@ export class PostSearchQuery {
       }
 
       return x.tag.id != tag.id;
-    }), {type: 'tag', tag}], this._order, this._seed);
+    }), { type: 'tag', tag }], this._order, this._seed);
   }
 
   public addText(text: string): PostSearchQuery {
@@ -48,7 +52,7 @@ export class PostSearchQuery {
       }
 
       return x.str != text;
-    }), {type: 'text', str: text}], this._order, this._seed);
+    }), { type: 'text', str: text }], this._order, this._seed);
   }
 
   public setOrder(order: SearchQueryOrder): PostSearchQuery {

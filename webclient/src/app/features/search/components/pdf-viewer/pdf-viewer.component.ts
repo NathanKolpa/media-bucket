@@ -1,5 +1,5 @@
-import {AfterViewInit, ChangeDetectionStrategy, Component, Input, ViewChild} from '@angular/core';
-import {Media} from "@core/models";
+import { AfterViewInit, ChangeDetectionStrategy, Component, Input, ViewChild } from '@angular/core';
+import { Media } from "@core/models";
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -8,7 +8,7 @@ import {Media} from "@core/models";
   styleUrls: ['./pdf-viewer.component.scss']
 })
 export class PdfViewerComponent implements AfterViewInit {
-  @ViewChild('pdfViewer', {static: false})
+  @ViewChild('pdfViewer', { static: false })
   public pdfViewer?: PdfViewerComponent;
   public zoom = 100;
   @Input()

@@ -1,6 +1,6 @@
-import {Injectable} from "@angular/core";
-import {Actions, createEffect, ofType} from "@ngrx/effects";
-import {ApiService} from "@core/services";
+import { Injectable } from "@angular/core";
+import { Actions, createEffect, ofType } from "@ngrx/effects";
+import { ApiService } from "@core/services";
 import * as searchActions from './search.actions';
 import {
   auditTime,
@@ -18,31 +18,31 @@ import {
   tap,
   withLatestFrom
 } from "rxjs";
-import {Store} from "@ngrx/store";
+import { Store } from "@ngrx/store";
 import * as fromSearch from "./search.selectors";
-import {MatDialog} from "@angular/material/dialog";
-import {PostDetailDialogComponent} from "@features/search/containers/post-detail-dialog/post-detail-dialog.component";
-import {UploadDialogComponent} from "@features/search/containers/upload-dialog/upload-dialog.component";
-import {MatSnackBar} from "@angular/material/snack-bar";
+import { MatDialog } from "@angular/material/dialog";
+import { PostDetailDialogComponent } from "@features/search/containers/post-detail-dialog/post-detail-dialog.component";
+import { UploadDialogComponent } from "@features/search/containers/upload-dialog/upload-dialog.component";
+import { MatSnackBar } from "@angular/material/snack-bar";
 import {
   UploadProgressDialogComponent
 } from "@features/search/containers/upload-progress-dialog/upload-progress-dialog.component";
-import {PageParams} from "@core/models";
+import { PageParams } from "@core/models";
 import {
   ConfirmDeletePostDialogComponent
 } from "@features/search/components/confirm-delete-post-dialog/confirm-delete-post-dialog.component";
-import {ManageTagsDialogComponent} from "@features/search/containers/manage-tags-dialog/manage-tags-dialog.component";
+import { ManageTagsDialogComponent } from "@features/search/containers/manage-tags-dialog/manage-tags-dialog.component";
 
 @Injectable()
 export class SearchEffects {
 
   loadNext$ = createEffect(() => this.actions$.pipe(
-    ofType(searchActions.loadNext, searchActions.searchQueryChange, searchActions.addTagToSearchQuery),
+    ofType(searchActions.loadNext, searchActions.searchQueryChange, searchActions.viewTagLinkedPosts, searchActions.addTagToSearchQuery),
     withLatestFrom(this.store.select(fromSearch.selectNextPage)),
     withLatestFrom(this.store.select(fromSearch.selectSearchQuery)),
     switchMap(([[action, page], query]) => this.api.searchPosts(action.bucket.auth, query, page).pipe(
-      map(({page, posts}) => searchActions.loadNextSuccess({page, posts})),
-      catchError(async failure => searchActions.loadNextFailure({failure}))
+      map(({ page, posts }) => searchActions.loadNextSuccess({ page, posts })),
+      catchError(async failure => searchActions.loadNextFailure({ failure }))
     ))
   ));
 
@@ -50,8 +50,8 @@ export class SearchEffects {
     ofType(searchActions.loadNextPostItemList),
     withLatestFrom(this.store.select(fromSearch.selectNextItemPage)),
     switchMap(([action, page]) => this.api.searchPostItems(action.bucket.auth, action.postId, page).pipe(
-      map(({page, items}) => searchActions.loadNextPostItemListSuccess({items})),
-      catchError(async failure => searchActions.loadNextPostItemListFailure({failure}))
+      map(({ page, items }) => searchActions.loadNextPostItemListSuccess({ items })),
+      catchError(async failure => searchActions.loadNextPostItemListFailure({ failure }))
     ))
   ));
 
@@ -61,30 +61,30 @@ export class SearchEffects {
     withLatestFrom(this.store.select(fromSearch.selectTagEditSearchText)),
     auditTime(250),
     switchMap(([[action, page], query]) => this.api.searchTags(action.bucket.auth, page, query || "").pipe(
-      map(({page, tags}) => searchActions.loadTagEditNextSearchTagsSuccess({page, tags})),
-      catchError(async failure => searchActions.loadTagEditNextSearchTagsFailure({failure}))
+      map(({ page, tags }) => searchActions.loadTagEditNextSearchTagsSuccess({ page, tags })),
+      catchError(async failure => searchActions.loadTagEditNextSearchTagsFailure({ failure }))
     ))
   ));
 
   searchTextChange$ = createEffect(() => this.actions$.pipe(
     ofType(searchActions.searchTextChange),
     auditTime(250),
-    switchMap(({bucket, query}) => this.api.searchTags(bucket.auth, new PageParams(25, 0), query ?? '').pipe(
-      map(({page, tags}) => searchActions.searchTagSuccess({tags})),
-      catchError(async failure => searchActions.searchTagFailure({failure}))
+    switchMap(({ bucket, query }) => this.api.searchTags(bucket.auth, new PageParams(25, 0), query ?? '').pipe(
+      map(({ page, tags }) => searchActions.searchTagSuccess({ tags })),
+      catchError(async failure => searchActions.searchTagFailure({ failure }))
     ))
   ));
 
   showPostLoadItem$ = createEffect(() => this.actions$.pipe(
     ofType(searchActions.showPost),
-    switchMap(({bucket, postId}) => [
-      searchActions.loadPostItem({bucket, postId, position: 0}),
+    switchMap(({ bucket, postId }) => [
+      searchActions.loadPostItem({ bucket, postId, position: 0 }),
     ])
   ));
 
   showPost$ = createEffect(() => this.actions$.pipe(
     ofType(searchActions.showPost),
-    tap(({showPopup}) => {
+    tap(({ showPopup }) => {
       if (showPopup) {
         this.dialog.open(PostDetailDialogComponent, {
           backdropClass: 'backdrop',
@@ -92,9 +92,9 @@ export class SearchEffects {
         });
       }
     }),
-    switchMap(({postId, bucket}) => this.api.getPostById(bucket.auth, postId).pipe(
-      map((post) => searchActions.showPostSuccess({post})),
-      catchError(async failure => searchActions.showPostFailure({failure}))
+    switchMap(({ postId, bucket }) => this.api.getPostById(bucket.auth, postId).pipe(
+      map((post) => searchActions.showPostSuccess({ post })),
+      catchError(async failure => searchActions.showPostFailure({ failure }))
     ))
   ));
 
@@ -103,28 +103,28 @@ export class SearchEffects {
     tap(() => {
       this.dialog.open(UploadDialogComponent);
     })
-  ), {dispatch: false})
+  ), { dispatch: false })
 
   showUploadProgressDialog$ = createEffect(() => this.actions$.pipe(
     ofType(searchActions.showUploadProgress),
     tap(() => {
       this.dialog.open(UploadProgressDialogComponent);
     })
-  ), {dispatch: false})
+  ), { dispatch: false })
 
   loadPostDetail$ = createEffect(() => this.actions$.pipe(
     ofType(searchActions.showPostSidebar),
-    switchMap(({postId, bucket}) => this.api.getPostById(bucket.auth, postId).pipe(
-      map((post) => searchActions.showPostSidebarSuccess({post})),
-      catchError(async failure => searchActions.showPostSidebarFailure({failure}))
+    switchMap(({ postId, bucket }) => this.api.getPostById(bucket.auth, postId).pipe(
+      map((post) => searchActions.showPostSidebarSuccess({ post })),
+      catchError(async failure => searchActions.showPostSidebarFailure({ failure }))
     ))
   ));
 
   loadTagDetail$ = createEffect(() => this.actions$.pipe(
     ofType(searchActions.tagEditSelectTag),
-    switchMap(({tagId, bucket}) => this.api.getTagById(bucket.auth, tagId).pipe(
-      map((tag) => searchActions.tagEditSelectTagSuccess({tag})),
-      catchError(async failure => searchActions.tagEditSelectTagFailure({failure}))
+    switchMap(({ tagId, bucket }) => this.api.getTagById(bucket.auth, tagId).pipe(
+      map((tag) => searchActions.tagEditSelectTagSuccess({ tag })),
+      catchError(async failure => searchActions.tagEditSelectTagFailure({ failure }))
     ))
   ));
 
@@ -133,7 +133,7 @@ export class SearchEffects {
     withLatestFrom(this.store.select(fromSearch.selectTotalPosts)),
     withLatestFrom(this.store.select(fromSearch.selectNextPage)),
     withLatestFrom(this.store.select(fromSearch.selectSearchQuery)),
-    switchMap(([[[{bucket}, postCount], nextPage], query]) => {
+    switchMap(([[[{ bucket }, postCount], nextPage], query]) => {
       let chunkCount = postCount / nextPage.pageSize;
       let requests = [];
 
@@ -143,15 +143,15 @@ export class SearchEffects {
 
       return forkJoin(requests);
     }),
-    map((responses) => searchActions.refreshLoadedSuccess({posts: responses.map(x => x.posts).reduce((acc, posts) => [...acc, ...posts], [])})),
-    catchError(async failure => searchActions.refreshLoadedFailure({failure}))
+    map((responses) => searchActions.refreshLoadedSuccess({ posts: responses.map(x => x.posts).reduce((acc, posts) => [...acc, ...posts], []) })),
+    catchError(async failure => searchActions.refreshLoadedFailure({ failure }))
   ))
 
   loadPostItem$ = createEffect(() => this.actions$.pipe(
     ofType(searchActions.loadPostItem),
-    switchMap(({postId, bucket, position}) => this.api.getPostItemById(bucket.auth, postId, position).pipe(
-      map((item) => searchActions.loadPostItemSuccess({item})),
-      catchError(async failure => searchActions.loadPostItemFailure({failure}))
+    switchMap(({ postId, bucket, position }) => this.api.getPostItemById(bucket.auth, postId, position).pipe(
+      map((item) => searchActions.loadPostItemSuccess({ item })),
+      catchError(async failure => searchActions.loadPostItemFailure({ failure }))
     ))
   ));
 
@@ -160,31 +160,31 @@ export class SearchEffects {
     tap(() => {
       this.dialog.open(ManageTagsDialogComponent);
     }),
-  ), {dispatch: false});
+  ), { dispatch: false });
 
 
   requestPostDelete$ = createEffect(() => this.actions$.pipe(
     ofType(searchActions.requestPostDelete),
-    switchMap(({post, bucket}) => this.dialog.open(ConfirmDeletePostDialogComponent, {data: post}).afterClosed().pipe(
+    switchMap(({ post, bucket }) => this.dialog.open(ConfirmDeletePostDialogComponent, { data: post }).afterClosed().pipe(
       filter(x => x === true),
-      map(() => searchActions.deletePost({bucket, postId: post.id}))
+      map(() => searchActions.deletePost({ bucket, postId: post.id }))
     ))
   ));
 
   updatePost$ = createEffect(() => this.actions$.pipe(
     ofType(searchActions.updatePost),
     switchMap(({
-                 postId,
-                 source,
-                 description,
-                 title,
-                 tags,
-                 bucket
-               }) => this.api.updatePost(bucket.auth, postId, title, description, source, tags.map(x => x.id)).pipe(
+      postId,
+      source,
+      description,
+      title,
+      tags,
+      bucket
+    }) => this.api.updatePost(bucket.auth, postId, title, description, source, tags.map(x => x.id)).pipe(
       switchMap((post) => this.api.getPostById(bucket.auth, post.id).pipe(
-        map((detail) => searchActions.updatePostSuccess({post, tags, detail})),
+        map((detail) => searchActions.updatePostSuccess({ post, tags, detail })),
       )),
-      catchError(async failure => searchActions.updatePostFailure({failure}))
+      catchError(async failure => searchActions.updatePostFailure({ failure }))
     ))
   ));
 
@@ -195,13 +195,13 @@ export class SearchEffects {
         duration: 3000
       });
     })
-  ), {dispatch: false});
+  ), { dispatch: false });
 
   deletePost$ = createEffect(() => this.actions$.pipe(
     ofType(searchActions.deletePost),
-    switchMap(({postId, bucket}) => this.api.deletePost(bucket.auth, postId).pipe(
-      map(() => searchActions.deletePostSuccess({postId})),
-      catchError(async failure => searchActions.deletePostFailure({failure}))
+    switchMap(({ postId, bucket }) => this.api.deletePost(bucket.auth, postId).pipe(
+      map(() => searchActions.deletePostSuccess({ postId })),
+      catchError(async failure => searchActions.deletePostFailure({ failure }))
     ))
   ));
 
@@ -212,7 +212,7 @@ export class SearchEffects {
         duration: 3000
       });
     })
-  ), {dispatch: false});
+  ), { dispatch: false });
 
   startUploadJob$ = createEffect(() => this.actions$.pipe(
     ofType(searchActions.startUploadJob),
@@ -224,7 +224,7 @@ export class SearchEffects {
       snackBar.onAction().subscribe(() => this.store.dispatch(searchActions.showUploadProgress()));
     }),
 
-    mergeMap(({job, bucket}) => {
+    mergeMap(({ job, bucket }) => {
       let cancellation = this.actions$.pipe(
         ofType(searchActions.reset)
       );
@@ -232,7 +232,7 @@ export class SearchEffects {
       let uploadJobs = from(job.nonDeletedUploads.map((x, i) => {
         let specificUploadCancellation = this.actions$.pipe(
           ofType(searchActions.deleteUploads),
-          filter(({jobId, indexes}) => jobId == job.id && indexes.find(x => x == i) !== undefined)
+          filter(({ jobId, indexes }) => jobId == job.id && indexes.find(x => x == i) !== undefined)
         )
 
         return {
@@ -242,7 +242,7 @@ export class SearchEffects {
         };
       }))
         .pipe(
-          mergeMap(({upload, index, cancellation}) => this.api.uploadFile(bucket.auth, upload.file, cancellation).pipe(
+          mergeMap(({ upload, index, cancellation }) => this.api.uploadFile(bucket.auth, upload.file, cancellation).pipe(
             tap((uploadEvent) => {
               if (uploadEvent.type == 'progress') {
                 this.store.dispatch(searchActions.uploadProgress({
@@ -260,7 +260,7 @@ export class SearchEffects {
               }
             }),
             catchError(async failure => {
-              this.store.dispatch(searchActions.uploadFailure({jobId: job.id, index, failure}));
+              this.store.dispatch(searchActions.uploadFailure({ jobId: job.id, index, failure }));
             }),
           ))
         )
@@ -288,7 +288,7 @@ export class SearchEffects {
             throw new Error('Job type not supported');
           }
         }),
-        catchError(async failure => searchActions.uploadJobFailure({jobId: job.id, failure}))
+        catchError(async failure => searchActions.uploadJobFailure({ jobId: job.id, failure }))
       );
 
     })
@@ -296,12 +296,12 @@ export class SearchEffects {
 
   uploadJobPostCreatedSuccess$ = createEffect(() => this.actions$.pipe(
     ofType(searchActions.uploadJobPostCreatedSuccess),
-    tap(({posts}) => {
+    tap(({ posts }) => {
       let snackBar = this.snackBar.open(`Successfully created ${posts.length} posts(s)`, 'Show all', {
         duration: 3000,
       });
     }),
-    map(({bucket}) => searchActions.refreshLoaded({bucket}))
+    map(({ bucket }) => searchActions.refreshLoaded({ bucket }))
   ))
 
   public constructor(

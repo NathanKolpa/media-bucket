@@ -1,4 +1,4 @@
-import {createAction, props} from "@ngrx/store";
+import { createAction, props } from "@ngrx/store";
 import {
   Failure,
   Media,
@@ -59,6 +59,7 @@ export const deletePostFailure = createAction('[Search] delete post failure', pr
 
 export const searchQueryChange = createAction('[Search] search query change', props<{ bucket: SelectedBucket, query: PostSearchQuery }>());
 export const addTagToSearchQuery = createAction('[Search] add tag to search query', props<{ bucket: SelectedBucket, tag: Tag }>());
+export const viewTagLinkedPosts = createAction('[Search] view tag linked posts', props<{ bucket: SelectedBucket, tag: Tag }>());
 
 export const searchTextChange = createAction('[Search] search text change', props<{ bucket: SelectedBucket, query: string | null }>());
 export const searchTagSuccess = createAction('[Search] search tags success', props<{ tags: Tag[] }>());
