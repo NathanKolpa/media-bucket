@@ -1,3 +1,5 @@
+mod repl;
+
 use std::error::Error;
 use std::net::IpAddr;
 use std::path::PathBuf;
@@ -6,6 +8,8 @@ use clap::{Parser, Subcommand};
 use libmb::Bucket;
 
 use libmb::http_server::{start_server, ServerConfig};
+
+use crate::repl::start_repl;
 
 #[derive(Subcommand)]
 enum Commands {
@@ -120,7 +124,16 @@ async fn main() -> Result<(), Box<dyn Error>> {
             println!("Successfully created bucket at {}", path.display());
         }
         Commands::Open { location, password } => {
-            let _bucket = Bucket::open(&location, password.as_deref()).await?;
+            let password = if Bucket::password_protected(&location).await? {
+                password
+                    .or_else(|| Some(rpassword::prompt_password("Enter your password: ").unwrap()))
+            } else {
+                None
+            };
+
+            let bucket = Bucket::open(&location, password.as_deref()).await?;
+
+            start_repl(bucket).await?;
         }
     }
 
