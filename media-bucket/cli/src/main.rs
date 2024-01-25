@@ -15,7 +15,7 @@ enum Commands {
         path: PathBuf,
 
         #[clap(value_parser, short, long)]
-        password: String,
+        password: Option<String>,
     },
 
     /// Start the REST API.
@@ -105,7 +105,19 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 tokio::fs::create_dir(&path).await?;
             }
 
+            let should_verify_password = password.is_none();
+            let password = password
+                .unwrap_or_else(|| rpassword::prompt_password("Enter your password: ").unwrap());
+
+            if should_verify_password
+                && rpassword::prompt_password("Enter your password again: ").unwrap() != password
+            {
+                return Err("Passwords do not match".into());
+            }
+
             Bucket::create_encrypted(&path, &password).await?;
+
+            println!("Successfully created bucket at {}", path.display());
         }
         Commands::Open { location, password } => {
             let _bucket = Bucket::open(&location, password.as_deref()).await?;
