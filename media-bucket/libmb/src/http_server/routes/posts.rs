@@ -54,6 +54,31 @@ pub async fn show(session: Session, id: web::Path<(u64, u64)>) -> Result<impl Re
     Ok(web::Json(post))
 }
 
+#[get("/{id}/tags")]
+pub async fn show_tags(
+    session: Session,
+    id: web::Path<(u64, u64)>,
+) -> Result<impl Responder, WebError> {
+    let id = id.into_inner().1;
+
+    let post = session
+        .bucket()
+        .data_source()
+        .posts()
+        .get_by_id(id)
+        .await?
+        .ok_or(WebError::ResourceNotFound)?;
+
+    let tags = session
+        .bucket()
+        .data_source()
+        .cross()
+        .get_tags_from_post(post.id)
+        .await?;
+
+    Ok(web::Json(tags))
+}
+
 #[delete("/{id}")]
 pub async fn delete(
     session: Session,

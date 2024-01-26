@@ -128,17 +128,22 @@ enum CompatMethod<'a> {
     Unoconv { path: &'a Path },
 }
 
-struct TmpFile {
+pub struct TmpFile {
     path: PathBuf,
 }
 
 impl TmpFile {
-    async fn new() -> Result<Self, MediaImportError> {
-        let tmp_file_path = env::temp_dir().join(Uuid::new_v4().to_string());
+    pub async fn new() -> Result<Self, MediaImportError> {
+        let uuid = Uuid::new_v4();
+        let tmp_file_path = env::temp_dir().join(format!("mb-{uuid}"));
 
         Ok(Self {
             path: tmp_file_path,
         })
+    }
+
+    pub fn path(&self) -> &Path {
+        &self.path
     }
 }
 

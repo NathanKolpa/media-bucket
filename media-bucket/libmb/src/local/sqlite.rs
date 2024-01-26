@@ -121,7 +121,7 @@ impl SqliteIndex {
 
     async fn prepare_db(pool: &SqlitePool) -> Result<(), SqliteError> {
         let mut conn = pool.acquire().await?;
-        conn.execute("PRAGMA wal_checkpoint(FULL)").await?;
+        conn.execute("PRAGMA wal_checkpoint(TRUNCATE)").await?;
         Ok(())
     }
 
@@ -186,6 +186,12 @@ impl SqliteIndex {
             post: ManyToOne::Id(row.try_get::<'_, i64, _>("post_id")? as u64),
             position: row.try_get("item_order")?,
             content: ManyToOne::Id(row.try_get::<'_, i64, _>("content_id")? as u64),
+            upload: UploadMetadata {
+                original_filename: row.try_get("original_name")?,
+                original_directory: row.try_get("original_directory")?,
+                original_modified_at: row.try_get("original_modified")?,
+                original_accessed_at: row.try_get("original_accessed")?,
+            },
         })
     }
 
@@ -303,6 +309,12 @@ impl SqliteIndex {
                 content: ManyToOne::Obj(Self::map_media(row)?),
                 thumbnail: ManyToOne::Id(row.try_get::<'_, i64, _>("thumbnail_id")? as u64),
             }),
+            upload: UploadMetadata {
+                original_filename: row.try_get("original_name")?,
+                original_directory: row.try_get("original_directory")?,
+                original_modified_at: row.try_get("original_modified")?,
+                original_accessed_at: row.try_get("original_accessed")?,
+            },
         })
     }
 
@@ -555,7 +567,7 @@ impl PostItemDataSource for SqliteIndex {
     async fn get_page_from_post(
         &self,
         post_id: u64,
-        page: PageParams,
+        page: &PageParams,
     ) -> Result<Page<PostItem>, DataSourceError> {
         let mut conn = self.read_pool.acquire().await?;
 
@@ -797,6 +809,19 @@ impl TagGroupDataSource for SqliteIndex {
         Ok(())
     }
 
+    async fn get_by_id(&self, id: u64) -> Result<Option<TagGroup>, DataSourceError> {
+        let mut rows = sqlx::query("SELECT * FROM tag_group WHERE group_id = ?")
+            .bind(id as i64)
+            .map(|r| Self::map_tag_group(&r))
+            .fetch(&self.read_pool);
+
+        if let Some(row) = rows.try_next().await? {
+            Ok(Some(row?))
+        } else {
+            Ok(None)
+        }
+    }
+
     async fn search(
         &self,
         page: &PageParams,
@@ -1036,9 +1061,10 @@ impl CrossDataSource for SqliteIndex {
             id: batch_id as u64,
         };
 
-        let mut posts = Vec::with_capacity(data.items.len());
+        let amount_of_posts_to_create = data.items.len().max(1);
+        let mut posts = Vec::with_capacity(amount_of_posts_to_create);
 
-        for content_id in data.items.iter() {
+        for _ in 0..amount_of_posts_to_create {
             let id = sqlx::query("INSERT INTO posts(source, title, description, import_batch_id, created_at) VALUES(?,?,?,?,?)")
                 .bind(data.source.as_ref().map(|url| url.as_str()))
                 .bind(data.title.as_deref())
@@ -1080,7 +1106,7 @@ impl CrossDataSource for SqliteIndex {
             }
         }
 
-        {
+        if !data.items.is_empty() {
             let insert_str = "INSERT INTO post_items(post_id, item_order, content_id, original_name, original_accessed, original_modified, original_directory, uploaded_at) VALUES \n";
             let row_value_str = "(?, ?, ?, ?,?,?,?,?),\n";
 

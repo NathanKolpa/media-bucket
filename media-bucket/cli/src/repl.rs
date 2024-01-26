@@ -6,7 +6,7 @@ use std::{
 
 use libmb::Bucket;
 
-async fn run_line(cmd: &str, bucket: &mut Bucket) -> Result<(), Box<dyn Error>> {
+async fn run_line(cmd: &str, _bucket: &mut Bucket) -> Result<(), Box<dyn Error>> {
     match cmd {
         "posts" => {}
         _ => println!("Uknown command '{cmd}'"),

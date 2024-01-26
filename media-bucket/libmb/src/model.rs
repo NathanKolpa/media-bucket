@@ -205,6 +205,7 @@ pub struct PostItem {
     pub post: ManyToOne<u64, Post>,
     pub position: i32,
     pub content: ManyToOne<u64, Content>,
+    pub upload: UploadMetadata,
 }
 
 impl ManyToOne<u64, Post> {
@@ -301,7 +302,7 @@ pub enum PostSearchQueryOrder {
     Random(f32),
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Default, Serialize, Deserialize, Clone)]
 pub struct PostSearchQuery {
     pub tags: Option<Vec<u64>>,
     pub text: Option<String>,

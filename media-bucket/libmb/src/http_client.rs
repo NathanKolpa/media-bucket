@@ -1,24 +1,23 @@
-use std::path::Path;
-
 use async_trait::async_trait;
+
 use mediatype::MediaTypeBuf;
-use reqwest::header::{HeaderMap, AUTHORIZATION, CONTENT_TYPE};
+use reqwest::{
+    header::{HeaderMap, AUTHORIZATION, CONTENT_TYPE},
+    Body,
+};
 use reqwest::{Client, RequestBuilder};
 use serde::de::DeserializeOwned;
 use thiserror::Error;
 use tokio::fs::File;
+use tokio_util::io::ReaderStream;
 use url::Url;
 use uuid::Uuid;
 
 use crate::data_source::*;
-use crate::http_models::{AuthRequest, AuthResponse, BucketInfo, CreateFullPostResponse, CreateTagGroupRequest, CreateTagRequest, ErrorResponse, UpdateTagRequest};
-use crate::model::{
-    Content, CreateFullPost, Graph, ImportBatch, Media, Page, Post, PostDetail, PostGraphQuery,
-    PostItem, PostSearchQuery, PostSearchQueryOrder, SearchPost, SearchPostItem, SearchTag, Tag,
-    TagDetail, TagGroup,
-};
+use crate::http_models::*;
+use crate::model::*;
 
-const USER_AGENT: &'static str = "libmb/1.0";
+const USER_AGENT: &str = "libmb/1.0";
 
 #[derive(Error, Debug)]
 pub enum HttpDataSourceError {
@@ -129,6 +128,20 @@ impl HttpDataSource {
             Err(res.json::<ErrorResponse>().await?.into())
         }
     }
+
+    async fn send_resource_request<T: DeserializeOwned>(
+        req: RequestBuilder,
+    ) -> Result<Option<T>, DataSourceError> {
+        let res = Self::send_request::<T>(req).await;
+
+        match res {
+            Ok(v) => Ok(Some(v)),
+            Err(e) => match e {
+                DataSourceError::NotFound => Ok(None),
+                _ => Err(e),
+            },
+        }
+    }
 }
 
 #[async_trait]
@@ -208,7 +221,12 @@ impl MediaDataSource for HttpDataSource {
     }
 
     async fn get_by_id(&self, id: u64) -> Result<Option<Media>, DataSourceError> {
-        todo!()
+        let res = HttpDataSource::send_resource_request(
+            self.client.get(format!("{}/media/{}", self.base, id)),
+        )
+        .await?;
+
+        Ok(res)
     }
 
     async fn get_by_sha256(&self, sha256: &str) -> Result<Option<Media>, DataSourceError> {
@@ -260,9 +278,24 @@ impl PostItemDataSource for HttpDataSource {
     async fn get_page_from_post(
         &self,
         post_id: u64,
-        page: PageParams,
+        page: &PageParams,
     ) -> Result<Page<PostItem>, DataSourceError> {
-        todo!()
+        let mut url = format!("{}/posts/{}/items", self.base, post_id)
+            .parse::<Url>()
+            .expect("Cannot parse url");
+
+        url.query_pairs_mut()
+            .append_pair("offset", page.offset().to_string().as_str())
+            .append_pair("size", page.page_size().to_string().as_str());
+
+        let res: Page<SearchPostItem> = Self::send_request(self.client.get(url)).await?;
+
+        Ok(Page {
+            page_size: res.page_size,
+            total_row_count: res.total_row_count,
+            page_number: res.page_number,
+            data: res.data.into_iter().map(|x| x.item).collect(),
+        })
     }
 }
 
@@ -358,6 +391,15 @@ impl TagGroupDataSource for HttpDataSource {
         Ok(())
     }
 
+    async fn get_by_id(&self, id: u64) -> Result<Option<TagGroup>, DataSourceError> {
+        let res = HttpDataSource::send_resource_request(
+            self.client.get(format!("{}/tag-groups/{}", self.base, id)),
+        )
+        .await?;
+
+        Ok(res)
+    }
+
     async fn search(
         &self,
         page: &PageParams,
@@ -390,18 +432,26 @@ impl MediaImportDataSource for HttpDataSource {
     async fn import_media(
         &self,
         mime: MediaTypeBuf,
-        stream: &Path,
+        stream: ImportSource<'_>,
     ) -> Result<Content, MediaImportError> {
-        let file = File::open(stream).await?;
+        let mut req = self
+            .client
+            .post(format!("{}/content", self.base))
+            .header(CONTENT_TYPE, mime.as_str());
 
-        HttpDataSource::send_request(
-            self.client
-                .post(format!("{}/content", self.base))
-                .header(CONTENT_TYPE, mime.as_str())
-                .body(file),
-        )
-        .await
-        .map_err(|err| MediaImportError::DataSourceError(err))
+        match stream {
+            ImportSource::Stream(stream) => {
+                req = req.body(Body::wrap_stream(ReaderStream::new(Box::into_pin(stream))));
+            }
+            ImportSource::File(path) => {
+                let file = File::open(path).await?;
+                req = req.body(file);
+            }
+        }
+
+        HttpDataSource::send_request(req)
+            .await
+            .map_err(MediaImportError::DataSourceError)
     }
 }
 
@@ -511,7 +561,12 @@ impl CrossDataSource for HttpDataSource {
     }
 
     async fn get_tags_from_post(&self, post_id: u64) -> Result<Vec<SearchTag>, DataSourceError> {
-        todo!()
+        let tags = HttpDataSource::send_request(
+            self.client
+                .get(format!("{}/posts/{}/tags", self.base, post_id)),
+        )
+        .await?;
+        Ok(tags)
     }
 
     async fn get_tag_detail(&self, tag_id: u64) -> Result<Option<TagDetail>, DataSourceError> {

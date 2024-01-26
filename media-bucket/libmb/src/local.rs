@@ -3,12 +3,13 @@ use std::path::Path;
 use async_trait::async_trait;
 use mediatype::MediaTypeBuf;
 use thiserror::Error;
+
 use uuid::Uuid;
 
-use crate::data_source::*;
 use crate::local::sqlite::{SqliteError, SqliteIndex};
 use crate::media_import::{import_file_with_thumbnail, MediaImportOutput};
 use crate::model::{Content, ManyToOne, Media};
+use crate::{data_source::*, media_import::TmpFile};
 
 #[cfg(feature = "encryption")]
 mod encrypted_fs_storage;
@@ -195,8 +196,22 @@ impl<FileStorage: BlobDataSource, Passwords: PasswordDataSource> MediaImportData
     async fn import_media(
         &self,
         mime: MediaTypeBuf,
-        path: &Path,
+        source: ImportSource<'_>,
     ) -> Result<Content, MediaImportError> {
+        let mut _tmp_file = None;
+        let path = match source {
+            ImportSource::Stream(source_stream) => {
+                let tmp_file = TmpFile::new().await?;
+                let mut file = tokio::fs::File::create(tmp_file.path()).await?;
+
+                tokio::io::copy(&mut Box::into_pin(source_stream), &mut file).await?;
+                _tmp_file = Some(tmp_file);
+
+                _tmp_file.as_ref().unwrap().path()
+            }
+            ImportSource::File(f) => f,
+        };
+
         let media_id = Uuid::new_v4();
         let media_writer = self.blobs().add(&media_id).await?;
 

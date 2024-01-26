@@ -36,7 +36,7 @@ pub fn routes_with_static(file_root: PathBuf, index_file: String) -> Scope {
                             if accept
                                 .to_str()
                                 .ok()
-                                .and_then(|s| s.split(",").find(|s| s == &"text/html"))
+                                .and_then(|s| s.split(',').find(|s| s == &"text/html"))
                                 .is_none()
                             {
                                 return Ok(ServiceResponse::new(
@@ -82,12 +82,14 @@ pub fn routes() -> Scope {
                                 .service(posts::store_tags)
                                 .service(posts::show_item)
                                 .service(posts::show)
+                                .service(posts::show_tags)
                                 .service(posts::delete)
                                 .service(posts::update),
                         )
                         .service(
                             web::scope("/tag-groups")
                                 .service(groups::index)
+                                .service(groups::show)
                                 .service(groups::store),
                         )
                         .service(

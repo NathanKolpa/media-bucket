@@ -1,25 +1,61 @@
 mod repl;
 
-use std::error::Error;
-use std::net::IpAddr;
 use std::path::PathBuf;
+use std::{error::Error, sync::atomic::AtomicUsize};
+use std::{net::IpAddr, sync::atomic::Ordering};
 
-use clap::{Parser, Subcommand};
-use libmb::Bucket;
+use clap::{Parser, Subcommand, ValueEnum};
+use libmb::{model::Post, Bucket, SyncMatchStategy};
 
 use libmb::http_server::{start_server, ServerConfig};
 
 use crate::repl::start_repl;
 
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Debug)]
+enum CliSyncMatchStrat {
+    /// Sync all posts regardless if any post already exists on the dest bucket.
+    /// This will effectivly copy all posts.
+    None,
+
+    /// Sync all posts based on the url as unique identifier. Posts without url will be ignored.
+    Url,
+}
+
+impl Into<SyncMatchStategy> for CliSyncMatchStrat {
+    fn into(self) -> SyncMatchStategy {
+        match self {
+            CliSyncMatchStrat::None => SyncMatchStategy::None,
+            CliSyncMatchStrat::Url => SyncMatchStategy::Url,
+        }
+    }
+}
+
 #[derive(Subcommand)]
 enum Commands {
+    /// Create a new bucket.
     Init {
-        /// The path where to create the new bucket.
+        /// The file path where to create the new bucket.
         #[clap(value_parser, value_name = "PATH")]
         path: PathBuf,
+    },
 
-        #[clap(value_parser, short, long)]
-        password: Option<String>,
+    /// Move data from one bucket across another in bulk.
+    Sync {
+        /// The bucket location where to copy from.
+        #[clap(value_parser, value_name = "SOURCE")]
+        source: String,
+
+        /// The bucket location where to write to.
+        #[clap(value_parser, value_name = "DESTINATION")]
+        destination: String,
+
+        /// Specify if the posts should be removed from the source bucket when sucessfully synced.
+        #[clap(value_parser, short, long, default_value_t = false)]
+        remove: bool,
+
+        /// Specify how posts should be matched across the source and destination.
+        #[clap(value_parser, short = 'm', long = "match")]
+        strategy: CliSyncMatchStrat,
     },
 
     /// Start the REST API.
@@ -59,12 +95,8 @@ enum Commands {
         index_file: Option<String>,
     },
 
-    Open {
-        location: String,
-
-        #[clap(value_parser, short, long, default_value = None)]
-        password: Option<String>,
-    },
+    /// Read and write from a bucket interactively.
+    Open { location: String },
 }
 
 #[derive(Parser)]
@@ -104,18 +136,13 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
             start_server(config).await?;
         }
-        Commands::Init { path, password } => {
+        Commands::Init { path } => {
             if !path.exists() {
                 tokio::fs::create_dir(&path).await?;
             }
 
-            let should_verify_password = password.is_none();
-            let password = password
-                .unwrap_or_else(|| rpassword::prompt_password("Enter your password: ").unwrap());
-
-            if should_verify_password
-                && rpassword::prompt_password("Enter your password again: ").unwrap() != password
-            {
+            let password = rpassword::prompt_password("Enter your password: ").unwrap();
+            if rpassword::prompt_password("Enter your password again: ").unwrap() != password {
                 return Err("Passwords do not match".into());
             }
 
@@ -123,19 +150,60 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
             println!("Successfully created bucket at {}", path.display());
         }
-        Commands::Open { location, password } => {
-            let password = if Bucket::password_protected(&location).await? {
-                password
-                    .or_else(|| Some(rpassword::prompt_password("Enter your password: ").unwrap()))
-            } else {
-                None
+        Commands::Open { location } => {
+            let bucket = open_bucket(None, &location, None).await?;
+            start_repl(bucket).await?;
+        }
+        Commands::Sync {
+            source,
+            destination,
+            remove,
+            strategy,
+        } => {
+            let src = open_bucket(
+                None,
+                &source,
+                Some(&format!("Enter your password for \"{source}\": ")),
+            )
+            .await?;
+            let dest = open_bucket(
+                None,
+                &destination,
+                Some(&format!("Enter your password for \"{destination}\": ")),
+            )
+            .await?;
+
+            let total = AtomicUsize::new(0);
+            let on_sync = |post: &Post| {
+                println!("Created post id: {}", post.id);
+                total.fetch_add(1, Ordering::SeqCst);
             };
 
-            let bucket = Bucket::open(&location, password.as_deref()).await?;
+            dest.sync_from(&src, strategy.into(), remove, &on_sync)
+                .await?;
 
-            start_repl(bucket).await?;
+            println!("Synced a total of {} post(s)", total.load(Ordering::SeqCst));
         }
     }
 
     Ok(())
+}
+
+async fn open_bucket(
+    password: Option<String>,
+    location: &str,
+    prompt_override: Option<&str>,
+) -> Result<Bucket, Box<dyn Error>> {
+    let password = if Bucket::password_protected(location).await? {
+        password.or_else(|| {
+            Some(
+                rpassword::prompt_password(prompt_override.unwrap_or("Enter your password: "))
+                    .unwrap(),
+            )
+        })
+    } else {
+        None
+    };
+
+    Ok(Bucket::open(location, password.as_deref()).await?)
 }

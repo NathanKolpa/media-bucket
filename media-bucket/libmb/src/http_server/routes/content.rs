@@ -1,13 +1,10 @@
-use std::env;
-
-use crate::http_server::web_error::WebError;
+use crate::{data_source::ImportSource, http_server::web_error::WebError, media_import::TmpFile};
 use actix_web::{post, web, HttpMessage, HttpRequest, Responder};
 use futures::StreamExt;
 use log::info;
 use mediatype::MediaTypeBuf;
-use tokio::fs::{remove_file, OpenOptions};
+use tokio::fs::OpenOptions;
 use tokio::io::AsyncWriteExt;
-use uuid::Uuid;
 
 use crate::http_server::instance::Session;
 
@@ -25,13 +22,13 @@ pub async fn store(
         .parse()
         .map_err(|_| WebError::ParseError)?;
 
-    let tmp_file_path = env::temp_dir().join(Uuid::new_v4().to_string());
+    let tmp_file_path = TmpFile::new().await?;
 
     {
         let mut tmp_file = OpenOptions::new()
             .create_new(true)
             .write(true)
-            .open(&tmp_file_path)
+            .open(&tmp_file_path.path())
             .await?;
 
         while let Some(item) = body.next().await {
@@ -45,10 +42,9 @@ pub async fn store(
         .bucket()
         .data_source()
         .media_import()
-        .import_media(mime, &tmp_file_path)
+        .import_media(mime, ImportSource::File(tmp_file_path.path()))
         .await;
 
-    remove_file(&tmp_file_path).await?;
     let content = content_result?;
 
     info!("Uploaded content {}", content.content.id());

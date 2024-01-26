@@ -2,7 +2,7 @@
 #![allow(dead_code)] // TODO remove me
 #![allow(unused_variables)] // TODO remove me
 
-pub use bucket::{Bucket, BucketError};
+pub use bucket::{Bucket, BucketError, SyncMatchStategy};
 
 mod bucket;
 pub mod data_source;

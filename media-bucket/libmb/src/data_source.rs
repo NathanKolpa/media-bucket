@@ -39,7 +39,7 @@ pub enum DataSourceError {
 
     #[cfg(feature = "local")]
     #[error("SQL error: {0}")]
-    SQLError(#[from] sqlx::Error),
+    SQLError(sqlx::Error),
 
     #[cfg(feature = "http-client")]
     #[error("HTTP error: {0}")]
@@ -56,11 +56,24 @@ pub enum DataSourceError {
     },
 }
 
+#[cfg(feature = "local")]
+impl From<sqlx::Error> for DataSourceError {
+    fn from(value: sqlx::Error) -> Self {
+        if let Some(db_err) = value.as_database_error() {
+            if db_err.is_unique_violation() {
+                return Self::Duplicate;
+            }
+        }
+
+        Self::SQLError(value)
+    }
+}
+
 /// A struct representing pagination parameters.
 ///
 /// The `PageParams` struct is used to specify pagination parameters when retrieving data from a data source.
 /// It includes the size of each page and the page number to retrieve.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PageParams {
     page_size: usize,
     offset: usize,
@@ -174,7 +187,7 @@ pub trait PostItemDataSource: Sync + Send {
     async fn get_page_from_post(
         &self,
         post_id: u64,
-        page: PageParams,
+        page: &PageParams,
     ) -> Result<Page<PostItem>, DataSourceError>;
 }
 
@@ -199,6 +212,7 @@ pub trait TagDataSource: Sync + Send {
 #[async_trait]
 pub trait TagGroupDataSource: Sync + Send {
     async fn add(&self, value: &mut TagGroup) -> Result<(), DataSourceError>;
+    async fn get_by_id(&self, group_id: u64) -> Result<Option<TagGroup>, DataSourceError>;
     async fn search(
         &self,
         page: &PageParams,
@@ -238,12 +252,17 @@ pub enum MediaImportError {
     IOError(#[from] std::io::Error),
 }
 
+pub enum ImportSource<'a> {
+    Stream(Box<dyn FileOutput>),
+    File(&'a Path),
+}
+
 #[async_trait]
 pub trait MediaImportDataSource: Sync + Send {
     async fn import_media(
         &self,
         mime: mediatype::MediaTypeBuf,
-        stream: &Path,
+        source: ImportSource<'_>,
     ) -> Result<Content, MediaImportError>;
 }
 

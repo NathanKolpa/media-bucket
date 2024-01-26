@@ -52,6 +52,21 @@ pub async fn index(
     Ok(web::Json(groups))
 }
 
+#[get("{id}")]
+pub async fn show(session: Session, id: web::Path<(u64, u64)>) -> Result<impl Responder, WebError> {
+    let id = id.into_inner().1;
+
+    let group = session
+        .bucket()
+        .data_source()
+        .tag_groups()
+        .get_by_id(id)
+        .await?
+        .ok_or(WebError::ResourceNotFound)?;
+
+    Ok(web::Json(group))
+}
+
 #[post("")]
 pub async fn store(
     session: Session,
