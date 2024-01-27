@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 use url::Url;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+#[cfg_attr(feature = "http-server-spec", derive(utoipa::ToSchema))]
 pub struct BucketInfo {
     pub id: u64,
     pub name: String,
@@ -12,17 +13,20 @@ pub struct BucketInfo {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+#[cfg_attr(feature = "http-server-spec", derive(utoipa::ToSchema))]
 pub struct AuthRequest {
     pub password: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+#[cfg_attr(feature = "http-server-spec", derive(utoipa::ToSchema))]
 pub struct AuthResponse {
     pub token: String,
     pub active_tokens: usize,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+#[cfg_attr(feature = "http-server-spec", derive(utoipa::ToSchema))]
 pub struct ErrorResponse {
     pub status: u16,
     pub status_text: String,
@@ -44,30 +48,35 @@ impl Into<DataSourceError> for ErrorResponse {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[cfg_attr(feature = "http-server-spec", derive(utoipa::ToSchema))]
 pub struct CreateFullPostResponse {
     pub batch: ImportBatch,
     pub posts: Vec<Post>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+#[cfg_attr(feature = "http-server-spec", derive(utoipa::ToSchema))]
 pub struct CreateTagGroupRequest {
     pub name: String,
     pub hex_color: String,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+#[cfg_attr(feature = "http-server-spec", derive(utoipa::ToSchema))]
 pub struct CreateTagRequest {
     pub name: String,
     pub group: Option<u64>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+#[cfg_attr(feature = "http-server-spec", derive(utoipa::ToSchema))]
 pub struct UpdateTagRequest {
     pub name: String,
     pub group: Option<u64>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+#[cfg_attr(feature = "http-server-spec", derive(utoipa::ToSchema))]
 pub struct UpdatePostRequest {
     pub title: Option<String>,
     pub description: Option<String>,

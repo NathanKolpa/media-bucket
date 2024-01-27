@@ -23,6 +23,7 @@ impl From<&ServerBucketInstance> for BucketInfo {
     }
 }
 
+#[cfg_attr(feature = "http-server-spec", utoipa::path)]
 #[get("")]
 pub async fn index(buckets: Data<InstanceDataSource>) -> impl Responder {
     let instances: Vec<BucketInfo> = buckets
@@ -34,6 +35,7 @@ pub async fn index(buckets: Data<InstanceDataSource>) -> impl Responder {
     web::Json(instances)
 }
 
+#[cfg_attr(feature = "http-server-spec", utoipa::path)]
 #[get("/{id}")]
 pub async fn show(
     id: web::Path<u64>,
@@ -44,6 +46,7 @@ pub async fn show(
     Ok(web::Json(BucketInfo::from(instance.deref())))
 }
 
+#[cfg_attr(feature = "http-server-spec", utoipa::path)]
 #[get("/details")]
 pub async fn bucket_details(session: Session) -> Result<impl Responder, WebError> {
     let total_file_size = session
@@ -62,6 +65,7 @@ pub async fn bucket_details(session: Session) -> Result<impl Responder, WebError
     }))
 }
 
+#[cfg_attr(feature = "http-server-spec", utoipa::path)]
 #[post("/{id}/auth")]
 pub async fn auth(
     id: web::Path<u64>,
@@ -98,6 +102,7 @@ pub async fn auth(
     }))
 }
 
+#[cfg_attr(feature = "http-server-spec", utoipa::path)]
 #[get("/check-auth")]
 pub async fn check_auth(bucket: Session) -> impl Responder {
     web::Json(())

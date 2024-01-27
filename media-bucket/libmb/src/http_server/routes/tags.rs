@@ -15,6 +15,7 @@ pub struct SearchParams {
     exact: Option<bool>,
 }
 
+#[cfg_attr(feature = "http-server-spec", utoipa::path)]
 #[get("")]
 pub async fn index(
     session: Session,
@@ -35,6 +36,7 @@ pub async fn index(
     Ok(web::Json(tags))
 }
 
+#[cfg_attr(feature = "http-server-spec", utoipa::path)]
 #[get("/{id}")]
 pub async fn show(session: Session, id: web::Path<(u64, u64)>) -> Result<impl Responder, WebError> {
     let id = id.into_inner().1;
@@ -50,6 +52,7 @@ pub async fn show(session: Session, id: web::Path<(u64, u64)>) -> Result<impl Re
     Ok(web::Json(tag))
 }
 
+#[cfg_attr(feature = "http-server-spec", utoipa::path)]
 #[post("")]
 pub async fn store(
     session: Session,
@@ -69,6 +72,7 @@ pub async fn store(
     Ok(web::Json(tag))
 }
 
+#[cfg_attr(feature = "http-server-spec", utoipa::path)]
 #[put("/{id}")]
 pub async fn update(
     session: Session,
@@ -95,6 +99,7 @@ pub async fn update(
     Ok(web::Json(tag))
 }
 
+#[cfg_attr(feature = "http-server-spec", utoipa::path)]
 #[delete("/{id}")]
 pub async fn delete(
     session: Session,

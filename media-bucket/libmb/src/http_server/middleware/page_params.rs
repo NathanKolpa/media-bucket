@@ -12,6 +12,7 @@ const MAX_SIZE: usize = 500;
 const DEFAULT_SIZE: usize = 50;
 
 #[derive(Deserialize)]
+#[cfg_attr(feature = "http-server-spec", derive(utoipa::IntoParams))]
 struct QueryParams {
     offset: Option<usize>,
     size: Option<usize>,

@@ -10,6 +10,7 @@ use crate::http_server::instance::{InstanceDataSource, Session};
 use crate::http_server::web_error::WebError;
 
 #[derive(Deserialize)]
+#[cfg_attr(feature = "http-server-spec", derive(utoipa::IntoParams))]
 struct QueryParams {
     #[serde(rename = "bucket")]
     bucket_id: Option<u64>,

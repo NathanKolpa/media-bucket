@@ -9,6 +9,7 @@ use crate::http_server::web_error::WebError;
 use crate::model::{PostSearchQuery, PostSearchQueryOrder};
 
 #[derive(Deserialize)]
+#[cfg_attr(feature = "http-server-spec", derive(utoipa::IntoParams))]
 struct PostSearchParams {
     tags: Option<String>,
     text: Option<String>,

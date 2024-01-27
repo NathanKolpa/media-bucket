@@ -59,6 +59,7 @@ pub fn routes_with_static(file_root: PathBuf, index_file: String) -> Scope {
 
 pub fn routes() -> Scope {
     web::scope("")
+        .service(doc())
         .service(
             web::scope("/buckets")
                 .service(buckets::index)
@@ -108,4 +109,96 @@ pub fn routes() -> Scope {
                 ),
         )
         .default_service(web::route().to(not_found))
+}
+
+#[cfg(feature = "http-server-spec")]
+fn doc() -> Scope {
+    use utoipa::OpenApi;
+    use utoipa_swagger_ui::SwaggerUi;
+
+    #[derive(OpenApi)]
+    #[openapi(
+        paths(
+            posts::graph,
+            posts::index,
+            posts::index,
+            posts::store,
+            posts::index_items,
+            posts::store_tags,
+            posts::show_item,
+            posts::show,
+            posts::show_tags,
+            posts::delete,
+            posts::update,
+            media::file,
+            media::show,
+            buckets::bucket_details,
+            buckets::index,
+            buckets::check_auth,
+            buckets::auth,
+            buckets::show,
+            groups::index,
+            groups::show,
+            groups::store,
+            tags::index,
+            tags::show,
+            tags::delete,
+            tags::store,
+            tags::update,
+            content::store,
+        ),
+        components(schemas(
+            crate::model::ImportBatch,
+            crate::model::Dimensions,
+            crate::model::MediaMetadata,
+            crate::model::Media,
+            crate::model::Content,
+            crate::model::UploadMetadata,
+            crate::model::Post,
+            crate::model::PostItem,
+            crate::model::TagGroup,
+            crate::model::Tag,
+            crate::model::SearchTag,
+            crate::model::TagDetail,
+            crate::model::PostDetail,
+            crate::model::SearchPost,
+            crate::model::SearchPostItem,
+            crate::model::CreateFullPostItem,
+            crate::model::CreateFullPost,
+            crate::model::PostSearchQueryOrder,
+            crate::model::PostSearchQuery,
+            crate::model::GraphValue,
+            crate::model::GraphPoint,
+            crate::model::Graph,
+            crate::model::GraphDiscriminator,
+            crate::model::GraphSelect,
+            crate::model::PostGraphQuery,
+            crate::model::BucketDetails,
+            crate::http_models::BucketInfo,
+            crate::http_models::AuthRequest,
+            crate::http_models::AuthResponse,
+            crate::http_models::ErrorResponse,
+            crate::http_models::CreateFullPostResponse,
+            crate::http_models::CreateTagGroupRequest,
+            crate::http_models::CreateTagRequest,
+            crate::http_models::UpdateTagRequest,
+            crate::http_models::UpdatePostRequest,
+            crate::http_models::UpdatePostRequest,
+        ))
+    )]
+    struct ApiDoc;
+
+    let openapi = ApiDoc::openapi();
+
+    web::scope("docs")
+        .service(
+            SwaggerUi::new("ui/{_:.*}")
+                .config(utoipa_swagger_ui::Config::new(["/docs/openapi.json"])),
+        )
+        .service(SwaggerUi::new("ui{_:.*}").url("openapi.json", openapi))
+}
+
+#[cfg(not(feature = "http-server-spec"))]
+fn doc() -> Scope {
+    web::scope("")
 }

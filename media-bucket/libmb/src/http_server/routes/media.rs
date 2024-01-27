@@ -7,6 +7,7 @@ use crate::http_server::instance::Session;
 use crate::http_server::stream_file::new_chunked_read;
 use crate::http_server::web_error::WebError;
 
+#[cfg_attr(feature = "http-server-spec", utoipa::path)]
 #[get("/{id}")]
 pub async fn show(session: Session, id: web::Path<(u64, u64)>) -> Result<impl Responder, WebError> {
     let id = id.into_inner().1;
@@ -22,6 +23,7 @@ pub async fn show(session: Session, id: web::Path<(u64, u64)>) -> Result<impl Re
     Ok(web::Json(media))
 }
 
+#[cfg_attr(feature = "http-server-spec", utoipa::path)]
 #[get("/{id}/file")]
 pub async fn file(
     session: Session,

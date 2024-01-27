@@ -19,6 +19,7 @@ pub use uuid;
 /// The `ManyToOne` enum is used to represent a many-to-one relationship between two types of objects.
 /// It can be either an `Id` variant, containing an identifier for the related object, or an `Obj` variant, containing the related object itself.
 #[derive(Debug, Serialize, Deserialize, Clone)]
+#[cfg_attr(feature = "http-server-spec", derive(utoipa::ToSchema))]
 pub enum ManyToOne<I, T> {
     #[serde(rename = "id")]
     Id(I),
@@ -50,6 +51,7 @@ impl ManyToOne<u64, TagGroup> {
 /// The `Page` struct is used to represent a collection of data that has been divided into pages.
 /// It includes information about the size of each page, the total number of rows in the collection, and the current page number. It also includes a vector of data for the current page.
 #[derive(Debug, Serialize, Deserialize)]
+#[cfg_attr(feature = "http-server-spec", derive(utoipa::ToSchema))]
 pub struct Page<T> {
     pub page_size: usize,
     pub total_row_count: usize,
@@ -58,6 +60,7 @@ pub struct Page<T> {
 }
 
 #[derive(Debug, Serialize, Clone, Deserialize)]
+#[cfg_attr(feature = "http-server-spec", derive(utoipa::ToSchema))]
 pub struct ImportBatch {
     pub id: u64,
 }
@@ -72,12 +75,14 @@ impl ManyToOne<u64, ImportBatch> {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[cfg_attr(feature = "http-server-spec", derive(utoipa::ToSchema))]
 pub struct Dimensions {
     pub width: i32,
     pub height: i32,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[cfg_attr(feature = "http-server-spec", derive(utoipa::ToSchema))]
 pub enum MediaMetadata {
     Image {
         dims: Dimensions,
@@ -155,6 +160,7 @@ impl MediaMetadata {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[cfg_attr(feature = "http-server-spec", derive(utoipa::ToSchema))]
 pub struct Media {
     pub id: u64,
     pub file_id: Uuid,
@@ -168,6 +174,7 @@ pub struct Media {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[cfg_attr(feature = "http-server-spec", derive(utoipa::ToSchema))]
 pub struct Content {
     pub content: ManyToOne<u64, Media>,
     pub thumbnail: ManyToOne<u64, Media>,
@@ -183,6 +190,7 @@ impl ManyToOne<u64, Content> {
 }
 
 #[derive(Default, Debug, Serialize, Deserialize, Clone)]
+#[cfg_attr(feature = "http-server-spec", derive(utoipa::ToSchema))]
 pub struct UploadMetadata {
     pub original_filename: Option<String>,
     pub original_directory: Option<String>,
@@ -191,6 +199,7 @@ pub struct UploadMetadata {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[cfg_attr(feature = "http-server-spec", derive(utoipa::ToSchema))]
 pub struct Post {
     pub id: u64,
     pub source: Option<Url>,
@@ -201,6 +210,7 @@ pub struct Post {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[cfg_attr(feature = "http-server-spec", derive(utoipa::ToSchema))]
 pub struct PostItem {
     pub post: ManyToOne<u64, Post>,
     pub position: i32,
@@ -218,6 +228,7 @@ impl ManyToOne<u64, Post> {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+#[cfg_attr(feature = "http-server-spec", derive(utoipa::ToSchema))]
 pub struct TagGroup {
     pub id: u64,
     pub name: String,
@@ -226,6 +237,7 @@ pub struct TagGroup {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+#[cfg_attr(feature = "http-server-spec", derive(utoipa::ToSchema))]
 pub struct Tag {
     pub id: u64,
     pub name: String,
@@ -234,12 +246,14 @@ pub struct Tag {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[cfg_attr(feature = "http-server-spec", derive(utoipa::ToSchema))]
 pub struct SearchTag {
     pub tag: Tag,
     pub linked_posts: u64,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[cfg_attr(feature = "http-server-spec", derive(utoipa::ToSchema))]
 pub struct TagDetail {
     pub tag: Tag,
 }
@@ -247,6 +261,7 @@ pub struct TagDetail {
 // Joins
 
 #[derive(Debug, Serialize, Deserialize)]
+#[cfg_attr(feature = "http-server-spec", derive(utoipa::ToSchema))]
 pub struct PostDetail {
     pub post: Post,
     pub tags: Vec<SearchTag>,
@@ -254,6 +269,7 @@ pub struct PostDetail {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[cfg_attr(feature = "http-server-spec", derive(utoipa::ToSchema))]
 pub struct SearchPost {
     pub post: Post,
     pub contains_image: bool,
@@ -267,6 +283,7 @@ pub struct SearchPost {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[cfg_attr(feature = "http-server-spec", derive(utoipa::ToSchema))]
 pub struct SearchPostItem {
     pub item: PostItem,
     pub contains_image: bool,
@@ -278,12 +295,14 @@ pub struct SearchPostItem {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+#[cfg_attr(feature = "http-server-spec", derive(utoipa::ToSchema))]
 pub struct CreateFullPostItem {
     pub content_id: u64,
     pub metadata: UploadMetadata,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+#[cfg_attr(feature = "http-server-spec", derive(utoipa::ToSchema))]
 pub struct CreateFullPost {
     pub title: Option<String>,
     pub description: Option<String>,
@@ -295,6 +314,7 @@ pub struct CreateFullPost {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq)]
+#[cfg_attr(feature = "http-server-spec", derive(utoipa::ToSchema))]
 pub enum PostSearchQueryOrder {
     Newest,
     Oldest,
@@ -303,6 +323,7 @@ pub enum PostSearchQueryOrder {
 }
 
 #[derive(Debug, Default, Serialize, Deserialize, Clone)]
+#[cfg_attr(feature = "http-server-spec", derive(utoipa::ToSchema))]
 pub struct PostSearchQuery {
     pub tags: Option<Vec<u64>>,
     pub text: Option<String>,
@@ -316,34 +337,40 @@ impl PostSearchQuery {
     }
 }
 #[derive(Debug, Serialize, Deserialize)]
+#[cfg_attr(feature = "http-server-spec", derive(utoipa::ToSchema))]
 pub enum GraphValue {
     Date(DateTime<Utc>),
     None,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[cfg_attr(feature = "http-server-spec", derive(utoipa::ToSchema))]
 pub struct GraphPoint {
     pub x: GraphValue,
     pub y: f32,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[cfg_attr(feature = "http-server-spec", derive(utoipa::ToSchema))]
 pub struct Graph {
     pub points: Vec<GraphPoint>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[cfg_attr(feature = "http-server-spec", derive(utoipa::ToSchema))]
 pub enum GraphDiscriminator {
     Duration(Duration),
     None,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[cfg_attr(feature = "http-server-spec", derive(utoipa::ToSchema))]
 pub enum GraphSelect {
     Count,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[cfg_attr(feature = "http-server-spec", derive(utoipa::ToSchema))]
 pub struct PostGraphQuery {
     pub filter: PostSearchQuery,
     pub discriminator: GraphDiscriminator,
@@ -351,6 +378,7 @@ pub struct PostGraphQuery {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[cfg_attr(feature = "http-server-spec", derive(utoipa::ToSchema))]
 pub struct BucketDetails {
     pub sessions_created: u64,
     pub total_file_size: u64,

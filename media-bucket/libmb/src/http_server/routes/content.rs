@@ -8,6 +8,7 @@ use tokio::io::AsyncWriteExt;
 
 use crate::http_server::instance::Session;
 
+#[cfg_attr(feature = "http-server-spec", utoipa::path)]
 #[post("")]
 pub async fn store(
     req: HttpRequest,

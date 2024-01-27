@@ -24,7 +24,11 @@ http-server = [
     "cookie"
 ]
 
-http-server-spec = ["http-server"]
+http-server-spec = [
+    "http-server",
+    "utoipa",
+    "utoipa-swagger-ui"
+]
 
 local = [
     "libsqlite3-sys",
@@ -95,4 +99,6 @@ http-range =  { version ="0.1.5", optional = true }
 jsonwebtoken = { version =  "8", optional = true }
 
 reqwest = { version = "0.11.14", features = ["json", "serde_json", "stream"], optional = true }
-tokio-util = { version = "0.7.10", optional = true }
+tokio-util = { version = "0.7.10", optional = true}
+utoipa = { version = "4.2.0", optional = true, features = ["actix_extras"] }
+utoipa-swagger-ui = { version = "6.0.0", optional = true, features = ["actix-web", "debug-embed"] }

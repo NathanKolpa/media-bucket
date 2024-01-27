@@ -8,6 +8,7 @@ use crate::http_server::instance::Session;
 use crate::http_server::web_error::WebError;
 use crate::model::{CreateFullPost, PostGraphQuery, PostSearchQuery};
 
+#[cfg_attr(feature = "http-server-spec", utoipa::path)]
 #[post("graph")]
 pub async fn graph(
     session: Session,
@@ -23,6 +24,7 @@ pub async fn graph(
     Ok(web::Json(graph))
 }
 
+#[cfg_attr(feature = "http-server-spec", utoipa::path)]
 #[get("")]
 pub async fn index(
     session: Session,
@@ -39,6 +41,7 @@ pub async fn index(
     Ok(web::Json(posts))
 }
 
+#[cfg_attr(feature = "http-server-spec", utoipa::path)]
 #[get("/{id}")]
 pub async fn show(session: Session, id: web::Path<(u64, u64)>) -> Result<impl Responder, WebError> {
     let id = id.into_inner().1;
@@ -54,6 +57,7 @@ pub async fn show(session: Session, id: web::Path<(u64, u64)>) -> Result<impl Re
     Ok(web::Json(post))
 }
 
+#[cfg_attr(feature = "http-server-spec", utoipa::path)]
 #[get("/{id}/tags")]
 pub async fn show_tags(
     session: Session,
@@ -79,6 +83,7 @@ pub async fn show_tags(
     Ok(web::Json(tags))
 }
 
+#[cfg_attr(feature = "http-server-spec", utoipa::path)]
 #[delete("/{id}")]
 pub async fn delete(
     session: Session,
@@ -98,6 +103,7 @@ pub async fn delete(
     Ok(web::Json(()))
 }
 
+#[cfg_attr(feature = "http-server-spec", utoipa::path)]
 #[get("/{id}/items/{position}")]
 pub async fn show_item(
     session: Session,
@@ -115,7 +121,7 @@ pub async fn show_item(
 
     Ok(web::Json(item))
 }
-
+#[cfg_attr(feature = "http-server-spec", utoipa::path)]
 #[get("/{id}/items")]
 pub async fn index_items(
     session: Session,
@@ -147,7 +153,7 @@ pub struct CreatePostTagRequest {
     tag_id: u64,
     enable: bool,
 }
-
+#[cfg_attr(feature = "http-server-spec", utoipa::path)]
 #[post("/{id}/tags")]
 pub async fn store_tags(
     id: web::Path<(u64, u64)>,
@@ -179,6 +185,7 @@ pub async fn store_tags(
     Ok(web::Json(()))
 }
 
+#[cfg_attr(feature = "http-server-spec", utoipa::path)]
 #[post("")]
 pub async fn store(
     session: Session,
@@ -195,7 +202,7 @@ pub async fn store(
 
     Ok(web::Json(CreateFullPostResponse { posts, batch }))
 }
-
+#[cfg_attr(feature = "http-server-spec", utoipa::path)]
 #[put("/{id}")]
 pub async fn update(
     session: Session,

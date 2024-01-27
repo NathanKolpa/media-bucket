@@ -32,6 +32,7 @@ pub struct SearchParams {
     exact: Option<bool>,
 }
 
+#[cfg_attr(feature = "http-server-spec", utoipa::path)]
 #[get("")]
 pub async fn index(
     session: Session,
@@ -52,6 +53,7 @@ pub async fn index(
     Ok(web::Json(groups))
 }
 
+#[cfg_attr(feature = "http-server-spec", utoipa::path)]
 #[get("{id}")]
 pub async fn show(session: Session, id: web::Path<(u64, u64)>) -> Result<impl Responder, WebError> {
     let id = id.into_inner().1;
@@ -67,6 +69,7 @@ pub async fn show(session: Session, id: web::Path<(u64, u64)>) -> Result<impl Re
     Ok(web::Json(group))
 }
 
+#[cfg_attr(feature = "http-server-spec", utoipa::path)]
 #[post("")]
 pub async fn store(
     session: Session,
