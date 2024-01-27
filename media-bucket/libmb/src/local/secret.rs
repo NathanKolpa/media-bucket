@@ -4,8 +4,8 @@
 use std::path::Path;
 
 use async_trait::async_trait;
-use chacha20poly1305::aead::{Aead, NewAead};
-use chacha20poly1305::{ChaCha20Poly1305, Key, Nonce};
+use chacha20poly1305::aead::Aead;
+use chacha20poly1305::{ChaCha20Poly1305, Key, KeyInit, Nonce};
 use rand::{thread_rng, Rng, RngCore};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
