@@ -27,6 +27,9 @@ const initialTransform: Transformation = {
 })
 export class ImageViewerComponent {
   @Output()
+  public loadingError = new EventEmitter<string>();
+
+  @Output()
   public viewChanged = new EventEmitter();
   @Output()
   public originalSizeChange = new EventEmitter<boolean>();

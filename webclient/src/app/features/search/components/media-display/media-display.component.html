@@ -1,29 +1,45 @@
-<ng-container *ngIf="media as media" [ngSwitch]="media.mediaType">
+<ng-container *ngIf="loadingError as error; else content">
+  <div [className]="className" style="width: 500px; height: 500px">
+    <mat-dialog-content class="w-100 h-100">
+      <div class="d-flex justify-content-center flex-column align-items-center w-100 h-100">
 
-  <app-image-viewer (originalSizeChange)="originalSizeChange.emit($event)" *ngSwitchCase="'image'" [className]="className" [media]="media"
-                    [originalSize]="originalSize"></app-image-viewer>
+        <mat-icon class="">broken_image</mat-icon>
+        <span class="mt-2">{{ error }}</span>
+      </div>
+    </mat-dialog-content>
 
-  <app-video-player
-    (nextVideo)="nextItem.emit()"
-    *ngSwitchCase="'video'"
-    [className]="className"
-    [media]="media">
-  </app-video-player>
+  </div>
+</ng-container>
 
-  <ng-container *ngSwitchCase="'document'">
-    <app-pdf-viewer
-      *ngIf="media.mime.endsWith('/pdf')"
+<ng-template #content>
+  <ng-container *ngIf="media as media" [ngSwitch]="media.mediaType">
+
+    <app-image-viewer (loadingError)="handleLoadingError($event)" (originalSizeChange)="originalSizeChange.emit($event)"
+                      *ngSwitchCase="'image'" [className]="className" [media]="media"
+                      [originalSize]="originalSize"></app-image-viewer>
+
+    <app-video-player
+      (nextVideo)="nextItem.emit()"
+      *ngSwitchCase="'video'"
       [className]="className"
       [media]="media">
-    </app-pdf-viewer>
+    </app-video-player>
+
+    <ng-container *ngSwitchCase="'document'">
+      <app-pdf-viewer
+        *ngIf="media.mime.endsWith('/pdf')"
+        [className]="className"
+        [media]="media">
+      </app-pdf-viewer>
+    </ng-container>
+
+    <p *ngSwitchDefault>
+      Unsupported media type: "{{ media.mediaType }}"
+    </p>
+
+    <p *ngSwitchCase="'unknown'">
+      Unknown media type
+    </p>
+
   </ng-container>
-
-  <p *ngSwitchDefault>
-    Unsupported media type: "{{ media.mediaType }}"
-  </p>
-
-  <p *ngSwitchCase="'unknown'">
-    Unknown media type
-  </p>
-
-</ng-container>
+</ng-template>

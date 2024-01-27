@@ -8,12 +8,21 @@ import {Media} from "@core/models";
   styleUrls: ['./media-display.component.scss']
 })
 export class MediaDisplayComponent {
+  private _media: Media | null = null;
+
+  get media(): Media | null {
+    return this._media;
+  }
+
+  @Input()
+  set media(value: Media | null) {
+    this._media = value;
+    this.loadingError = null;
+  }
 
   @Output()
   public nextItem = new EventEmitter();
 
-  @Input()
-  public media: Media | null = null;
 
   @Input()
   public className: string | null = null;
@@ -23,4 +32,15 @@ export class MediaDisplayComponent {
 
   @Output()
   public originalSizeChange = new EventEmitter<boolean>();
+
+  public loadingError: string | null = null;
+
+  handleLoadingError(message: string) {
+    console.log(message)
+    this.loadingError = message;
+  }
+
+  retryLoad() {
+    this.loadingError = null;
+  }
 }

@@ -49,14 +49,18 @@
       </form>
 
       <ng-container *ngIf="bucket.auth">
-        <div class="w-100 d-flex justify-content-center h-100 align-items-center">
-          <button (click)="selectClick()" color="primary" mat-flat-button>
-            Go
-          </button>
 
-          <button (click)="logoutClick()" mat-stroked-button>
-            Logout
-          </button>
+        <div class="w-100 d-flex justify-content-center h-100 align-items-center flex-column">
+          <div>
+            <button (click)="selectClick()" color="primary" mat-flat-button class="me-1">
+              Go
+            </button>
+
+            <button (click)="logoutClick()" mat-stroked-button class="ms-1">
+              Logout
+            </button>
+          </div>
+
         </div>
       </ng-container>
 
