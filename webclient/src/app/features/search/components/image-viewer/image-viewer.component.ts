@@ -72,8 +72,8 @@ export class ImageViewerComponent {
     this.zoom(element, Math.sign(event.deltaY) > 0 ? -1 : 1, event.pageX, event.pageY);
   }
 
-  mouseMove(event: MouseEvent) {
-    if (event.buttons != 1) {
+  mouseMove(event: PointerEvent) {
+    if (event.buttons != 1 || event.pointerType != 'mouse') {
       return;
     }
 

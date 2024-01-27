@@ -1,4 +1,4 @@
-<img (error)="loadingError.emit('Failed to load image')" #image (mousemove)="mouseMove($event)" (wheel)="mouseWheel(image, $event)" *ngIf="_media" [className]="className"
+<img (error)="loadingError.emit('Failed to load image')" #image (pointermove)="mouseMove($event)" (wheel)="mouseWheel(image, $event)" *ngIf="_media" [className]="className"
      [draggable]="false"
      [height]="_media.dimensions?.height"
      [src]="_media.url"
