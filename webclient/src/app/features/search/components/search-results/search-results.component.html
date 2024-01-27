@@ -1,35 +1,42 @@
-<cdk-virtual-scroll-viewport #viewport (scrolledIndexChange)="scrolledIndexChange()" [itemSize]="350"
-                             class="h-100 d-block">
+<div cdkVirtualScrollingElement class="h-100 d-block">
 
-  <ng-content>
-  </ng-content>
+  <div>
+    <ng-content>
+    </ng-content>
 
-  <p *ngIf="resultCount !== null" class="ms-4 mt-3 mb-0">
-    <i>Results: {{ resultCount }}</i>
-  </p>
-
-  <div [ngClass]="containerClass" class="row">
-    <ng-container *cdkVirtualFor="let row of rows; trackBy: trackById">
-      <app-listing
-        (showDetail)="showDetail.emit(index)"
-        (showInfo)="showInfo.emit(index)"
-        *ngFor="let index of row"
-        [disableFooter]="disableFooter"
-        [height]="350"
-        [item]="items[index]"
-        class="d-block">
-      </app-listing>
-    </ng-container>
+    <p *ngIf="resultCount !== null" class="ms-4 mt-3 mb-0">
+      <i>Results: {{ resultCount }}</i>
+    </p>
   </div>
 
-  <app-loadable-content (loadAgain)="requestNextData.emit()" [loadingState]="nextLoadingState"
-                        class="h-100 d-block mt-4">
-  </app-loadable-content>
+  <cdk-virtual-scroll-viewport #viewport (scrolledIndexChange)="scrolledIndexChange()" [itemSize]="350"
+                               class="h-100 d-block">
 
-</cdk-virtual-scroll-viewport>
+    <div [ngClass]="containerClass" class="row">
+      <ng-container *cdkVirtualFor="let row of rows; trackBy: trackById">
+        <app-listing
+          (showDetail)="showDetail.emit(index)"
+          (showInfo)="showInfo.emit(index)"
+          *ngFor="let index of row"
+          [disableFooter]="disableFooter"
+          [height]="350"
+          [item]="items[index]"
+          class="d-block">
+        </app-listing>
+      </ng-container>
+    </div>
+
+    <app-loadable-content (loadAgain)="requestNextData.emit()" [loadingState]="nextLoadingState"
+                          class="h-100 d-block mt-4">
+    </app-loadable-content>
+
+  </cdk-virtual-scroll-viewport>
+</div>
 
 <div [hidden]="((viewport.scrolledIndexChange | async) || 0) <= 0" class="up-container">
   <button (click)="viewport.scrollToIndex(0, 'smooth')" class="up" color="accent" mat-fab>
     <mat-icon>keyboard_arrow_up</mat-icon>
   </button>
 </div>
+
+
