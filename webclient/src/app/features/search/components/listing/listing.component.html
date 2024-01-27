@@ -3,7 +3,13 @@
     <mat-card (click)="showDetail.emit(post)" [matRippleDisabled]="disableCardRipple" appearance="outlined" class="h-100"
               matRipple>
 
-      <img [src]="post.thumbnail?.url" alt="Thumbnail" class="thumbnail">
+      <img *ngIf="!hasThumbnailError; else loadError" (error)="handleThumbnailError()" [src]="post.thumbnail?.url" alt="Thumbnail" class="thumbnail">
+      <ng-template #loadError>
+        <div class="thumbnail d-flex justify-content-center align-items-center flex-column bg-white">
+          <mat-icon class="text-warning-emphasis">broken_image</mat-icon>
+          <span class="text-warning-emphasis mt-2">Error while loading file</span>
+        </div>
+      </ng-template>
 
       <mat-card-footer *ngIf="!disableFooter" class="p-2 d-flex align-items-center user-select-none">
 

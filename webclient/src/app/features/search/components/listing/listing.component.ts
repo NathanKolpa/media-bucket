@@ -8,11 +8,21 @@ import {Listing} from "@core/models/listing";
   styleUrls: ['./listing.component.scss']
 })
 export class ListingComponent {
+  public hasThumbnailError = false;
+  private _item: Listing | null = null;
+
+  get item(): Listing | null {
+    return this._item;
+  }
+
+  @Input()
+  set item(value: Listing | null) {
+    this._item = value;
+    this.hasThumbnailError = false;
+  }
 
   disableCardRipple = false;
 
-  @Input()
-  public item: Listing | null = null;
 
   @Input()
   public height: number = 100;
@@ -25,4 +35,8 @@ export class ListingComponent {
 
   @Input()
   public disableFooter = false;
+
+  handleThumbnailError() {
+    this.hasThumbnailError = true;
+  }
 }
