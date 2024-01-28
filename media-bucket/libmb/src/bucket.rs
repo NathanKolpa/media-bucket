@@ -13,6 +13,7 @@ use crate::{
         TagGroup,
     },
 };
+use crate::model::ImportBatch;
 
 #[derive(Clone, Copy, Debug)]
 pub enum SyncMatchStategy {
@@ -174,6 +175,12 @@ impl Bucket {
         delete_synced: bool,
         on_sync: &impl Fn(&Post),
     ) -> Result<(), BucketError> {
+        let mut batch = ImportBatch {
+            id: 0
+        };
+
+        self.data_source.import_batches().add(&mut batch).await?;
+
         let query = PostSearchQuery::default();
         let mut page = PageParams::new(1, 0);
 
@@ -197,7 +204,7 @@ impl Bucket {
             let futures = results
                 .data
                 .into_iter()
-                .map(|search_post| self.sync_post(source, search_post.post, strat, on_sync));
+                .map(|search_post| self.sync_post(source, search_post.post, strat, on_sync, &batch));
 
             join_all(futures)
                 .await
@@ -224,6 +231,7 @@ impl Bucket {
         post: Post,
         strat: SyncMatchStategy,
         on_sync: &impl Fn(&Post),
+        batch: &ImportBatch
     ) -> Result<(), BucketError> {
         let matched_post = match strat {
             SyncMatchStategy::None => None,
@@ -272,6 +280,7 @@ impl Bucket {
                 items,
                 tag_ids,
                 flatten: false,
+                batch_id: Some(batch.id)
             })
             .await?;
 

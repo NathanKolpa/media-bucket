@@ -1065,13 +1065,16 @@ impl CrossDataSource for SqliteIndex {
 
         let mut tx = self.write_pool.begin().await?;
 
-        let batch_id = sqlx::query("INSERT INTO import_batches DEFAULT VALUES")
-            .execute(tx.deref_mut())
-            .await?
-            .last_insert_rowid();
+        let batch_id = match data.batch_id {
+            None => sqlx::query("INSERT INTO import_batches DEFAULT VALUES")
+                .execute(tx.deref_mut())
+                .await?
+                .last_insert_rowid() as u64,
+            Some(v) => v
+        };
 
         let batch = ImportBatch {
-            id: batch_id as u64,
+            id: batch_id,
         };
 
         let amount_of_posts_to_create = data.items.len().max(1);
@@ -1082,7 +1085,7 @@ impl CrossDataSource for SqliteIndex {
                 .bind(data.source.as_ref().map(|url| url.as_str()))
                 .bind(data.title.as_deref())
                 .bind(data.description.as_deref())
-                .bind(batch_id)
+                .bind(batch.id as i64)
                 .bind(created_at)
                 .execute(tx.deref_mut())
                 .await?

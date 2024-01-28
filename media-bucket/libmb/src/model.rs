@@ -311,6 +311,7 @@ pub struct CreateFullPost {
     pub items: Vec<CreateFullPostItem>,
     pub tag_ids: Vec<u64>,
     pub flatten: bool,
+    pub batch_id: Option<u64>
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq)]
