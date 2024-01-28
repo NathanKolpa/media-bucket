@@ -16,43 +16,48 @@
 
     </ng-container>
 
-    <button (click)="originalSize = true" *ngIf="!originalSize" mat-mini-fab matTooltip="Reset view to original">
+    <button (click)="originalSize = true" [style]="{ opacity: originalSize ? 0 : 1 }" mat-mini-fab matTooltip="Reset view to original">
       <mat-icon>sync</mat-icon>
     </button>
 
 
-    <div class="spacer"></div>
+    <div class="spacer">
+    </div>
 
     <button mat-icon-button mat-dialog-close>
       <mat-icon>close</mat-icon>
     </button>
-
   </div>
 
-  <div *ngIf="(viewedPostMode$ | async) == 'preview'" class="left-button">
-    <ng-container *ngIf="(item$ | async) || null as item">
-      <ng-container *ngIf="(post$ | async) || null as post">
-        <button (click)="loadItem(bucket, post.id, item.position - 1)" *ngIf="open && post.itemCount > 1"
-                [disabled]="item.position <= 0"
-                mat-fab>
-          <mat-icon>arrow_back</mat-icon>
-        </button>
+  <div class="button-bar d-flex justify-content-center">
+    <div *ngIf="(viewedPostMode$ | async) == 'preview'" class="left-button">
+      <ng-container *ngIf="(item$ | async) || null as item">
+        <ng-container *ngIf="(post$ | async) || null as post">
+          <button (click)="loadItem(bucket, post.id, item.position - 1)" *ngIf="open && post.itemCount > 1"
+                  [disabled]="item.position <= 0"
+                  color="accent"
+                  mat-mini-fab>
+            <mat-icon>arrow_back</mat-icon>
+          </button>
+        </ng-container>
       </ng-container>
-    </ng-container>
-  </div>
+    </div>
 
-
-  <div *ngIf="(viewedPostMode$ | async) == 'preview'" class="right-button">
-    <ng-container *ngIf="(item$ | async) || null as item">
-      <ng-container *ngIf="(post$ | async) || null as post">
-        <button (click)="loadItem(bucket, post.id, item.position + 1)" *ngIf="open && post.itemCount > 1"
-                [disabled]="item.position >= post.itemCount - 1"
-                mat-fab>
-          <mat-icon>arrow_forward</mat-icon>
-        </button>
+    <div *ngIf="(viewedPostMode$ | async) == 'preview'" class="right-button">
+      <ng-container *ngIf="(item$ | async) || null as item">
+        <ng-container *ngIf="(post$ | async) || null as post">
+          <button (click)="loadItem(bucket, post.id, item.position + 1)" *ngIf="open && post.itemCount > 1"
+                  [disabled]="item.position >= post.itemCount - 1"
+                  color="accent"
+                  mat-mini-fab>
+            <mat-icon>arrow_forward</mat-icon>
+          </button>
+        </ng-container>
       </ng-container>
-    </ng-container>
+    </div>
   </div>
+
+
 
   <app-loadable-content (loadAgain)="reloadPost()" [loadingState]="postLoadingState$ | async">
     <ng-container *ngIf="(post$ | async) || null as post">
