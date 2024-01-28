@@ -1,10 +1,12 @@
-use actix_web::{delete, get, post, put, web, Responder};
+use actix_web::body::{BodyStream, SizedStream};
+use actix_web::{delete, get, post, put, web, HttpResponse, Responder};
 use log::info;
 use serde::Deserialize;
 
 use crate::data_source::PageParams;
 use crate::http_models::{CreateFullPostResponse, UpdatePostRequest};
 use crate::http_server::instance::Session;
+use crate::http_server::stream_playlist::new_search_playlist;
 use crate::http_server::web_error::WebError;
 use crate::model::{CreateFullPost, PostGraphQuery, PostSearchQuery};
 
@@ -39,6 +41,24 @@ pub async fn index(
         .await?;
 
     Ok(web::Json(posts))
+}
+
+#[cfg_attr(feature = "http-server-spec", utoipa::path)]
+#[get("index.m3u")]
+pub async fn index_playlist(
+    session: Session,
+    query: PostSearchQuery,
+) -> Result<impl Responder, WebError> {
+    let mut response =
+        HttpResponse::Ok()
+            .content_type("audio/x-mpegurl")
+            .body(BodyStream::new(new_search_playlist(
+                session.bucket_arc(),
+                query,
+                100,
+            )));
+
+    Ok(response)
 }
 
 #[cfg_attr(feature = "http-server-spec", utoipa::path)]

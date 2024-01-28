@@ -18,6 +18,7 @@ mod routes;
 mod stream_file;
 mod token;
 mod web_error;
+mod stream_playlist;
 
 struct InstanceConfig {
     id: u64,

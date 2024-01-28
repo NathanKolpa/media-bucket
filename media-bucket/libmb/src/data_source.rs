@@ -76,7 +76,7 @@ impl From<sqlx::Error> for DataSourceError {
 ///
 /// The `PageParams` struct is used to specify pagination parameters when retrieving data from a data source.
 /// It includes the size of each page and the page number to retrieve.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub struct PageParams {
     page_size: usize,
     offset: usize,

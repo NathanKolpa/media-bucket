@@ -50,6 +50,10 @@ impl Session {
         self.bucket.deref()
     }
 
+    pub fn bucket_arc(&self) -> Arc<Bucket> {
+        self.bucket.clone()
+    }
+
     pub fn instance(&self) -> &ServerBucketInstance {
         self.parent.deref()
     }
