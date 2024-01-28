@@ -78,8 +78,9 @@ export class SearchEffects {
 
   showPostLoadItem$ = createEffect(() => this.actions$.pipe(
     ofType(searchActions.showPost),
-    switchMap(({ bucket, postId }) => [
-      searchActions.loadPostItem({ bucket, postId, position: 0 }),
+    withLatestFrom(this.store.select(fromSearch.selectCurrentItem)),
+    switchMap(([{ bucket, postId }, currentItem]) => [
+      searchActions.loadPostItem({ bucket, postId, position: currentItem?.position ?? 0 }),
     ])
   ));
 

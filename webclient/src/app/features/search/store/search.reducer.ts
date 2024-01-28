@@ -116,19 +116,26 @@ const feature = createFeature({
       showSidebar: false
     })),
 
-    on(searchActions.showPost, (state) => ({
-      ...state,
-      viewedPostLoadingState: state.viewedPostLoadingState.loading(),
-      currentItem: null,
-      viewedPost: null,
-      nextItemPreview: null,
-      prevItemPreview: null,
-      itemList: []
-    })),
+    on(searchActions.showPost, (state, {postId}) => {
+      if (postId == state.viewedPost?.id) {
+        return state;
+      }
+
+      return ({
+        ...state,
+        viewedPostLoadingState: state.viewedPostLoadingState.loading(),
+        currentItem: null,
+        viewedPost: null,
+        nextItemPreview: null,
+        prevItemPreview: null,
+        itemList: [],
+      });
+    }),
     on(searchActions.showPostSuccess, (state, {post}) => ({
       ...state,
       viewedPostLoadingState: state.viewedPostLoadingState.success(),
-      viewedPost: post
+      viewedPost: post,
+      viewedPostMode: post.itemCount == 1 ? 'preview' : state.viewedPostMode
     })),
     on(searchActions.showPostFailure, (state, {failure}) => ({
       ...state,
