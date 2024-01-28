@@ -191,11 +191,12 @@ fn doc() -> Scope {
     let openapi = ApiDoc::openapi();
 
     web::scope("docs")
+        .service(web::redirect("/ui", "/docs/ui/index.html"))
         .service(
             SwaggerUi::new("ui/{_:.*}")
+                .url("openapi.json", openapi)
                 .config(utoipa_swagger_ui::Config::new(["/docs/openapi.json"])),
         )
-        .service(SwaggerUi::new("ui{_:.*}").url("openapi.json", openapi))
 }
 
 #[cfg(not(feature = "http-server-spec"))]
