@@ -23,7 +23,6 @@ export class MediaDisplayComponent {
   @Output()
   public nextItem = new EventEmitter();
 
-
   @Input()
   public className: string | null = null;
 

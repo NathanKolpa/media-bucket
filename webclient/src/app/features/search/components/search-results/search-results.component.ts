@@ -12,6 +12,7 @@ import {Listing} from "@core/models/listing";
   styleUrls: ['./search-results.component.scss']
 })
 export class SearchResultsComponent implements OnDestroy {
+  private _startingIndex: number | null = null;
 
   @ViewChild('viewport', {static: true})
   viewport!: CdkVirtualScrollViewport;
@@ -29,7 +30,16 @@ export class SearchResultsComponent implements OnDestroy {
   public disableFooter = false;
 
   @Input()
-  public startingIndex: number | null = null;
+  set startingIndex(value: number | null) {
+    if (value === null) {
+      return;
+    }
+
+    this._startingIndex = value;
+    this.moveToStartingPosition()
+  }
+
+
   public rows: number[][] = [];
   @Input()
   public nextLoadingState: LoadingState | null = null;
@@ -115,14 +125,14 @@ export class SearchResultsComponent implements OnDestroy {
   }
 
   private moveToStartingPosition() {
-    if (!this.viewport || this.startingIndex == null) {
+    if (!this.viewport || this._startingIndex == null) {
       return;
     }
 
-    const startingRow = Math.ceil(this.startingIndex / this._rowsSize) - 2;
+    const startingRow = Math.floor(this._startingIndex / this._rowsSize);
 
     if (this.rows.length >= startingRow && startingRow > 0) {
-      this.startingIndex = null;
+      this._startingIndex = null;
       setTimeout(() => this.viewport.scrollToIndex(startingRow), 0);
     }
   }

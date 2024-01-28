@@ -41,6 +41,10 @@ export const loadPostItem = createAction('[Search] load post item', props<{ buck
 export const loadPostItemSuccess = createAction('[Search] load post item success', props<{ item: PostItemDetail }>());
 export const loadPostItemFailure = createAction('[Search] load post item failure', props<{ failure: Failure }>());
 
+export const loadNeighbourItemsSuccess = createAction('[Search] load post neighbour items success', props<{ items: SearchPostItem[], startPosition: number, position: number, total: number }>());
+export const loadNeighbourItemsFailure = createAction('[Search] load post neighbour items success', props<{ failure: Failure }>());
+
+
 export const uploadProgress = createAction('[Search] upload progress', props<{ jobId: string, index: number, uploadedBytes: number }>());
 export const uploadDone = createAction('[Search] upload done', props<{ jobId: string, index: number, content: Media, thumbnail: Media }>());
 export const uploadFailure = createAction('[Search] upload failure', props<{ jobId: string, index: number, failure: Failure }>());

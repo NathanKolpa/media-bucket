@@ -32,7 +32,8 @@
   <div *ngIf="(viewedPostMode$ | async) == 'preview'" class="left-button">
     <ng-container *ngIf="(item$ | async) || null as item">
       <ng-container *ngIf="(post$ | async) || null as post">
-        <button (click)="loadItem(bucket, post.id, item.position - 1)" *ngIf="open && post.itemCount > 1" [disabled]="item.position <= 0"
+        <button (click)="loadItem(bucket, post.id, item.position - 1)" *ngIf="open && post.itemCount > 1"
+                [disabled]="item.position <= 0"
                 mat-fab>
           <mat-icon>arrow_back</mat-icon>
         </button>
@@ -44,7 +45,8 @@
   <div *ngIf="(viewedPostMode$ | async) == 'preview'" class="right-button">
     <ng-container *ngIf="(item$ | async) || null as item">
       <ng-container *ngIf="(post$ | async) || null as post">
-        <button (click)="loadItem(bucket, post.id, item.position + 1)" *ngIf="open && post.itemCount > 1" [disabled]="item.position >= post.itemCount - 1"
+        <button (click)="loadItem(bucket, post.id, item.position + 1)" *ngIf="open && post.itemCount > 1"
+                [disabled]="item.position >= post.itemCount - 1"
                 mat-fab>
           <mat-icon>arrow_forward</mat-icon>
         </button>

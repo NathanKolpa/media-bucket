@@ -103,5 +103,7 @@ export {
   selectTagEditSearchTagCount,
   selectTagEditSearchTags,
   selectTagEditSelectedTagLoadingState,
-  selectTagEditSelectedTag
+  selectTagEditSelectedTag,
+  selectNextItemPreview,
+  selectPrevItemPreview
 } from './search.reducer'
