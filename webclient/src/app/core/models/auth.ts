@@ -1,5 +1,9 @@
 export class Auth {
-  public constructor(private _bucketId: number, private _token: string | null, private _privateSession: boolean, private _domain: string, private _path: string, private _protocol: string, private _port: string | null) {
+  public constructor(private _bucketId: number, private _token: string | null, private _shareToken: string, private _privateSession: boolean, private _domain: string, private _path: string, private _protocol: string, private _port: string | null) {
+  }
+
+  get shareToken(): string {
+    return this._shareToken;
   }
 
   get bucketId(): number {

@@ -35,7 +35,8 @@ export class PdfViewerComponent implements AfterViewInit {
     }
 
     if (this._media) {
-      (this.pdfViewer as any).pdfSrc = encodeURIComponent(this._media.url);
+      console.log(this._media.shareUrl);
+      (this.pdfViewer as any).pdfSrc = encodeURIComponent(this._media.shareUrl);
       (this.pdfViewer as any).refresh();
     }
   }

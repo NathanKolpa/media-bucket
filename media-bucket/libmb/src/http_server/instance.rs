@@ -115,7 +115,7 @@ impl ServerBucketInstance {
         self.name.as_str()
     }
 
-    pub async fn login(&self, password: Option<&str>, ip: IpAddr) -> Result<String, LoginError> {
+    pub async fn login(&self, password: Option<&str>, ip: IpAddr) -> Result<(String, String), LoginError> {
         let instance = self.instance.read().unwrap();
 
         let token_secret;
@@ -151,7 +151,10 @@ impl ServerBucketInstance {
         };
 
         let new_token = self.new_session(ip, false).to_token(&token_secret);
-        Ok(new_token)
+        let ro_token = self.new_session(ip, true).to_token(&token_secret);
+
+
+        Ok((new_token, ro_token))
     }
 
     fn new_session(&self, ip: IpAddr, read_only: bool) -> AuthToken {

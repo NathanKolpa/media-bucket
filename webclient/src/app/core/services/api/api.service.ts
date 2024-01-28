@@ -468,7 +468,7 @@ export class ApiService {
 
   private mapAuth(bucketId: number, privateSession: boolean, json: any): Auth {
     let url = new URL(environment.api + "/buckets/" + bucketId, document.location.toString());
-    return new Auth(bucketId, json.token, privateSession, url.hostname, url.pathname, url.protocol, url.port == '' ? null : url.port);
+    return new Auth(bucketId, json.token, json.share_token, privateSession, url.hostname, url.pathname, url.protocol, url.port == '' ? null : url.port);
   }
 
   private mapPage(json: any): Page {
@@ -543,6 +543,8 @@ export class ApiService {
       mediaType = 'document';
     }
 
+    let url = `${auth.base}/media/${json.id}/file`;
+
     return new Media(
       json.id,
       videoEncoding,
@@ -555,7 +557,8 @@ export class ApiService {
       json.mime,
       documentData,
       mediaType,
-      `${auth.base}/media/${json.id}/file`
+      url,
+      url + `?token=${encodeURIComponent(auth.shareToken)}`
     );
   }
 

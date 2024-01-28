@@ -47,7 +47,8 @@ export class Media {
     private _mime: string,
     private _documentData: DocumentData | null,
     private _mediaType: MediaType,
-    private _url: string
+    private _url: string,
+    private _shareUrl: string
   ) {
   }
 
@@ -97,6 +98,9 @@ export class Media {
 
   get videoEncoding(): string | null {
     return this._videoEncoding;
+  }
+  get shareUrl(): string {
+    return this._shareUrl;
   }
 
   public isCompatibleWithBrowser(): boolean {

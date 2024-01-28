@@ -94,10 +94,11 @@ pub async fn auth(
         }
     }
 
-    let login_token = login_result?;
+    let (login_token, share_token) = login_result?;
 
     Ok(web::Json(AuthResponse {
         token: login_token,
+        share_token,
         active_tokens: 0,
     }))
 }

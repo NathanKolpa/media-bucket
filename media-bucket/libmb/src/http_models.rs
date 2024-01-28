@@ -22,6 +22,7 @@ pub struct AuthRequest {
 #[cfg_attr(feature = "http-server-spec", derive(utoipa::ToSchema))]
 pub struct AuthResponse {
     pub token: String,
+    pub share_token: String,
     pub active_tokens: usize,
 }
 

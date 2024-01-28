@@ -9,6 +9,7 @@ interface SavedAuth {
   path: string;
   port: string | null;
   protocol: string;
+  shareToken: string
 }
 
 @Injectable({
@@ -62,7 +63,7 @@ export class AuthCacheService {
 
     let stored: SavedAuth[] = JSON.parse(storedStr);
 
-    return stored.map(x => new Auth(x.id, null, privateSession, x.domain, x.path, x.protocol, x.port));
+    return stored.map(x => new Auth(x.id, null, x.shareToken, privateSession, x.domain, x.path, x.protocol, x.port));
   }
 
   private saveSession() {
@@ -79,7 +80,8 @@ export class AuthCacheService {
       domain: auth.domain,
       path: auth.path,
       port: auth.port,
-      protocol: auth.protocol
+      protocol: auth.protocol,
+      shareToken: auth.shareToken
     }));
 
     let json = JSON.stringify(savedAuth);
