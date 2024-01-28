@@ -13,6 +13,9 @@
             <p>Password Protected: {{ bucket.bucket.passwordProtected ? 'Yes' : 'No' }}</p>
             <p>Files: {{ details.fileCount }} ({{ details.totalFileSize | bytes }})</p>
             <p>Sessions created: {{ details.sessionsCreated }}</p>
+            <p>Api Url:
+              <a>{{ apiUrl + '/buckets/' + bucket.bucket.id }}</a>
+            </p>
 
           </ng-container>
         </app-loadable-content>

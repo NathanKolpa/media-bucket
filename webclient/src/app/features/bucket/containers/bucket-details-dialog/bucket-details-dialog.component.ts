@@ -2,6 +2,7 @@ import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {bucketActions, fromBucket } from '@features/bucket/store';
 import {Store} from "@ngrx/store";
 import {Auth} from "@core/models";
+import {environment} from "@src/environments/environment";
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -21,4 +22,7 @@ export class BucketDetailsDialogComponent {
 
   constructor(private store: Store) {
   }
+
+
+  public apiUrl = environment.api;
 }
