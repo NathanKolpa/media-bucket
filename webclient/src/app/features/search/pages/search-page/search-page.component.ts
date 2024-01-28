@@ -5,7 +5,7 @@ import {Post, PostSearchQuery, SearchPost, SelectedBucket, Tag} from "@core/mode
 import {fromBucket} from '@features/bucket/store';
 import {MatDialog} from "@angular/material/dialog";
 import {ConfirmComponent} from "@core/services/confirm/confirm.guard";
-import {Subscription} from "rxjs";
+import {filter, first, Subscription, tap} from "rxjs";
 import {EditPostRequest} from "@features/search/components/post-detail-sidebar/post-detail-sidebar.component";
 import {Listing} from "@core/models/listing";
 
@@ -35,6 +35,12 @@ export class SearchPageComponent implements OnDestroy, ConfirmComponent {
 
     this.unsavedInputSub = this.activeJobs$.subscribe(activeJobs => {
       this.hasUnsavedInput = activeJobs > 0;
+    });
+
+    this.bucket$.pipe(filter(x => x !== null), first()).subscribe(bucket => {
+      if (bucket !== null) {
+        this.loadNext(bucket);
+      }
     })
   }
 

@@ -164,7 +164,7 @@ export class ApiService {
     }
 
     if (textItems.length > 0) {
-      text = '&text=' + encodeURIComponent(textItems.map(x => x.type == 'text' ? x.str : '').join(' '));
+      text = '&text=' + encodeURIComponent(textItems.map(x => x.type == 'text' ? x.str.toLowerCase() : '').join(' OR ')); // to lower case prevents messing with OR
     }
 
 

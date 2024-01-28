@@ -400,19 +400,25 @@ impl SqliteIndex {
             let query_is_empty = text.len() < 3;
 
             if !query_is_empty {
-                let escaped = text.replace("\"", "\\\"");
-
-                let words = text
+                let escaped = text
                     .trim()
-                    .split(' ')
-                    .filter(|s| !s.is_empty())
-                    .map(|word| format!("({{title description source tags original_name original_directory document_title document_author}}: {word})"))
-                    .collect::<Vec<String>>()
+                    .replace(",", "")
+                    .replace(")", "")
+                    .replace("\"", "")
+                    .replace("(", "");
+
+                let value = escaped.split("OR")
+                    .map(|x| x.trim().to_lowercase())
+                    .filter(|x| !x.is_empty())
+                    .map(|text| {
+                        if text.contains(" ") {
+                            format!("({{title description source tags original_name original_directory document_title document_author}}: NEAR({}, 1000))", text)
+                        } else {
+                            format!("({{title description source tags original_name original_directory document_title document_author}}: \"{}\")", text)
+                        }
+                    })
+                    .collect::<Vec<_>>()
                     .join(" OR ");
-
-                let sentence = format!("({{title description source tags original_name original_directory document_title document_author}}: {})", text.trim());
-
-                let value = format!("{sentence} OR ({words})");
 
                 query = query.bind(value);
             } else {
