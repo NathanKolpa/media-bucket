@@ -118,7 +118,7 @@ export class SearchResultsComponent implements OnDestroy {
 
     let end = this.viewport.getRenderedRange().end;
 
-    if (end >= this.rows.length - 1) {
+    if (end >= this.rows.length - 1 && this._items.length > 0) {
       this.requestNextData.emit();
       this.requestedData = true;
     }
