@@ -31,6 +31,9 @@ pub enum DataSourceError {
     #[error("duplicate model")]
     Duplicate,
 
+    #[error("Readonly")]
+    ReadOnly,
+
     #[error("model not found")]
     NotFound,
 
@@ -223,7 +226,10 @@ pub trait TagGroupDataSource: Sync + Send {
 
 #[async_trait]
 pub trait PasswordDataSource: Sync + Send {
-    async fn is_valid_password(&self, password: Option<&str>) -> Result<bool, DataSourceError>;
+    async fn validate_password(
+        &self,
+        password: Option<&str>,
+    ) -> Result<Option<[u8; 32]>, DataSourceError>;
 }
 
 #[async_trait]

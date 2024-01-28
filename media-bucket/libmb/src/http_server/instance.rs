@@ -5,9 +5,7 @@ use std::ops::Deref;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, RwLock};
 
-use chrono::{DateTime, Duration, Utc};
-use rand::distributions::Alphanumeric;
-use rand::{random, thread_rng, Rng};
+use chrono::{Duration, Utc};
 use thiserror::Error;
 
 use crate::data_source::DataSourceError;
@@ -40,16 +38,11 @@ impl From<BucketError> for LoginError {
     }
 }
 
-#[derive(Clone)]
-struct SessionData {
-    created_at: DateTime<Utc>,
-    ip: IpAddr,
-}
-
 pub struct Session {
     parent: Arc<ServerBucketInstance>,
     bucket: Arc<Bucket>,
     ip: IpAddr,
+    read_only: bool,
 }
 
 impl Session {
@@ -65,6 +58,10 @@ impl Session {
         self.ip
     }
 
+    pub fn read_only(&self) -> bool {
+        self.read_only
+    }
+
     pub fn get_session_count() {}
 }
 
@@ -74,8 +71,8 @@ pub struct ServerBucketInstance {
     name: String,
     password_protected: bool,
     instance: RwLock<Option<Arc<Bucket>>>,
-    token_secret: [u8; 32],
     sessions_created: AtomicU64,
+    token_secret: RwLock<Option<[u8; 32]>>,
 }
 
 impl ServerBucketInstance {
@@ -86,8 +83,8 @@ impl ServerBucketInstance {
             location,
             name,
             instance: Default::default(),
-            token_secret: random(),
             sessions_created: AtomicU64::new(0),
+            token_secret: Default::default(),
         })
     }
 
@@ -96,13 +93,17 @@ impl ServerBucketInstance {
     }
 
     pub fn authorize_token(self: Arc<Self>, token: &str, ip: IpAddr) -> Option<Session> {
-        let auth_token = AuthToken::from_token(token, &self.token_secret, &ip)?;
+        let token_secret = self.token_secret.read().unwrap().clone()?;
+
+        let auth_token = AuthToken::from_token(token, &token_secret, &ip)?;
+
         let bucket = self.instance.read().unwrap().clone()?;
 
         Some(Session {
             bucket,
             parent: self,
             ip,
+            read_only: auth_token.read_only(),
         })
     }
 
@@ -117,40 +118,47 @@ impl ServerBucketInstance {
     pub async fn login(&self, password: Option<&str>, ip: IpAddr) -> Result<String, LoginError> {
         let instance = self.instance.read().unwrap();
 
+        let token_secret;
+
         if let Some(bucket) = &*instance {
             // the instance is loaded
-            if !bucket
+            token_secret = bucket
                 .data_source()
                 .passwords()
-                .is_valid_password(password)
-                .await?
-            {
-                return Err(LoginError::InvalidPassword);
-            }
+                .validate_password(password)
+                .await?;
         } else {
             // load the instance
             drop(instance);
 
             let bucket = Bucket::open(self.location.as_str(), password).await?;
 
+            token_secret = bucket
+                .data_source()
+                .passwords()
+                .validate_password(password)
+                .await?;
+
             let mut instance = self.instance.write().unwrap();
             *instance = Some(Arc::new(bucket));
+
+            let mut instance_secret = self.token_secret.write().unwrap();
+            *instance_secret = token_secret;
         }
 
-        let new_token = self.new_session(ip).to_token(&self.token_secret);
+        let Some(token_secret) = token_secret else {
+            return Err(LoginError::InvalidPassword);
+        };
+
+        let new_token = self.new_session(ip, false).to_token(&token_secret);
         Ok(new_token)
     }
 
-    fn new_session(&self, ip: IpAddr) -> AuthToken {
+    fn new_session(&self, ip: IpAddr, read_only: bool) -> AuthToken {
         let now = Utc::now();
         let lifetime = Duration::days(14);
 
-        let token = AuthToken::new(ip, now.clone(), lifetime);
-
-        let session_data = SessionData {
-            ip,
-            created_at: now,
-        };
+        let token = AuthToken::new(ip, now, lifetime, read_only);
 
         self.sessions_created.fetch_add(1, Ordering::Relaxed);
 
@@ -159,14 +167,6 @@ impl ServerBucketInstance {
 
     pub fn sessions_created(&self) -> u64 {
         self.sessions_created.load(Ordering::Relaxed)
-    }
-
-    fn random_token() -> String {
-        thread_rng()
-            .sample_iter(&Alphanumeric)
-            .take(128)
-            .map(char::from)
-            .collect()
     }
 }
 

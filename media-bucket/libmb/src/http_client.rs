@@ -422,7 +422,7 @@ impl TagGroupDataSource for HttpDataSource {
 
 #[async_trait]
 impl PasswordDataSource for HttpDataSource {
-    async fn is_valid_password(&self, password: Option<&str>) -> Result<bool, DataSourceError> {
+    async fn validate_password(&self, password: Option<&str>) -> Result<Option<[u8; 32]>, DataSourceError> {
         todo!()
     }
 }

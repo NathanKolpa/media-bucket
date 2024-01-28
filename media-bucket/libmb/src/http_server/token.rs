@@ -11,21 +11,28 @@ struct Claims {
     iat: i64,
     ip: String,
     exp: i64,
+    ro: bool,
 }
 
 pub struct AuthToken {
     ip: IpAddr,
     issued_at: DateTime<Utc>,
     lifetime: Duration,
+    read_only: bool,
 }
 
 impl AuthToken {
-    pub fn new(ip: IpAddr, issued_at: DateTime<Utc>, lifetime: Duration) -> Self {
+    pub fn new(ip: IpAddr, issued_at: DateTime<Utc>, lifetime: Duration, read_only: bool) -> Self {
         Self {
             lifetime,
             ip,
             issued_at,
+            read_only,
         }
+    }
+
+    pub fn read_only(&self) -> bool {
+        self.read_only
     }
 
     pub fn to_token(&self, secret: &[u8]) -> String {
@@ -36,6 +43,7 @@ impl AuthToken {
             ip: self.ip.to_string(),
             iat: self.issued_at.timestamp(),
             exp: self.expires_at(),
+            ro: self.read_only,
         };
 
         jsonwebtoken::encode(&headers, &claims, &key).unwrap()
@@ -64,6 +72,7 @@ impl AuthToken {
             ip: claims.claims.ip.parse().ok()?,
             lifetime: Duration::seconds(offset),
             issued_at: iat,
+            read_only: claims.claims.ro,
         })
     }
 }

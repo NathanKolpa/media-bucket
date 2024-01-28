@@ -123,6 +123,15 @@ impl Secret {
         &self.bytes
     }
 
+    pub fn derive_for_token_secret(&self) -> Self {
+        let mut hasher = Sha256::new();
+        hasher.update(self.bytes);
+        hasher.update("token-secret".as_bytes());
+        let derived_key = hasher.finalize();
+
+        Self::from_bytes(derived_key.try_into().unwrap())
+    }
+
     pub fn derive_from_uuid(&self, uuid: &Uuid) -> Self {
         let mut hasher = Sha256::new();
         hasher.update(self.bytes);
@@ -178,12 +187,21 @@ impl EncryptionMetadata {
 
 #[async_trait]
 impl PasswordDataSource for EncryptionMetadata {
-    async fn is_valid_password(&self, password: Option<&str>) -> Result<bool, DataSourceError> {
-        if let Some(password) = password {
-            Ok(self.find_encrypted_secret_by_password(password).is_some())
-        } else {
-            Ok(false)
-        }
+    async fn validate_password(
+        &self,
+        password: Option<&str>,
+    ) -> Result<Option<[u8; 32]>, DataSourceError> {
+        let Some(password) = password else {
+            return Ok(None);
+        };
+
+        let Some(secret) = self.find_encrypted_secret_by_password(password) else {
+            return Ok(None);
+        };
+
+        Ok(secret
+            .decrypt(password)
+            .map(|secret| secret.derive_for_token_secret().bytes().clone()))
     }
 }
 

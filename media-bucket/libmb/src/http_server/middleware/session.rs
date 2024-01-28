@@ -66,6 +66,8 @@ impl FromRequest for Session {
             .ok_or(WebError::InstanceNotFound)
             .and_then(|ip| ip.parse::<IpAddr>().map_err(|_| WebError::ParseError));
 
+        let method = req.method().clone();
+
         Box::pin(async move {
             let bucket_id = bucket_id.ok_or(WebError::MissingBucketId)?;
             let token = token??;
@@ -78,6 +80,10 @@ impl FromRequest for Session {
             let session = instance
                 .authorize_token(&token, ip)
                 .ok_or(WebError::InvalidAuthToken)?;
+
+            if session.read_only() && method.is_safe() {
+                return Err(WebError::ReadOnlyToken);
+            }
 
             Ok(session)
         })

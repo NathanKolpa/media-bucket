@@ -20,6 +20,9 @@ pub enum WebError {
     #[error("Missing \"Authorization\" header or \"token\" query parameter")]
     MissingAuthToken,
 
+    #[error("The given authorization is set to read only mode")]
+    ReadOnlyToken,
+
     #[error("Missing \"x-bucket-id\" header or \"bucket-id\" query parameter")]
     MissingBucketId,
 
@@ -136,6 +139,7 @@ impl actix_web::error::ResponseError for WebError {
             WebError::MissingProgram(_) => StatusCode::INTERNAL_SERVER_ERROR,
             WebError::UnsupportedMimeType => StatusCode::UNSUPPORTED_MEDIA_TYPE,
             WebError::UnexpectedProgramOutput => StatusCode::INTERNAL_SERVER_ERROR,
+            WebError::ReadOnlyToken => StatusCode::FORBIDDEN,
         }
     }
 
