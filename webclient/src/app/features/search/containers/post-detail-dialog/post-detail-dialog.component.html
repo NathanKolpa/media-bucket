@@ -1,9 +1,6 @@
 <div *ngIf="(bucket$ | async) || null as bucket" class="dialog-container">
 
   <div *ngIf="open" class="toolbar d-flex">
-
-
-
     <button mat-icon-button mat-dialog-close >
       <mat-icon>close</mat-icon>
     </button>
@@ -17,7 +14,7 @@
 
     <ng-container *ngIf="{ item: item$ | async,  mode: viewedPostMode$ | async  } as ctx">
       <ng-container *ngIf="ctx.item !== null && ctx.mode == 'preview'">
-        <a [href]="ctx.item.content.url" mat-mini-fab target="_blank" matTooltip="Open file in new tab">
+        <a [href]="ctx.item.content.shareUrl" mat-mini-fab target="_blank" matTooltip="Open file in new tab">
           <mat-icon>open_in_new</mat-icon>
         </a>
       </ng-container>
