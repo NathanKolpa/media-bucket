@@ -171,6 +171,10 @@ impl ServerBucketInstance {
     pub fn sessions_created(&self) -> u64 {
         self.sessions_created.load(Ordering::Relaxed)
     }
+
+    pub fn is_bfu(&self) -> bool {
+        self.token_secret.read().unwrap().is_none()
+    }
 }
 
 impl Display for ServerBucketInstance {

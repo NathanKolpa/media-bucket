@@ -74,6 +74,10 @@ impl FromRequest for Session {
                 .get_by_id(bucket_id)
                 .ok_or(WebError::InstanceNotFound)?;
 
+            if instance.is_bfu() {
+                return Err(WebError::BeforeFirstUnlock);
+            }
+
             let session = instance
                 .authorize_token(&token, ip)
                 .ok_or(WebError::InvalidAuthToken)?;

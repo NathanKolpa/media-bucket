@@ -20,6 +20,9 @@ pub enum WebError {
     #[error("Missing \"Authorization\" header or \"token\" query parameter")]
     MissingAuthToken,
 
+    #[error("Unable to determine authorization because the instance is not unlocked")]
+    BeforeFirstUnlock,
+
     #[error("Only read only tokens are allowed in query parameters")]
     InsecureAuthToken,
 
@@ -143,7 +146,8 @@ impl actix_web::error::ResponseError for WebError {
             WebError::UnsupportedMimeType => StatusCode::UNSUPPORTED_MEDIA_TYPE,
             WebError::UnexpectedProgramOutput => StatusCode::INTERNAL_SERVER_ERROR,
             WebError::ReadOnlyToken => StatusCode::FORBIDDEN,
-            WebError::InsecureAuthToken => StatusCode::UNAUTHORIZED
+            WebError::InsecureAuthToken => StatusCode::UNAUTHORIZED,
+            WebError::BeforeFirstUnlock => StatusCode::LOCKED
         }
     }
 
@@ -156,7 +160,7 @@ impl actix_web::error::ResponseError for WebError {
             ("Server", Level::Error)
         };
 
-        log!(level, "{target} error: {self} -> {:?}", self.inner_error());
+        log!(level, "{target} error \"{status}\": {self} -> {:?}", self.inner_error());
 
         HttpResponse::build(status).json(ErrorResponse {
             status: status.as_u16(),
