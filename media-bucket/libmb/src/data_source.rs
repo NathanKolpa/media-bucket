@@ -31,7 +31,7 @@ pub enum DataSourceError {
     #[error("duplicate model")]
     Duplicate,
 
-    #[error("Readonly")]
+    #[error("Tried to modify a read only model")]
     ReadOnly,
 
     #[error("model not found")]

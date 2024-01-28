@@ -20,6 +20,9 @@ pub enum WebError {
     #[error("Missing \"Authorization\" header or \"token\" query parameter")]
     MissingAuthToken,
 
+    #[error("Only read only tokens are allowed in query parameters")]
+    InsecureAuthToken,
+
     #[error("The given authorization is set to read only mode")]
     ReadOnlyToken,
 
@@ -140,6 +143,7 @@ impl actix_web::error::ResponseError for WebError {
             WebError::UnsupportedMimeType => StatusCode::UNSUPPORTED_MEDIA_TYPE,
             WebError::UnexpectedProgramOutput => StatusCode::INTERNAL_SERVER_ERROR,
             WebError::ReadOnlyToken => StatusCode::FORBIDDEN,
+            WebError::InsecureAuthToken => StatusCode::UNAUTHORIZED
         }
     }
 

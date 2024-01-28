@@ -41,12 +41,12 @@ impl FromRequest for Session {
             .map(|h| {
                 h.to_str()
                     .map_err(|_| WebError::ParseError)
-                    .map(|s| s.to_string())
+                    .map(|s| (s.to_string(), false))
             })
             .or_else(|| {
                 bucket_id.map(|id| {
                     req.cookie(&format!("bucket_{id}"))
-                        .map(|e| e.value().to_string())
+                        .map(|e| (e.value().to_string(), false))
                         .ok_or(WebError::MissingAuthToken)
                 })
             })
@@ -55,7 +55,7 @@ impl FromRequest for Session {
                     p.token
                         .as_ref()
                         .ok_or(WebError::MissingAuthToken)
-                        .map(|s| s.clone())
+                        .map(|s| (s.clone(), true))
                 })
             })
             .ok_or(WebError::MissingAuthToken);
@@ -70,7 +70,7 @@ impl FromRequest for Session {
 
         Box::pin(async move {
             let bucket_id = bucket_id.ok_or(WebError::MissingBucketId)?;
-            let token = token??;
+            let (token, token_from_insecure_location) = token??;
             let ip = ip?;
 
             let instance = instances
@@ -81,8 +81,12 @@ impl FromRequest for Session {
                 .authorize_token(&token, ip)
                 .ok_or(WebError::InvalidAuthToken)?;
 
-            if session.read_only() && method.is_safe() {
+            if session.read_only() && !method.is_safe() {
                 return Err(WebError::ReadOnlyToken);
+            }
+
+            if token_from_insecure_location && !session.read_only() {
+                return Err(WebError::InsecureAuthToken);
             }
 
             Ok(session)

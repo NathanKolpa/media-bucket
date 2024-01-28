@@ -273,4 +273,23 @@ mod tests {
         // Check that the encrypted secret is not the same as the original secret
         assert_ne!(secret.bytes(), encrypted_secret.encrypted_secret.as_slice());
     }
+
+    #[test]
+    fn deriving_the_token_secret_should_be_different() {
+        let secret = Secret::random();
+
+        let derived = secret.derive_for_token_secret();
+
+        assert_ne!(secret, derived);
+    }
+
+    #[test]
+    fn deriving_the_token_secret_should_be_idempotent() {
+        let secret = Secret::random();
+
+        let derived1 = secret.derive_for_token_secret();
+        let derived2 = secret.derive_for_token_secret();
+
+        assert_eq!(derived1, derived2);
+    }
 }
