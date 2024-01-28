@@ -39,6 +39,13 @@ export class PostDetailDialogComponent implements OnDestroy {
   constructor(public dialogRef: MatDialogRef<PostDetailDialogComponent>, private store: Store, private title: AppTitleService) {
     dialogRef.afterOpened().pipe(first(), delay(0)).subscribe(() => this.open = true);
 
+    this.dialogRef.keydownEvents().subscribe(event => {
+      if (event.key === "Escape") {
+        this.dialogRef.close();
+      }
+    });
+
+
     this.postSubscription = this.post$.subscribe(post => {
       if (post) {
         this.currentPostId = post.id;

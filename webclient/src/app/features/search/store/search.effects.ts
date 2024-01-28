@@ -90,6 +90,7 @@ export class SearchEffects {
         this.dialog.open(PostDetailDialogComponent, {
           backdropClass: 'backdrop',
           panelClass: 'post-detail-container',
+          disableClose: true
         });
       }
     }),

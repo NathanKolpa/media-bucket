@@ -4,7 +4,7 @@
   <p [title]="post.createdAt.toLocaleString()">{{ post.createdAt | ago }}</p>
 
   <h3>Source</h3>
-  <p *ngIf="post.source"><a [href]="post.source" target="_blank">{{ post.source }}</a></p>
+  <p *ngIf="post.source"><a [href]="post.source" rel="noreferrer" target="_blank">{{ post.source }}</a></p>
   <p *ngIf="!post.source"><i>No source url</i></p>
 
   <h3>Title</h3>

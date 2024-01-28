@@ -2,9 +2,17 @@
 
   <div *ngIf="open" class="toolbar d-flex">
 
-    <button (click)="toggleViewMode()" *ngIf="{ mode: viewedPostMode$ | async } as ctx" color="primary" mat-mini-fab>
-      <mat-icon *ngIf="ctx.mode == 'list'">list_view</mat-icon>
-      <mat-icon *ngIf="ctx.mode == 'preview'">preview</mat-icon>
+
+
+    <button mat-icon-button mat-dialog-close >
+      <mat-icon>close</mat-icon>
+    </button>
+
+    <div class="spacer">
+    </div>
+
+    <button (click)="originalSize = true" [style]="{ opacity: originalSize ? 0 : 1 }" mat-mini-fab matTooltip="Reset view to original">
+      <mat-icon>sync</mat-icon>
     </button>
 
     <ng-container *ngIf="{ item: item$ | async,  mode: viewedPostMode$ | async  } as ctx">
@@ -16,17 +24,11 @@
 
     </ng-container>
 
-    <button (click)="originalSize = true" [style]="{ opacity: originalSize ? 0 : 1 }" mat-mini-fab matTooltip="Reset view to original">
-      <mat-icon>sync</mat-icon>
+    <button (click)="toggleViewMode()" *ngIf="{ mode: viewedPostMode$ | async } as ctx" color="primary" mat-mini-fab>
+      <mat-icon *ngIf="ctx.mode == 'list'">list_view</mat-icon>
+      <mat-icon *ngIf="ctx.mode == 'preview'">preview</mat-icon>
     </button>
 
-
-    <div class="spacer">
-    </div>
-
-    <button mat-icon-button mat-dialog-close>
-      <mat-icon>close</mat-icon>
-    </button>
   </div>
 
   <div class="button-bar d-flex justify-content-center">
