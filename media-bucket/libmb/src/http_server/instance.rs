@@ -43,6 +43,7 @@ pub struct Session {
     bucket: Arc<Bucket>,
     ip: IpAddr,
     read_only: bool,
+    token: Option<String>,
 }
 
 impl Session {
@@ -56,6 +57,10 @@ impl Session {
 
     pub fn instance(&self) -> &ServerBucketInstance {
         self.parent.deref()
+    }
+
+    pub fn token(&self) -> Option<&str> {
+        self.token.as_deref()
     }
 
     pub fn ip(&self) -> IpAddr {
@@ -96,21 +101,21 @@ impl ServerBucketInstance {
         self.password_protected
     }
 
-    pub fn authorize_token(self: Arc<Self>, token: &str, ip: IpAddr) -> Option<Session> {
+    pub fn authorize_token(self: Arc<Self>, token: String, ip: IpAddr) -> Option<Session> {
         let token_secret = self.token_secret.read().unwrap().clone()?;
 
-        let auth_token = AuthToken::from_token(token, &token_secret, &ip)?;
+        let auth_token = AuthToken::from_token(&token, &token_secret, &ip)?;
 
         let bucket = self.instance.read().unwrap().clone()?;
 
         Some(Session {
+            token: Some(token),
             bucket,
             parent: self,
             ip,
             read_only: auth_token.read_only(),
         })
     }
-
     pub fn id(&self) -> u64 {
         self.id
     }
@@ -119,7 +124,11 @@ impl ServerBucketInstance {
         self.name.as_str()
     }
 
-    pub async fn login(&self, password: Option<&str>, ip: IpAddr) -> Result<(String, String), LoginError> {
+    pub async fn login(
+        &self,
+        password: Option<&str>,
+        ip: IpAddr,
+    ) -> Result<(String, String), LoginError> {
         let instance = self.instance.read().unwrap();
 
         let token_secret;
@@ -156,7 +165,6 @@ impl ServerBucketInstance {
 
         let new_token = self.new_session(ip, false).to_token(&token_secret);
         let ro_token = self.new_session(ip, true).to_token(&token_secret);
-
 
         Ok((new_token, ro_token))
     }

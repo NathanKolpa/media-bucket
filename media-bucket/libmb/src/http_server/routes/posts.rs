@@ -1,4 +1,4 @@
-use actix_web::body::{BodyStream, SizedStream};
+use actix_web::body::BodyStream;
 use actix_web::{delete, get, post, put, web, HttpResponse, Responder};
 use log::info;
 use serde::Deserialize;
@@ -43,20 +43,31 @@ pub async fn index(
     Ok(web::Json(posts))
 }
 
+#[derive(Deserialize)]
+pub struct PlaylistParams {
+    include_token: Option<bool>,
+}
+
 #[cfg_attr(feature = "http-server-spec", utoipa::path)]
 #[get("index.m3u")]
 pub async fn index_playlist(
     session: Session,
     query: PostSearchQuery,
+    params: web::Query<PlaylistParams>,
 ) -> Result<impl Responder, WebError> {
-    let mut response =
-        HttpResponse::Ok()
-            .content_type("audio/x-mpegurl")
-            .body(BodyStream::new(new_search_playlist(
-                session.bucket_arc(),
-                query,
-                100,
-            )));
+    let token = if params.include_token.unwrap_or(false) && session.read_only() {
+        session.token().map(|s| s.to_string())
+    } else {
+        None
+    };
+
+    let response = HttpResponse::Ok().body(BodyStream::new(new_search_playlist(
+        session.instance().id(),
+        token,
+        session.bucket_arc(),
+        query,
+        100,
+    )));
 
     Ok(response)
 }

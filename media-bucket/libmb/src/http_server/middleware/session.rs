@@ -38,11 +38,7 @@ impl FromRequest for Session {
         let token = req
             .headers()
             .get("Authorization")
-            .and_then(|h| {
-                h.to_str()
-                    .map(|s| (s.to_string(), false))
-                    .ok()
-            })
+            .and_then(|h| h.to_str().map(|s| (s.to_string(), false)).ok())
             .or_else(|| {
                 bucket_id.and_then(|id| {
                     req.cookie(&format!("bucket_{id}"))
@@ -50,11 +46,10 @@ impl FromRequest for Session {
                 })
             })
             .or_else(|| {
-                params.as_ref().ok().and_then(|p| {
-                    p.token
-                        .as_ref()
-                        .map(|s| (s.clone(), true))
-                })
+                params
+                    .as_ref()
+                    .ok()
+                    .and_then(|p| p.token.as_ref().map(|s| (s.clone(), true)))
             });
 
         let ip = req
@@ -79,7 +74,7 @@ impl FromRequest for Session {
             }
 
             let session = instance
-                .authorize_token(&token, ip)
+                .authorize_token(token, ip)
                 .ok_or(WebError::InvalidAuthToken)?;
 
             if session.read_only() && !method.is_safe() {

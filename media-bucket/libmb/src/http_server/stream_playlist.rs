@@ -1,10 +1,12 @@
 use crate::data_source::PageParams;
+
 use crate::model::PostSearchQuery;
 use crate::Bucket;
 use actix_web::web::Bytes;
 use futures_core::{ready, Stream};
 use pin_project_lite::pin_project;
 use std::collections::VecDeque;
+use std::fmt::Write;
 use std::future::Future;
 use std::io::{Error, ErrorKind};
 use std::pin::Pin;
@@ -12,6 +14,8 @@ use std::sync::Arc;
 use std::task::{Context, Poll};
 
 pub fn new_search_playlist(
+    bucket_id: u64,
+    token: Option<String>,
     bucket: Arc<Bucket>,
     query: PostSearchQuery,
     chunk_size: usize,
@@ -24,11 +28,13 @@ pub fn new_search_playlist(
         header_written: false,
         next_page: PageParams::new(chunk_size, 0),
         state: StreamPlaylistState::PreRead,
-        current_write_state: EntryWriteState::Header,
         next_page_callback: move |bucket, params, buffer| {
             let query = query_rc.clone();
             search_posts(query, bucket, params, buffer)
         },
+        buffer: String::new(),
+        bucket_id,
+        token,
     }
 }
 
@@ -50,18 +56,24 @@ async fn search_posts(
     };
 
     buffer.extend(page.data.into_iter().map(|p| PlaylistEntry {
+        url: EntryUrl::Post(p.post.id),
         title: p.post.title,
-        thumbnail: p.thumbnail.map(|t| format!("/media/{}", t.file_id)),
-        url: format!("/posts/{}/index.m3u", p.post.id),
+        thumbnail_file: p.thumbnail.map(|t| t.id),
+        runtime_seconds: p.duration.unwrap_or(-1),
     }));
 
     Ok((bucket, buffer))
 }
 
+enum EntryUrl {
+    Post(u64),
+}
+
 struct PlaylistEntry {
-    url: String,
-    thumbnail: Option<String>,
+    url: EntryUrl,
+    thumbnail_file: Option<u64>,
     title: Option<String>,
+    runtime_seconds: i32,
 }
 
 pin_project! {
@@ -72,7 +84,10 @@ pin_project! {
 
         bucket: Option<Arc<Bucket>>,
         entries: Option<VecDeque<PlaylistEntry>>,
-        current_write_state: EntryWriteState,
+        buffer: String,
+
+        bucket_id: u64,
+        token: Option<String>,
 
         #[pin]
         state: StreamPlaylistState<Fut>,
@@ -86,21 +101,6 @@ pin_project! {
         PreRead,
         Read { #[pin] fut: Fut },
     }
-}
-
-enum EntryWriteState {
-    Header,
-
-    ThumbnailPre,
-    Thumbnail,
-    ThumbnailPost,
-
-    TitlePre,
-    Title,
-
-    HeaderEnd,
-
-    Url,
 }
 
 impl<N, Fut> Stream for StreamPlaylist<N, Fut>
@@ -122,7 +122,7 @@ where
             StreamPlaylistProj::PreRead => {
                 let entries = this.entries.as_mut().unwrap();
 
-                let Some(entry) = entries.front_mut() else {
+                if entries.is_empty() {
                     let bucket = this.bucket.take().unwrap();
                     let entries = this.entries.take().unwrap();
 
@@ -132,66 +132,46 @@ where
                         .project_replace(StreamPlaylistState::Read { fut });
 
                     return self.poll_next(cx);
-                };
+                }
 
-                match this.current_write_state {
-                    EntryWriteState::Header => {
-                        if entry.thumbnail.is_some() {
-                            *this.current_write_state = EntryWriteState::ThumbnailPre;
-                        } else if entry.title.is_some() {
-                            *this.current_write_state = EntryWriteState::TitlePre;
-                        } else {
-                            *this.current_write_state = EntryWriteState::HeaderEnd;
-                        }
+                this.buffer.clear();
+                let token_str = this
+                    .token
+                    .as_ref()
+                    .map(|t| format!("?token={}", t))
+                    .unwrap_or_default();
 
-                        Poll::Ready(Some(Ok(Bytes::from_static("\n\n#EXTINF:-1".as_bytes()))))
-                    }
-                    EntryWriteState::ThumbnailPre => {
-                        *this.current_write_state = EntryWriteState::Thumbnail;
-                        Poll::Ready(Some(Ok(Bytes::from_static(" tvg-logo=\"".as_bytes()))))
-                    }
-                    EntryWriteState::Thumbnail => {
-                        *this.current_write_state = EntryWriteState::ThumbnailPost;
-                        let url: String = entry.thumbnail.take().unwrap().into();
-                        Poll::Ready(Some(Ok(Bytes::from(url))))
-                    }
-                    EntryWriteState::ThumbnailPost => {
-                        if entry.title.is_some() {
-                            *this.current_write_state = EntryWriteState::TitlePre;
-                        } else {
-                            *this.current_write_state = EntryWriteState::HeaderEnd;
-                        }
+                for entry in entries.iter().filter(|x| x.runtime_seconds.is_positive()) {
+                    write!(this.buffer, "\n\n#EXTINF:{}", entry.runtime_seconds,).unwrap();
 
-                        Poll::Ready(Some(Ok(Bytes::from_static("\"".as_bytes()))))
-                    }
-                    EntryWriteState::TitlePre => {
-                        *this.current_write_state = EntryWriteState::Title;
-                        Poll::Ready(Some(Ok(Bytes::from_static(", ".as_bytes()))))
+                    if let Some(thumbnail_id) = entry.thumbnail_file.as_ref() {
+                        write!(
+                            this.buffer,
+                            " tvg-logo=\"/buckets/{}/media/{}/file\"{}",
+                            *this.bucket_id, thumbnail_id, token_str
+                        )
+                        .unwrap();
                     }
 
-                    EntryWriteState::Title => {
-                        *this.current_write_state = EntryWriteState::HeaderEnd;
-                        let title = entry.title.take().unwrap();
-                        Poll::Ready(Some(Ok(Bytes::from(title))))
+                    if let Some(title) = entry.title.as_deref() {
+                        write!(this.buffer, ", {title}").unwrap();
                     }
 
-                    EntryWriteState::HeaderEnd => {
-                        *this.current_write_state = EntryWriteState::Url;
-                        Poll::Ready(Some(Ok(Bytes::from_static("\n".as_bytes()))))
-                    }
-                    EntryWriteState::Url => {
-                        *this.current_write_state = EntryWriteState::Header;
-                        let url: String = this
-                            .entries
-                            .as_mut()
-                            .unwrap()
-                            .pop_front()
-                            .unwrap()
-                            .url
-                            .into();
-                        Poll::Ready(Some(Ok(Bytes::from(url))))
+                    writeln!(this.buffer).unwrap();
+
+                    match entry.url {
+                        EntryUrl::Post(post_id) => writeln!(
+                            this.buffer,
+                            "/buckets/{}/posts/{}/index.m3u{}",
+                            *this.bucket_id, post_id, token_str
+                        )
+                        .unwrap(),
                     }
                 }
+
+                entries.clear();
+
+                Poll::Ready(Some(Ok(Bytes::copy_from_slice(this.buffer.as_bytes()))))
             }
             StreamPlaylistProj::Read { fut } => {
                 let (bucket, entries) = ready!(fut.poll(cx))?;
