@@ -1,4 +1,4 @@
-use crate::data_source::PageParams;
+use crate::{data_source::PageParams, model::PostDetail};
 
 use crate::model::PostSearchQuery;
 use crate::Bucket;
@@ -13,6 +13,65 @@ use std::pin::Pin;
 use std::sync::Arc;
 use std::task::{Context, Poll};
 use url::Url;
+
+pub fn new_post_playlist(
+    base_url: Option<Arc<Url>>,
+    bucket_id: u64,
+    token: Option<String>,
+    bucket: Arc<Bucket>,
+    post: PostDetail,
+    chunk_size: usize,
+) -> impl Stream<Item = Result<Bytes, Error>> {
+    StreamPlaylist {
+        base_url,
+        bucket: Some(bucket),
+        entries: Some(VecDeque::with_capacity(chunk_size)),
+        header_written: false,
+        next_page: PageParams::new(chunk_size, 0),
+        state: StreamPlaylistState::PreRead,
+        next_page_callback: move |bucket, params, buffer| {
+            search_items(post.post.id, post.item_count, bucket, params, buffer)
+        },
+        buffer: String::new(),
+        bucket_id,
+        token,
+    }
+}
+async fn search_items(
+    post_id: u64,
+    _item_count: usize,
+    bucket: Arc<Bucket>,
+    params: PageParams,
+    mut buffer: VecDeque<PlaylistEntry>,
+) -> Result<(Arc<Bucket>, VecDeque<PlaylistEntry>), Error> {
+    let results = bucket
+        .data_source()
+        .cross()
+        .search_items(post_id, params)
+        .await;
+
+    let page = match results {
+        Ok(p) => p,
+        Err(err) => return Err(Error::new(ErrorKind::Other, Box::new(err))),
+    };
+
+    buffer.extend(page.data.into_iter().map(|item| PlaylistEntry {
+        url: EntryUrl::Item(item.item.post.id(), item.item.position),
+        title: None,
+        thumbnail_file: item.thumbnail.map(|t| t.id),
+        runtime_seconds: item.duration.unwrap_or(-1),
+    }));
+
+    Ok((bucket, buffer))
+}
+async fn get_content(
+    content_id: u64,
+    bucket: Arc<Bucket>,
+    params: PageParams,
+    mut buffer: VecDeque<PlaylistEntry>,
+) -> Result<(Arc<Bucket>, VecDeque<PlaylistEntry>), Error> {
+    todo!()
+}
 
 pub fn new_search_playlist(
     base_url: Option<Arc<Url>>,
@@ -70,6 +129,8 @@ async fn search_posts(
 
 enum EntryUrl {
     Post(u64),
+    Item(u64, i32),
+    Content(u64),
 }
 
 struct PlaylistEntry {
@@ -176,6 +237,23 @@ where
                             this.buffer,
                             "{}buckets/{}/posts/{}/index.m3u{}{}",
                             base_url_str, *this.bucket_id, post_id, token_str, include_str
+                        )
+                        .unwrap(),
+                        EntryUrl::Content(content_id) => writeln!(
+                            this.buffer,
+                            "{}buckets/{}/content/{}/index.m3u{}{}",
+                            base_url_str, *this.bucket_id, content_id, token_str, include_str
+                        )
+                        .unwrap(),
+                        EntryUrl::Item(post_id, position) => writeln!(
+                            this.buffer,
+                            "{}buckets/{}/posts/{}/items/{}/index.m3u{}{}",
+                            base_url_str,
+                            *this.bucket_id,
+                            post_id,
+                            position,
+                            token_str,
+                            include_str
                         )
                         .unwrap(),
                     }

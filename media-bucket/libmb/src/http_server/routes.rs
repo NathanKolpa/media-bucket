@@ -84,6 +84,7 @@ pub fn routes() -> Scope {
                                 .service(posts::store_tags)
                                 .service(posts::show_item)
                                 .service(posts::show)
+                                .service(posts::show_playlist)
                                 .service(posts::show_tags)
                                 .service(posts::delete)
                                 .service(posts::update),

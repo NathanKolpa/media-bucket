@@ -3,12 +3,12 @@ use actix_web::{delete, get, post, put, web, HttpResponse, Responder};
 use log::info;
 use serde::Deserialize;
 
-use crate::data_source::PageParams;
 use crate::http_models::{CreateFullPostResponse, UpdatePostRequest};
 use crate::http_server::instance::Session;
 use crate::http_server::stream_playlist::new_search_playlist;
 use crate::http_server::web_error::WebError;
 use crate::model::{CreateFullPost, PostGraphQuery, PostSearchQuery};
+use crate::{data_source::PageParams, http_server::stream_playlist::new_post_playlist};
 
 #[cfg_attr(feature = "http-server-spec", utoipa::path)]
 #[post("graph")]
@@ -87,6 +87,41 @@ pub async fn show(session: Session, id: web::Path<(u64, u64)>) -> Result<impl Re
         .ok_or(WebError::ResourceNotFound)?;
 
     Ok(web::Json(post))
+}
+
+#[cfg_attr(feature = "http-server-spec", utoipa::path)]
+#[get("/{id}/index.m3u")]
+pub async fn show_playlist(
+    session: Session,
+    id: web::Path<(u64, u64)>,
+    params: web::Query<PlaylistParams>,
+) -> Result<impl Responder, WebError> {
+    let id = id.into_inner().1;
+
+    let token = if params.include_token.unwrap_or(false) && session.read_only() {
+        session.token().map(|s| s.to_string())
+    } else {
+        None
+    };
+
+    let post = session
+        .bucket()
+        .data_source()
+        .cross()
+        .get_post_detail(id)
+        .await?
+        .ok_or(WebError::ResourceNotFound)?;
+
+    let response = HttpResponse::Ok().body(BodyStream::new(new_post_playlist(
+        session.instance().base_url(),
+        session.instance().id(),
+        token,
+        session.bucket_arc(),
+        post,
+        100,
+    )));
+
+    Ok(response)
 }
 
 #[cfg_attr(feature = "http-server-spec", utoipa::path)]
