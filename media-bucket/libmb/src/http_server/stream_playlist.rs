@@ -141,13 +141,19 @@ where
                     .map(|t| format!("?token={}", t))
                     .unwrap_or_default();
 
+                let include_str = if this.token.is_some() {
+                    "&include_token=true"
+                } else {
+                    ""
+                };
+
                 for entry in entries.iter().filter(|x| x.runtime_seconds.is_positive()) {
                     write!(this.buffer, "\n\n#EXTINF:{}", entry.runtime_seconds,).unwrap();
 
                     if let Some(thumbnail_id) = entry.thumbnail_file.as_ref() {
                         write!(
                             this.buffer,
-                            " tvg-logo=\"/buckets/{}/media/{}/file\"{}",
+                            " tvg-logo=\"/buckets/{}/media/{}/file{}\"",
                             *this.bucket_id, thumbnail_id, token_str
                         )
                         .unwrap();
@@ -162,8 +168,8 @@ where
                     match entry.url {
                         EntryUrl::Post(post_id) => writeln!(
                             this.buffer,
-                            "/buckets/{}/posts/{}/index.m3u{}",
-                            *this.bucket_id, post_id, token_str
+                            "/buckets/{}/posts/{}/index.m3u{}{}",
+                            *this.bucket_id, post_id, token_str, include_str
                         )
                         .unwrap(),
                     }
