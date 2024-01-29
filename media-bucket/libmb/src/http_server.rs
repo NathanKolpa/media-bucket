@@ -7,6 +7,7 @@ use actix_web::middleware::NormalizePath;
 use actix_web::{web, App, HttpServer};
 
 pub use config_file::ConfigError;
+use url::Url;
 
 use crate::http_server::instance::{InstanceDataSource, ServerBucketInstance};
 use crate::http_server::routes::{routes, routes_with_static};
@@ -16,9 +17,9 @@ mod instance;
 mod middleware;
 mod routes;
 mod stream_file;
+mod stream_playlist;
 mod token;
 mod web_error;
-mod stream_playlist;
 
 struct InstanceConfig {
     id: u64,
@@ -34,15 +35,11 @@ struct StaticFilesConfig {
 impl StaticFilesConfig {
     pub fn file_root(&self) -> &Path {
         self.file_root
-            .as_ref()
-            .map(|s| s.as_path())
+            .as_deref()
             .unwrap_or_else(|| Path::new("/var/www/html"))
     }
     pub fn index_file(&self) -> &str {
-        self.index_file
-            .as_ref()
-            .map(|s| s.as_str())
-            .unwrap_or("index.html")
+        self.index_file.as_deref().unwrap_or("index.html")
     }
 }
 
@@ -51,6 +48,8 @@ pub struct ServerConfig {
     address: Option<IpAddr>,
     port: Option<u16>,
     instances: Vec<InstanceConfig>,
+
+    public_url: Option<Url>,
 
     static_files: Option<StaticFilesConfig>,
 }
@@ -62,6 +61,7 @@ impl ServerConfig {
         Ok(Self {
             port: config.server.as_ref().and_then(|s| s.port),
             address: config.server.as_ref().and_then(|a| a.address),
+            public_url: config.server.as_ref().and_then(|a| a.public_url.clone()),
             static_files: config.server.as_ref().and_then(|s| {
                 if !s.serve_ui.unwrap_or(false) {
                     None
@@ -111,12 +111,20 @@ impl ServerConfig {
 
     async fn load_instance_data_source(&self) -> std::io::Result<InstanceDataSource> {
         let mut instances = Vec::with_capacity(self.instances.len());
+        let mut base_url = self.public_url.clone();
+
+        if self.static_files.is_some() {
+            base_url = base_url.map(|url| url.join("api").unwrap());
+        }
+
+        let base_url = base_url.map(|url| Arc::new(url));
 
         for instance_config in self.instances.iter() {
             instances.push(Arc::new(
                 ServerBucketInstance::load(
                     instance_config.id,
                     instance_config.name.clone(),
+                    base_url.clone(),
                     instance_config.location.clone(),
                 )
                 .await?,

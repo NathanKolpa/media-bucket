@@ -62,6 +62,7 @@ pub async fn index_playlist(
     };
 
     let response = HttpResponse::Ok().body(BodyStream::new(new_search_playlist(
+        session.instance().base_url(),
         session.instance().id(),
         token,
         session.bucket_arc(),

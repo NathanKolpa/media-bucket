@@ -3,6 +3,7 @@ use std::path::{Path, PathBuf};
 
 use serde::Deserialize;
 use thiserror::Error;
+use url::Url;
 
 #[derive(Error, Debug)]
 pub enum ConfigError {
@@ -23,6 +24,8 @@ pub struct InstanceConfigSection {
 pub struct ServerConfigSection {
     pub address: Option<IpAddr>,
     pub port: Option<u16>,
+
+    pub public_url: Option<Url>,
 
     pub serve_ui: Option<bool>,
     pub static_files: Option<PathBuf>,

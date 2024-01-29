@@ -12,8 +12,10 @@ use std::io::{Error, ErrorKind};
 use std::pin::Pin;
 use std::sync::Arc;
 use std::task::{Context, Poll};
+use url::Url;
 
 pub fn new_search_playlist(
+    base_url: Option<Arc<Url>>,
     bucket_id: u64,
     token: Option<String>,
     bucket: Arc<Bucket>,
@@ -23,6 +25,7 @@ pub fn new_search_playlist(
     let query_rc = Arc::new(query);
 
     StreamPlaylist {
+        base_url,
         bucket: Some(bucket),
         entries: Some(VecDeque::with_capacity(chunk_size)),
         header_written: false,
@@ -87,6 +90,7 @@ pin_project! {
         buffer: String,
 
         bucket_id: u64,
+        base_url: Option<Arc<Url>>,
         token: Option<String>,
 
         #[pin]
@@ -141,6 +145,8 @@ where
                     .map(|t| format!("?token={}", t))
                     .unwrap_or_default();
 
+                let base_url_str = this.base_url.as_ref().map(|x| x.as_str()).unwrap_or(".");
+
                 let include_str = if this.token.is_some() {
                     "&include_token=true"
                 } else {
@@ -153,8 +159,8 @@ where
                     if let Some(thumbnail_id) = entry.thumbnail_file.as_ref() {
                         write!(
                             this.buffer,
-                            " tvg-logo=\"/buckets/{}/media/{}/file{}\"",
-                            *this.bucket_id, thumbnail_id, token_str
+                            " tvg-logo=\"{}buckets/{}/media/{}/file{}\"",
+                            base_url_str, *this.bucket_id, thumbnail_id, token_str
                         )
                         .unwrap();
                     }
@@ -168,8 +174,8 @@ where
                     match entry.url {
                         EntryUrl::Post(post_id) => writeln!(
                             this.buffer,
-                            "/buckets/{}/posts/{}/index.m3u{}{}",
-                            *this.bucket_id, post_id, token_str, include_str
+                            "{}buckets/{}/posts/{}/index.m3u{}{}",
+                            base_url_str, *this.bucket_id, post_id, token_str, include_str
                         )
                         .unwrap(),
                     }

@@ -7,6 +7,7 @@ use std::sync::{Arc, RwLock};
 
 use chrono::{Duration, Utc};
 use thiserror::Error;
+use url::Url;
 
 use crate::data_source::DataSourceError;
 use crate::http_server::instance::LoginError::LoadingError;
@@ -78,6 +79,7 @@ pub struct ServerBucketInstance {
     id: u64,
     location: String,
     name: String,
+    base_url: Option<Arc<Url>>,
     password_protected: bool,
     instance: RwLock<Option<Arc<Bucket>>>,
     sessions_created: AtomicU64,
@@ -85,7 +87,12 @@ pub struct ServerBucketInstance {
 }
 
 impl ServerBucketInstance {
-    pub async fn load(id: u64, name: String, location: String) -> std::io::Result<Self> {
+    pub async fn load(
+        id: u64,
+        name: String,
+        base_url: Option<Arc<Url>>,
+        location: String,
+    ) -> std::io::Result<Self> {
         Ok(ServerBucketInstance {
             id,
             password_protected: Bucket::password_protected(location.as_str()).await?,
@@ -93,12 +100,17 @@ impl ServerBucketInstance {
             name,
             instance: Default::default(),
             sessions_created: AtomicU64::new(0),
+            base_url,
             token_secret: Default::default(),
         })
     }
 
     pub fn password_protected(&self) -> bool {
         self.password_protected
+    }
+
+    pub fn base_url(&self) -> Option<Arc<Url>> {
+        self.base_url.clone()
     }
 
     pub fn authorize_token(self: Arc<Self>, token: String, ip: IpAddr) -> Option<Session> {
