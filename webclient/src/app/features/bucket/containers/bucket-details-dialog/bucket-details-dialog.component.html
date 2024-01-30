@@ -8,14 +8,21 @@
           <ng-container *ngIf="details$ | async as details">
 
 
-            <p>Name: "{{ bucket.bucket.name }}"</p>
-            <p>Encrypted: {{ bucket.bucket.encrypted ? 'Yes' : 'No' }}</p>
-            <p>Password Protected: {{ bucket.bucket.passwordProtected ? 'Yes' : 'No' }}</p>
-            <p>Files: {{ details.fileCount }} ({{ details.totalFileSize | bytes }})</p>
-            <p>Sessions created: {{ details.sessionsCreated }}</p>
-            <p>Api Url:
-              <a>{{ apiUrl + '/buckets/' + bucket.bucket.id }}</a>
+            <p><span class="user-select-none">Name: </span>{{ bucket.bucket.name }}</p>
+            <p><span class="user-select-none">Encrypted: </span>{{ bucket.bucket.encrypted ? 'Yes' : 'No' }}</p>
+            <p><span class="user-select-none">Password Protected: </span>{{ bucket.bucket.passwordProtected ? 'Yes' : 'No' }}</p>
+            <p><span class="user-select-none">Files: </span>{{ details.fileCount }} ({{ details.totalFileSize | bytes }})</p>
+            <p><span class="user-select-none">Sessions created: </span>{{ details.sessionsCreated }}</p>
+            <p>
+              <span class="user-select-none">Api Url: </span>
+              <a style="color: inherit; outline: none" [href]="apiUrl + '/buckets/' + bucket.bucket.id">{{ apiUrl + '/buckets/' + bucket.bucket.id }}</a>
             </p>
+            <p class="d-block" style="overflow-x: auto">
+              <span class="user-select-none text-wrap-none">Share Token: </span>
+              <span>{{ bucket.auth.shareToken }}</span>
+            </p>
+
+
 
           </ng-container>
         </app-loadable-content>
