@@ -3,12 +3,15 @@ use actix_web::{delete, get, post, put, web, HttpResponse, Responder};
 use log::info;
 use serde::Deserialize;
 
-use crate::http_models::{CreateFullPostResponse, UpdatePostRequest};
 use crate::http_server::instance::Session;
 use crate::http_server::stream_playlist::new_search_playlist;
 use crate::http_server::web_error::WebError;
 use crate::model::{CreateFullPost, PostGraphQuery, PostSearchQuery};
 use crate::{data_source::PageParams, http_server::stream_playlist::new_post_playlist};
+use crate::{
+    http_models::{CreateFullPostResponse, UpdatePostRequest},
+    http_server::stream_playlist::new_content_playlist,
+};
 
 #[cfg_attr(feature = "http-server-spec", utoipa::path)]
 #[post("graph")]
@@ -188,6 +191,49 @@ pub async fn show_item(
 
     Ok(web::Json(item))
 }
+
+#[cfg_attr(feature = "http-server-spec", utoipa::path)]
+#[get("/{id}/items/{position}/index.m3u8")]
+pub async fn show_item_playlist(
+    session: Session,
+    path: web::Path<(u64, u64, i32)>,
+    params: web::Query<PlaylistParams>,
+) -> Result<impl Responder, WebError> {
+    let (_, id, position) = path.into_inner();
+
+    let token = if params.include_token.unwrap_or(false) && session.read_only() {
+        session.token().map(|s| s.to_string())
+    } else {
+        None
+    };
+
+    let item = session
+        .bucket()
+        .data_source()
+        .cross()
+        .get_full_post_item(id, position)
+        .await?
+        .ok_or(WebError::ResourceNotFound)?;
+
+    if let crate::model::ManyToOne::Obj(c) = &item.content {
+        if let crate::model::ManyToOne::Obj(media) = &c.content {
+            if media.metadata.duration().is_none() {
+                return Err(WebError::ResourceNotFound);
+            }
+        }
+    }
+
+    let response = HttpResponse::Ok().body(BodyStream::new(new_content_playlist(
+        session.instance().base_url(),
+        session.instance().id(),
+        token,
+        session.bucket_arc(),
+        item,
+    )));
+
+    Ok(response)
+}
+
 #[cfg_attr(feature = "http-server-spec", utoipa::path)]
 #[get("/{id}/items")]
 pub async fn index_items(

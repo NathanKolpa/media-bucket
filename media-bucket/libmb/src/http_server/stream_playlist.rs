@@ -1,4 +1,7 @@
-use crate::{data_source::PageParams, model::PostDetail};
+use crate::{
+    data_source::PageParams,
+    model::{PostDetail, PostItem},
+};
 
 use crate::model::PostSearchQuery;
 use crate::Bucket;
@@ -23,6 +26,7 @@ pub fn new_post_playlist(
     chunk_size: usize,
 ) -> impl Stream<Item = Result<Bytes, Error>> {
     StreamPlaylist {
+        playlist_title: post.post.title,
         base_url,
         bucket: Some(bucket),
         entries: Some(VecDeque::with_capacity(chunk_size)),
@@ -37,6 +41,7 @@ pub fn new_post_playlist(
         token,
     }
 }
+
 async fn search_items(
     post_id: u64,
     _item_count: usize,
@@ -44,33 +49,116 @@ async fn search_items(
     params: PageParams,
     mut buffer: VecDeque<PlaylistEntry>,
 ) -> Result<(Arc<Bucket>, VecDeque<PlaylistEntry>), Error> {
-    let results = bucket
+    let post = bucket
+        .data_source()
+        .cross()
+        .get_post_detail(post_id)
+        .await
+        .map_err(|err| Error::new(ErrorKind::Other, Box::new(err)))?
+        .ok_or(Error::from(ErrorKind::NotFound))?;
+
+    let mut item_title = None;
+    if post.item_count == 1 {
+        item_title = post.post.title.clone();
+    }
+
+    let page = bucket
         .data_source()
         .cross()
         .search_items(post_id, params)
-        .await;
+        .await
+        .map_err(|err| Error::new(ErrorKind::Other, Box::new(err)))?;
 
-    let page = match results {
-        Ok(p) => p,
-        Err(err) => return Err(Error::new(ErrorKind::Other, Box::new(err))),
-    };
+    buffer.extend(page.data.into_iter().map(|item| {
+        let media = item
+            .item
+            .content
+            .as_ref()
+            .obj()
+            .and_then(|content| content.content.as_ref().obj());
 
-    buffer.extend(page.data.into_iter().map(|item| PlaylistEntry {
-        url: EntryUrl::Item(item.item.post.id(), item.item.position),
-        title: None,
-        thumbnail_file: item.thumbnail.map(|t| t.id),
-        runtime_seconds: item.duration.unwrap_or(-1),
+        PlaylistEntry {
+            url: EntryUrl::Item(item.item.post.id(), item.item.position),
+            title: item_title.clone().or(item
+                .item
+                .upload
+                .original_filename
+                .or_else(|| post.post.title.clone())),
+            file_size: media.map(|media| media.file_size),
+            thumbnail_file: item.thumbnail.map(|t| t.id),
+            runtime_seconds: item.duration.unwrap_or(-1),
+        }
     }));
 
     Ok((bucket, buffer))
 }
-async fn get_content(
-    content_id: u64,
+
+pub fn new_content_playlist(
+    base_url: Option<Arc<Url>>,
+    bucket_id: u64,
+    token: Option<String>,
     bucket: Arc<Bucket>,
-    params: PageParams,
-    mut buffer: VecDeque<PlaylistEntry>,
-) -> Result<(Arc<Bucket>, VecDeque<PlaylistEntry>), Error> {
-    todo!()
+    item: PostItem,
+) -> impl Stream<Item = Result<Bytes, Error>> {
+    MediaPlaylist {
+        base_url,
+        bucket_id,
+        token,
+        done: false,
+        fut: get_content(item, bucket),
+    }
+}
+
+async fn get_content(item: PostItem, bucket: Arc<Bucket>) -> Result<MediaEntry, Error> {
+    let content = match item.content {
+        crate::model::ManyToOne::Obj(o) => Some(o),
+        crate::model::ManyToOne::Id(id) => bucket
+            .data_source()
+            .content()
+            .get_by_content_id(id)
+            .await
+            .map_err(|err| Error::new(ErrorKind::Other, Box::new(err)))?,
+    };
+
+    let Some(content) = content else {
+        return Err(Error::from(ErrorKind::NotFound));
+    };
+
+    let thumbnail = match content.thumbnail {
+        crate::model::ManyToOne::Obj(o) => Some(o),
+        crate::model::ManyToOne::Id(id) => bucket
+            .data_source()
+            .media()
+            .get_by_id(id)
+            .await
+            .map_err(|err| Error::new(ErrorKind::Other, Box::new(err)))?,
+    };
+
+    let media = match content.content {
+        crate::model::ManyToOne::Obj(o) => Some(o),
+        crate::model::ManyToOne::Id(id) => bucket
+            .data_source()
+            .media()
+            .get_by_id(id)
+            .await
+            .map_err(|err| Error::new(ErrorKind::Other, Box::new(err)))?,
+    };
+
+    let Some(media) = media else {
+        return Err(Error::from(ErrorKind::NotFound));
+    };
+
+    Ok(MediaEntry {
+        media_id: media.id,
+        thumbnail_id: thumbnail.map(|x| x.id),
+        title: item.upload.original_filename,
+        runtime_seconds: media.metadata.duration().cloned().unwrap_or(-1),
+        resolution: media
+            .metadata
+            .width()
+            .and_then(|width| media.metadata.height().map(|height| (*width, *height))),
+        size: media.file_size,
+    })
 }
 
 pub fn new_search_playlist(
@@ -84,6 +172,7 @@ pub fn new_search_playlist(
     let query_rc = Arc::new(query);
 
     StreamPlaylist {
+        playlist_title: query_rc.text.clone(),
         base_url,
         bucket: Some(bucket),
         entries: Some(VecDeque::with_capacity(chunk_size)),
@@ -119,7 +208,8 @@ async fn search_posts(
 
     buffer.extend(page.data.into_iter().map(|p| PlaylistEntry {
         url: EntryUrl::Post(p.post.id),
-        title: p.post.title,
+        file_size: None,
+        title: p.post.title.or(p.file_name),
         thumbnail_file: p.thumbnail.map(|t| t.id),
         runtime_seconds: p.duration.unwrap_or(-1),
     }));
@@ -130,7 +220,105 @@ async fn search_posts(
 enum EntryUrl {
     Post(u64),
     Item(u64, i32),
-    Content(u64),
+}
+
+struct MediaEntry {
+    media_id: u64,
+    title: Option<String>,
+    thumbnail_id: Option<u64>,
+    runtime_seconds: i32,
+    resolution: Option<(i32, i32)>,
+    size: usize,
+}
+
+pin_project! {
+    struct MediaPlaylist<Fut> {
+        bucket_id: u64,
+        base_url: Option<Arc<Url>>,
+        token: Option<String>,
+
+        #[pin]
+        fut: Fut,
+
+        done: bool
+    }
+}
+
+impl<Fut> Stream for MediaPlaylist<Fut>
+where
+    Fut: Future<Output = Result<MediaEntry, Error>>,
+{
+    type Item = Result<Bytes, Error>;
+
+    fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
+        if self.done {
+            return Poll::Ready(None);
+        }
+
+        let this = self.as_mut().project();
+
+        let Poll::Ready(media) = this.fut.poll(cx) else {
+            return Poll::Pending;
+        };
+
+        *this.done = true;
+
+        let media = match media {
+            Ok(media) => media,
+            Err(err) => return Poll::Ready(Some(Err(err))),
+        };
+
+        let mut buffer = String::from(HEADER);
+
+        let token_str = this
+            .token
+            .as_ref()
+            .map(|t| format!("?token={}", t))
+            .unwrap_or_default();
+
+        let base_url_str = this.base_url.as_ref().map(|x| x.as_str()).unwrap_or(".");
+
+        if let Some(title) = media.title.as_deref() {
+            write!(&mut buffer, "\r\n#PLAYLIST:{}", title).unwrap();
+        }
+
+        write!(&mut buffer, "\r\n#EXTBYT:{}", media.size).unwrap();
+
+        if let Some(title) = media.title.as_deref() {
+            write!(
+                &mut buffer,
+                "\r\n#EXTINF:{},{}",
+                media.runtime_seconds, title
+            )
+            .unwrap();
+        }
+
+        if let Some(thumbnail_id) = media.thumbnail_id {
+            write!(
+                &mut buffer,
+                "\r\n#EXTIMG:{}buckets/{}/media/{}/file{}",
+                base_url_str, *this.bucket_id, thumbnail_id, token_str
+            )
+            .unwrap();
+        }
+
+        if let Some((width, height)) = media.resolution {
+            write!(
+                &mut buffer,
+                "\r\n#EXT-STREAM-INF:RESOLUTION=\"{width}x{height}\",NAME=\"original\"",
+            )
+            .unwrap();
+        }
+
+        write!(
+            &mut buffer,
+            "\r\n{}buckets/{}/media/{}/file{}",
+            base_url_str, *this.bucket_id, media.media_id, token_str
+        )
+        .unwrap();
+
+        Poll::Ready(Some(Ok(Bytes::from(buffer))))
+    }
 }
 
 struct PlaylistEntry {
@@ -138,6 +326,7 @@ struct PlaylistEntry {
     thumbnail_file: Option<u64>,
     title: Option<String>,
     runtime_seconds: i32,
+    file_size: Option<usize>,
 }
 
 pin_project! {
@@ -145,6 +334,7 @@ pin_project! {
         next_page_callback: N,
         next_page: PageParams,
         header_written: bool,
+        playlist_title: Option<String>,
 
         bucket: Option<Arc<Bucket>>,
         entries: Option<VecDeque<PlaylistEntry>>,
@@ -168,6 +358,8 @@ pin_project! {
     }
 }
 
+const HEADER: &str = "#EXTM3U\r\n#EXTENC:UTF-8";
+
 impl<N, Fut> Stream for StreamPlaylist<N, Fut>
 where
     N: Fn(Arc<Bucket>, PageParams, VecDeque<PlaylistEntry>) -> Fut,
@@ -179,8 +371,16 @@ where
         let mut this = self.as_mut().project();
 
         if !*this.header_written {
+            let mut header = String::from(HEADER);
+
+            if let Some(title) = this.playlist_title {
+                write!(&mut header, "\r\n#PLAYLIST:{}", title).unwrap();
+            }
+
+            write!(&mut header, "\r\n#EXTM3A").unwrap();
+
             *this.header_written = true;
-            return Poll::Ready(Some(Ok(Bytes::from_static("#EXTM3U".as_bytes()))));
+            return Poll::Ready(Some(Ok(Bytes::from(header))));
         }
 
         match this.state.as_mut().project() {
@@ -215,9 +415,9 @@ where
                 };
 
                 for entry in entries.iter().filter(|x| x.runtime_seconds.is_positive()) {
-                    write!(this.buffer, "\n\n#EXTINF:{}", entry.runtime_seconds,).unwrap();
+                    write!(this.buffer, "\r\n\r\n#EXTINF:{}", entry.runtime_seconds,).unwrap();
 
-                    if let Some(thumbnail_id) = entry.thumbnail_file.as_ref() {
+                    if let Some(thumbnail_id) = entry.thumbnail_file {
                         write!(
                             this.buffer,
                             " tvg-logo=\"{}buckets/{}/media/{}/file{}\"",
@@ -230,24 +430,37 @@ where
                         write!(this.buffer, ", {title}").unwrap();
                     }
 
-                    writeln!(this.buffer).unwrap();
+                    write!(this.buffer, "\r\n").unwrap();
 
-                    match entry.url {
-                        EntryUrl::Post(post_id) => writeln!(
+                    if let Some(size) = entry.file_size {
+                        write!(this.buffer, "#EXTBYT:{size}\r\n").unwrap();
+                    }
+
+                    if let Some(thumbnail_id) = entry.thumbnail_file {
+                        write!(
                             this.buffer,
-                            "{}buckets/{}/posts/{}/index.m3u{}{}",
+                            "#EXTIMG:{}buckets/{}/media/{}/file{}\r\n",
+                            base_url_str, *this.bucket_id, thumbnail_id, token_str
+                        )
+                        .unwrap();
+                        write!(
+                            this.buffer,
+                            "#EXTALBUMARTURL:{}buckets/{}/media/{}/file{}\r\n",
+                            base_url_str, *this.bucket_id, thumbnail_id, token_str
+                        )
+                        .unwrap();
+                    }
+
+                    match &entry.url {
+                        EntryUrl::Post(post_id) => write!(
+                            this.buffer,
+                            "{}buckets/{}/posts/{}/index.m3u{}{}\r\n",
                             base_url_str, *this.bucket_id, post_id, token_str, include_str
                         )
                         .unwrap(),
-                        EntryUrl::Content(content_id) => writeln!(
+                        EntryUrl::Item(post_id, position) => write!(
                             this.buffer,
-                            "{}buckets/{}/content/{}/index.m3u{}{}",
-                            base_url_str, *this.bucket_id, content_id, token_str, include_str
-                        )
-                        .unwrap(),
-                        EntryUrl::Item(post_id, position) => writeln!(
-                            this.buffer,
-                            "{}buckets/{}/posts/{}/items/{}/index.m3u{}{}",
+                            "{}buckets/{}/posts/{}/items/{}/index.m3u8{}{}\r\n",
                             base_url_str,
                             *this.bucket_id,
                             post_id,

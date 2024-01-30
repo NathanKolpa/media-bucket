@@ -1,6 +1,6 @@
 use crate::data_source::DataSourceError;
 use crate::model::*;
-use chrono::{DateTime, Duration, Utc};
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use url::Url;
 

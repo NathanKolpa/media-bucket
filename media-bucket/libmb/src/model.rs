@@ -28,6 +28,25 @@ pub enum ManyToOne<I, T> {
     Obj(T),
 }
 
+impl<I, T> ManyToOne<I, T> {
+    pub fn obj(self) -> Option<T> {
+        match self {
+            ManyToOne::Id(_) => None,
+            ManyToOne::Obj(o) => Some(o),
+        }
+    }
+
+    pub fn as_ref(&self) -> ManyToOne<I, &T>
+    where
+        I: Copy,
+    {
+        match self {
+            ManyToOne::Id(id) => ManyToOne::Id(*id),
+            ManyToOne::Obj(obj) => ManyToOne::Obj(obj),
+        }
+    }
+}
+
 impl ManyToOne<u64, Media> {
     pub fn id(&self) -> u64 {
         match self {
@@ -74,14 +93,14 @@ impl ManyToOne<u64, ImportBatch> {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[cfg_attr(feature = "http-server-spec", derive(utoipa::ToSchema))]
 pub struct Dimensions {
     pub width: i32,
     pub height: i32,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[cfg_attr(feature = "http-server-spec", derive(utoipa::ToSchema))]
 pub enum MediaMetadata {
     Image {
@@ -159,7 +178,7 @@ impl MediaMetadata {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[cfg_attr(feature = "http-server-spec", derive(utoipa::ToSchema))]
 pub struct Media {
     pub id: u64,
@@ -173,7 +192,7 @@ pub struct Media {
     pub mime: ::mediatype::MediaTypeBuf,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[cfg_attr(feature = "http-server-spec", derive(utoipa::ToSchema))]
 pub struct Content {
     pub content: ManyToOne<u64, Media>,
@@ -198,7 +217,7 @@ pub struct UploadMetadata {
     pub original_accessed_at: Option<DateTime<Utc>>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[cfg_attr(feature = "http-server-spec", derive(utoipa::ToSchema))]
 pub struct Post {
     pub id: u64,
@@ -209,7 +228,7 @@ pub struct Post {
     pub created_at: DateTime<Utc>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[cfg_attr(feature = "http-server-spec", derive(utoipa::ToSchema))]
 pub struct PostItem {
     pub post: ManyToOne<u64, Post>,
@@ -311,7 +330,7 @@ pub struct CreateFullPost {
     pub items: Vec<CreateFullPostItem>,
     pub tag_ids: Vec<u64>,
     pub flatten: bool,
-    pub batch_id: Option<u64>
+    pub batch_id: Option<u64>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq)]
