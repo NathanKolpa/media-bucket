@@ -149,7 +149,12 @@ async fn get_content(item: PostItem, bucket: Arc<Bucket>) -> Result<MediaEntry, 
     Ok(MediaEntry {
         media_id: media.id,
         thumbnail_id: thumbnail.map(|x| x.id),
-        title: item.upload.original_filename,
+        title: item
+            .post
+            .as_ref()
+            .obj()
+            .and_then(|post| post.title.clone())
+            .or(item.upload.original_filename),
         runtime_seconds: media.metadata.duration().cloned().unwrap_or(-1),
         resolution: media
             .metadata
