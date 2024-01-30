@@ -93,16 +93,15 @@ async fn search_items(
 }
 
 pub fn new_content_playlist(
-    base_url: Option<Arc<Url>>,
+    base: Option<Arc<Url>>,
     bucket_id: u64,
     token: Option<String>,
     bucket: Arc<Bucket>,
     item: PostItem,
 ) -> impl Stream<Item = Result<Bytes, Error>> {
     MediaPlaylist {
-        base_url,
-        bucket_id,
-        token,
+        api_url: ApiUrl { bucket_id, base },
+        auth_params: AuthParams { token },
         done: false,
         fut: get_content(item, bucket),
     }
