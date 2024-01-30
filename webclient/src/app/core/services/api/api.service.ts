@@ -1,6 +1,6 @@
-import {Injectable} from '@angular/core';
-import {HttpClient, HttpErrorResponse, HttpEventType} from "@angular/common/http";
-import {audit, catchError, first, forkJoin, interval, map, Observable, Subject, Subscription, takeUntil} from "rxjs";
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpErrorResponse, HttpEventType } from "@angular/common/http";
+import { audit, catchError, first, forkJoin, interval, map, Observable, Subject, Subscription, takeUntil } from "rxjs";
 import {
   ApiFailure,
   Auth,
@@ -27,7 +27,7 @@ import {
   Tag, TagDetail, TagGroup,
   Upload
 } from "@core/models";
-import {environment} from "@src/environments/environment";
+import { environment } from "@src/environments/environment";
 
 
 export interface UploadProgress {
@@ -227,7 +227,7 @@ export class ApiService {
   }
 
   public login(bucketId: number, password: string | null, privateSession: boolean): Observable<Auth> {
-    return this.post(`/buckets/${bucketId}/auth`, {password}).pipe(
+    return this.post(`/buckets/${bucketId}/auth`, { password }).pipe(
       map((json) => {
         return this.mapAuth(bucketId, privateSession, json);
       })
@@ -288,7 +288,7 @@ export class ApiService {
         discriminator = 'None';
         break;
       case 'duration':
-        discriminator = {Duration: {nanos: 0, secs}}
+        discriminator = { Duration: { nanos: 0, secs } }
         break;
     }
 
@@ -433,15 +433,15 @@ export class ApiService {
   }
 
   private authenticatedPost(auth: Auth, url: string, data: any, options?: any): Observable<any> {
-    return this.pipeRequest(this.client.post(`${auth.base}${url}`, data, {...this.authRequestOptions(auth), ...options}));
+    return this.pipeRequest(this.client.post(`${auth.base}${url}`, data, { ...this.authRequestOptions(auth), ...options }));
   }
 
   private authenticatedPut(auth: Auth, url: string, data: any, options?: any): Observable<any> {
-    return this.pipeRequest(this.client.put(`${auth.base}${url}`, data, {...this.authRequestOptions(auth), ...options}));
+    return this.pipeRequest(this.client.put(`${auth.base}${url}`, data, { ...this.authRequestOptions(auth), ...options }));
   }
 
   private authenticatedDelete(auth: Auth, url: string, options?: any): Observable<any> {
-    return this.pipeRequest(this.client.delete(`${auth.base}${url}`, {...this.authRequestOptions(auth), ...options}));
+    return this.pipeRequest(this.client.delete(`${auth.base}${url}`, { ...this.authRequestOptions(auth), ...options }));
   }
 
   private authRequestOptions(_auth: Auth): any {
@@ -468,7 +468,7 @@ export class ApiService {
 
   private mapAuth(bucketId: number, privateSession: boolean, json: any): Auth {
     let url = new URL(environment.api + "/buckets/" + bucketId, document.location.toString());
-    return new Auth(bucketId, json.token, json.share_token, privateSession, url.hostname, url.pathname, url.protocol, url.port == '' ? null : url.port);
+    return new Auth(bucketId, json.token, json.share_token, privateSession, url.hostname, url.pathname, url.protocol, url.port == '' ? null : url.port, json.lifetime, new Date(json.now));
   }
 
   private mapPage(json: any): Page {

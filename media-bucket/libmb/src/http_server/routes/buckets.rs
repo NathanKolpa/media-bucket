@@ -94,12 +94,14 @@ pub async fn auth(
         }
     }
 
-    let (login_token, share_token) = login_result?;
+    let new_login = login_result?;
 
     Ok(web::Json(AuthResponse {
-        token: login_token,
-        share_token,
-        active_tokens: 0,
+        token: new_login.token,
+        share_token: new_login.share_token,
+        active_tokens: instance.sessions_created(),
+        now: new_login.now,
+        lifetime: new_login.lifetime.num_seconds() as u64,
     }))
 }
 

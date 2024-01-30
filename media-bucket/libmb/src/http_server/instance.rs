@@ -5,7 +5,7 @@ use std::ops::Deref;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, RwLock};
 
-use chrono::{Duration, Utc};
+use chrono::{DateTime, Duration, Utc};
 use thiserror::Error;
 use url::Url;
 
@@ -86,6 +86,13 @@ pub struct ServerBucketInstance {
     token_secret: RwLock<Option<[u8; 32]>>,
 }
 
+pub struct NewLogin {
+    pub token: String,
+    pub share_token: String,
+    pub lifetime: Duration,
+    pub now: DateTime<Utc>,
+}
+
 impl ServerBucketInstance {
     pub async fn load(
         id: u64,
@@ -136,11 +143,7 @@ impl ServerBucketInstance {
         self.name.as_str()
     }
 
-    pub async fn login(
-        &self,
-        password: Option<&str>,
-        ip: IpAddr,
-    ) -> Result<(String, String), LoginError> {
+    pub async fn login(&self, password: Option<&str>, ip: IpAddr) -> Result<NewLogin, LoginError> {
         let instance = self.instance.read().unwrap();
 
         let token_secret;
@@ -175,16 +178,31 @@ impl ServerBucketInstance {
             return Err(LoginError::InvalidPassword);
         };
 
-        let new_token = self.new_session(ip, false).to_token(&token_secret);
-        let ro_token = self.new_session(ip, true).to_token(&token_secret);
-
-        Ok((new_token, ro_token))
-    }
-
-    fn new_session(&self, ip: IpAddr, read_only: bool) -> AuthToken {
         let now = Utc::now();
         let lifetime = Duration::days(14);
 
+        let new_token = self
+            .new_session(ip, false, now, lifetime)
+            .to_token(&token_secret);
+        let ro_token = self
+            .new_session(ip, true, now, lifetime)
+            .to_token(&token_secret);
+
+        Ok(NewLogin {
+            now,
+            lifetime,
+            token: new_token,
+            share_token: ro_token,
+        })
+    }
+
+    fn new_session(
+        &self,
+        ip: IpAddr,
+        read_only: bool,
+        now: DateTime<Utc>,
+        lifetime: Duration,
+    ) -> AuthToken {
         let token = AuthToken::new(ip, now, lifetime, read_only);
 
         self.sessions_created.fetch_add(1, Ordering::Relaxed);

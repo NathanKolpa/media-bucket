@@ -1,5 +1,5 @@
 export class Auth {
-  public constructor(private _bucketId: number, private _token: string | null, private _shareToken: string, private _privateSession: boolean, private _domain: string, private _path: string, private _protocol: string, private _port: string | null) {
+  public constructor(private _bucketId: number, private _token: string | null, private _shareToken: string, private _privateSession: boolean, private _domain: string, private _path: string, private _protocol: string, private _port: string | null, private _lifetime: number, private _createdAt: Date) {
   }
 
   get shareToken(): string {
@@ -36,5 +36,19 @@ export class Auth {
 
   get base(): string {
     return `${this.protocol}//${this.domain}${this.port == null ? '' : ':' + this.port}${this.path}`
+  }
+
+  public get createdAt(): Date {
+    return this._createdAt;
+  }
+
+  public get lifetime(): number {
+    return this._lifetime;
+  }
+
+  public isExpired(): boolean {
+    let expireDate = new Date();
+    expireDate.setSeconds(this.createdAt.getSeconds() + this.lifetime);
+    return new Date() > expireDate;
   }
 }

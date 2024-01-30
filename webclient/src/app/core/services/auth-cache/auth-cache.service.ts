@@ -1,5 +1,5 @@
-import {Injectable} from '@angular/core';
-import {Auth} from "@core/models";
+import { Injectable } from '@angular/core';
+import { Auth } from "@core/models";
 
 const STORAGE_KEY = 'auth';
 
@@ -9,7 +9,9 @@ interface SavedAuth {
   path: string;
   port: string | null;
   protocol: string;
-  shareToken: string
+  shareToken: string;
+  lifetime: number;
+  createdAt: string
 }
 
 @Injectable({
@@ -63,7 +65,9 @@ export class AuthCacheService {
 
     let stored: SavedAuth[] = JSON.parse(storedStr);
 
-    return stored.map(x => new Auth(x.id, null, x.shareToken, privateSession, x.domain, x.path, x.protocol, x.port));
+    return stored
+      .map(x => new Auth(x.id, null, x.shareToken, privateSession, x.domain, x.path, x.protocol, x.port, x.lifetime, new Date(x.createdAt)))
+      .filter(x => !x.isExpired());
   }
 
   private saveSession() {
@@ -81,7 +85,9 @@ export class AuthCacheService {
       path: auth.path,
       port: auth.port,
       protocol: auth.protocol,
-      shareToken: auth.shareToken
+      shareToken: auth.shareToken,
+      lifetime: auth.lifetime,
+      createdAt: auth.createdAt.toISOString()
     }));
 
     let json = JSON.stringify(savedAuth);
@@ -90,7 +96,7 @@ export class AuthCacheService {
   }
 
   private saveCookie(auth: Auth) {
-    document.cookie = `bucket_${auth.bucketId}=${auth.token}; domain=${auth.domain}; path=${auth.path}; Max-Age=1008000; SameSite=Strict; ${auth.protocol == 'https:' ? 'Secure;' : ''}`
+    document.cookie = `bucket_${auth.bucketId}=${auth.token}; domain=${auth.domain}; path=${auth.path}; Max-Age=${auth.lifetime}; SameSite=Strict; ${auth.protocol == 'https:' ? 'Secure;' : ''}`
   }
 
   private removeCookie(auth: Auth) {

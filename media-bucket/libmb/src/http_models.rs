@@ -1,5 +1,6 @@
 use crate::data_source::DataSourceError;
 use crate::model::*;
+use chrono::{DateTime, Duration, Utc};
 use serde::{Deserialize, Serialize};
 use url::Url;
 
@@ -23,7 +24,9 @@ pub struct AuthRequest {
 pub struct AuthResponse {
     pub token: String,
     pub share_token: String,
-    pub active_tokens: usize,
+    pub active_tokens: u64,
+    pub now: DateTime<Utc>,
+    pub lifetime: u64,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
