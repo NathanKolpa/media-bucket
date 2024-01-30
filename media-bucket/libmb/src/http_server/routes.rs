@@ -59,7 +59,6 @@ pub fn routes_with_static(file_root: PathBuf, index_file: String) -> Scope {
 
 pub fn routes() -> Scope {
     web::scope("")
-        .service(doc())
         .service(
             web::scope("/buckets")
                 .service(buckets::index)
@@ -83,6 +82,7 @@ pub fn routes() -> Scope {
                                 .service(posts::index_items)
                                 .service(posts::store_tags)
                                 .service(posts::show_item)
+                                .service(posts::show_item_playlist)
                                 .service(posts::show)
                                 .service(posts::show_playlist)
                                 .service(posts::show_tags)
@@ -111,6 +111,7 @@ pub fn routes() -> Scope {
                 ),
         )
         .default_service(web::route().to(not_found))
+        .service(doc())
 }
 
 #[cfg(feature = "http-server-spec")]
