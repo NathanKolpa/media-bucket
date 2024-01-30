@@ -2,7 +2,6 @@ use crate::data_source::PageParams;
 
 use super::PLAYLIST_HEADER;
 
-use crate::Bucket;
 use actix_web::web::Bytes;
 use futures_core::{ready, Stream};
 use pin_project_lite::pin_project;
@@ -11,9 +10,7 @@ use std::fmt::Write;
 use std::future::Future;
 use std::io::Error;
 use std::pin::Pin;
-use std::sync::Arc;
 use std::task::{Context, Poll};
-use url::Url;
 
 pub enum EntryUrl {
     Post(u64),
@@ -35,13 +32,12 @@ pin_project! {
         pub header_written: bool,
         pub playlist_title: Option<String>,
 
-        pub bucket: Option<Arc<Bucket>>,
+        pub api_url: super::api_urls::ApiUrl,
+        pub auth_params: super::api_urls::AuthParams,
+
         pub entries: Option<VecDeque<PlaylistEntry>>,
         pub buffer: String,
 
-        pub bucket_id: u64,
-        pub base_url: Option<Arc<Url>>,
-        pub token: Option<String>,
 
         #[pin]
         pub state: StreamPlaylistState<Fut>,
@@ -59,8 +55,8 @@ pin_project! {
 
 impl<N, Fut> Stream for PlaylistStream<N, Fut>
 where
-    N: Fn(Arc<Bucket>, PageParams, VecDeque<PlaylistEntry>) -> Fut,
-    Fut: Future<Output = Result<(Arc<Bucket>, VecDeque<PlaylistEntry>), Error>>,
+    N: Fn(PageParams, VecDeque<PlaylistEntry>) -> Fut,
+    Fut: Future<Output = Result<VecDeque<PlaylistEntry>, Error>>,
 {
     type Item = Result<Bytes, Error>;
 
@@ -85,10 +81,9 @@ where
                 let entries = this.entries.as_mut().unwrap();
 
                 if entries.is_empty() {
-                    let bucket = this.bucket.take().unwrap();
                     let entries = this.entries.take().unwrap();
 
-                    let fut = (this.next_page_callback)(bucket, *this.next_page, entries);
+                    let fut = (this.next_page_callback)(*this.next_page, entries);
 
                     this.state
                         .project_replace(StreamPlaylistState::Read { fut });
@@ -97,19 +92,7 @@ where
                 }
 
                 this.buffer.clear();
-                let token_str = this
-                    .token
-                    .as_ref()
-                    .map(|t| format!("?token={}", t))
-                    .unwrap_or_default();
-
-                let base_url_str = this.base_url.as_ref().map(|x| x.as_str()).unwrap_or(".");
-
-                let include_str = if this.token.is_some() {
-                    "&include_token=true"
-                } else {
-                    ""
-                };
+                let api_url = &*this.api_url;
 
                 for entry in entries.iter().filter(|x| x.runtime_seconds.is_positive()) {
                     write!(this.buffer, "\r\n\r\n#EXTINF:{}", entry.runtime_seconds,).unwrap();
@@ -117,8 +100,8 @@ where
                     if let Some(thumbnail_id) = entry.thumbnail_file {
                         write!(
                             this.buffer,
-                            " tvg-logo=\"{}buckets/{}/media/{}/file{}\"",
-                            base_url_str, *this.bucket_id, thumbnail_id, token_str
+                            " tvg-logo=\"{api_url}/media/{thumbnail_id}/file{}\"",
+                            this.auth_params.without_include()
                         )
                         .unwrap();
                     }
@@ -136,14 +119,14 @@ where
                     if let Some(thumbnail_id) = entry.thumbnail_file {
                         write!(
                             this.buffer,
-                            "#EXTIMG:{}buckets/{}/media/{}/file{}\r\n",
-                            base_url_str, *this.bucket_id, thumbnail_id, token_str
+                            "#EXTIMG:{api_url}/media/{thumbnail_id}/file{}\r\n",
+                            this.auth_params.without_include()
                         )
                         .unwrap();
                         write!(
                             this.buffer,
-                            "#EXTALBUMARTURL:{}buckets/{}/media/{}/file{}\r\n",
-                            base_url_str, *this.bucket_id, thumbnail_id, token_str
+                            "#EXTALBUMARTURL:{api_url}/media/{thumbnail_id}/file{}\r\n",
+                            this.auth_params.without_include()
                         )
                         .unwrap();
                     }
@@ -151,19 +134,14 @@ where
                     match &entry.url {
                         EntryUrl::Post(post_id) => write!(
                             this.buffer,
-                            "{}buckets/{}/posts/{}/index.m3u{}{}\r\n",
-                            base_url_str, *this.bucket_id, post_id, token_str, include_str
+                            "{api_url}/posts/{post_id}/index.m3u{}\r\n",
+                            this.auth_params.include_token()
                         )
                         .unwrap(),
                         EntryUrl::Item(post_id, position) => write!(
                             this.buffer,
-                            "{}buckets/{}/posts/{}/items/{}/index.m3u8{}{}\r\n",
-                            base_url_str,
-                            *this.bucket_id,
-                            post_id,
-                            position,
-                            token_str,
-                            include_str
+                            "{api_url}/posts/{post_id}/items/{position}/index.m3u8{}\r\n",
+                            this.auth_params.include_token()
                         )
                         .unwrap(),
                     }
@@ -174,14 +152,13 @@ where
                 Poll::Ready(Some(Ok(Bytes::copy_from_slice(this.buffer.as_bytes()))))
             }
             StreamPlaylistProj::Read { fut } => {
-                let (bucket, entries) = ready!(fut.poll(cx))?;
+                let entries = ready!(fut.poll(cx))?;
 
                 if entries.is_empty() {
                     return Poll::Ready(None);
                 }
 
                 *this.entries = Some(entries);
-                *this.bucket = Some(bucket);
 
                 this.state.project_replace(StreamPlaylistState::PreRead);
 

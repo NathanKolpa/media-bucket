@@ -1,3 +1,4 @@
+mod api_urls;
 mod media_playlist_stream;
 mod playlist_stream;
 
@@ -6,6 +7,7 @@ use crate::{
     model::{PostDetail, PostItem},
 };
 
+use api_urls::*;
 use media_playlist_stream::*;
 use playlist_stream::*;
 
@@ -25,45 +27,35 @@ fn data_to_std_err(err: DataSourceError) -> Error {
 }
 
 pub fn new_post_playlist(
-    base_url: Option<Arc<Url>>,
+    base: Option<Arc<Url>>,
     bucket_id: u64,
     token: Option<String>,
     bucket: Arc<Bucket>,
     post: PostDetail,
     chunk_size: usize,
 ) -> impl Stream<Item = Result<Bytes, Error>> {
+    let post_rc = Arc::new(post);
     PlaylistStream {
-        playlist_title: post.post.title,
-        base_url,
-        bucket: Some(bucket),
+        playlist_title: post_rc.post.title.clone(),
+        api_url: ApiUrl { bucket_id, base },
+        auth_params: AuthParams { token },
         entries: Some(VecDeque::with_capacity(chunk_size)),
         header_written: false,
         next_page: PageParams::new(chunk_size, 0),
         state: StreamPlaylistState::PreRead,
-        next_page_callback: move |bucket, params, buffer| {
-            search_items(post.post.id, post.item_count, bucket, params, buffer)
+        next_page_callback: move |params, buffer| {
+            search_items(post_rc.clone(), bucket.clone(), params, buffer)
         },
         buffer: String::new(),
-        bucket_id,
-        token,
     }
 }
 
 async fn search_items(
-    post_id: u64,
-    _item_count: usize,
+    post: Arc<PostDetail>,
     bucket: Arc<Bucket>,
     params: PageParams,
     mut buffer: VecDeque<PlaylistEntry>,
-) -> Result<(Arc<Bucket>, VecDeque<PlaylistEntry>), Error> {
-    let post = bucket
-        .data_source()
-        .cross()
-        .get_post_detail(post_id)
-        .await
-        .map_err(|err| Error::new(ErrorKind::Other, Box::new(err)))?
-        .ok_or(Error::from(ErrorKind::NotFound))?;
-
+) -> Result<VecDeque<PlaylistEntry>, Error> {
     let mut item_title = None;
     if post.item_count == 1 {
         item_title = post.post.title.clone();
@@ -72,7 +64,7 @@ async fn search_items(
     let page = bucket
         .data_source()
         .cross()
-        .search_items(post_id, params)
+        .search_items(post.post.id, params)
         .await
         .map_err(data_to_std_err)?;
 
@@ -97,7 +89,7 @@ async fn search_items(
         }
     }));
 
-    Ok((bucket, buffer))
+    Ok(buffer)
 }
 
 pub fn new_content_playlist(
@@ -169,30 +161,27 @@ async fn get_content(item: PostItem, bucket: Arc<Bucket>) -> Result<MediaEntry, 
 }
 
 pub fn new_search_playlist(
-    base_url: Option<Arc<Url>>,
+    base: Option<Arc<Url>>,
     bucket_id: u64,
     token: Option<String>,
     bucket: Arc<Bucket>,
     query: PostSearchQuery,
     chunk_size: usize,
 ) -> impl Stream<Item = Result<Bytes, Error>> {
-    let query_rc = Arc::new(query);
+    let query = Arc::new(query);
 
     PlaylistStream {
-        playlist_title: query_rc.text.clone(),
-        base_url,
-        bucket: Some(bucket),
+        playlist_title: query.text.clone(),
         entries: Some(VecDeque::with_capacity(chunk_size)),
         header_written: false,
         next_page: PageParams::new(chunk_size, 0),
         state: StreamPlaylistState::PreRead,
-        next_page_callback: move |bucket, params, buffer| {
-            let query = query_rc.clone();
-            search_posts(query, bucket, params, buffer)
+        next_page_callback: move |params, buffer| {
+            search_posts(query.clone(), bucket.clone(), params, buffer)
         },
         buffer: String::new(),
-        bucket_id,
-        token,
+        api_url: ApiUrl { bucket_id, base },
+        auth_params: AuthParams { token },
     }
 }
 
@@ -201,7 +190,7 @@ async fn search_posts(
     bucket: Arc<Bucket>,
     params: PageParams,
     mut buffer: VecDeque<PlaylistEntry>,
-) -> Result<(Arc<Bucket>, VecDeque<PlaylistEntry>), Error> {
+) -> Result<VecDeque<PlaylistEntry>, Error> {
     let results = bucket
         .data_source()
         .cross()
@@ -221,7 +210,7 @@ async fn search_posts(
         runtime_seconds: p.duration.unwrap_or(-1),
     }));
 
-    Ok((bucket, buffer))
+    Ok(buffer)
 }
 
 const PLAYLIST_HEADER: &str = "#EXTM3U\r\n#EXTENC:UTF-8";

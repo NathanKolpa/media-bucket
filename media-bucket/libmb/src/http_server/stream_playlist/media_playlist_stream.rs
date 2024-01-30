@@ -65,7 +65,7 @@ where
             .map(|t| format!("?token={}", t))
             .unwrap_or_default();
 
-        let base_url_str = this.base_url.as_ref().map(|x| x.as_str()).unwrap_or(".");
+        let base_url_str = this.base_url.as_ref().map(|x| x.as_str()).unwrap_or("");
 
         if let Some(title) = media.title.as_deref() {
             write!(&mut buffer, "\r\n#PLAYLIST:{}", title).unwrap();
