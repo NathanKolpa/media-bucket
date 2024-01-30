@@ -56,9 +56,15 @@
     </mat-form-field>
   </div>
 
-  <button (click)="submit()" color="primary" mat-flat-button *ngIf="!hideSearchButton">
-    Search
-  </button>
+  <div class="d-flex justify-content-between">
+    <button (click)="submit()" color="primary" mat-flat-button *ngIf="!hideSearchButton">
+      Search
+    </button>
+
+    <button (click)="copyUrl()" color="accent" mat-icon-button class="ms-4" *ngIf="showShareButton" matTooltip="Copy Playlist Url">
+      <mat-icon>live_tv</mat-icon>
+    </button>
+  </div>
 </div>
 
 

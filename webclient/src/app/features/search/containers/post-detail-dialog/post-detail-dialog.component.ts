@@ -1,12 +1,13 @@
-import {Component, OnDestroy, ViewEncapsulation} from '@angular/core';
-import {MatDialogRef} from "@angular/material/dialog";
-import {delay, first, map, Subscription} from "rxjs";
-import {Store} from "@ngrx/store";
-import {fromSearch, searchActions} from '@features/search/store';
-import {fromBucket} from '@features/bucket/store';
-import {SearchPostItem, SelectedBucket} from "@core/models";
-import {AppTitleService} from "@core/services";
-import {Listing} from "@core/models/listing";
+import { Component, OnDestroy, ViewEncapsulation } from '@angular/core';
+import { MatDialogRef } from "@angular/material/dialog";
+import { delay, first, map, Subscription } from "rxjs";
+import { Store } from "@ngrx/store";
+import { fromSearch, searchActions } from '@features/search/store';
+import { fromBucket } from '@features/bucket/store';
+import { PostItem, SearchPostItem, SelectedBucket } from "@core/models";
+import { AppTitleService } from "@core/services";
+import { Listing } from "@core/models/listing";
+import { Clipboard } from '@angular/cdk/clipboard';
 
 @Component({
   encapsulation: ViewEncapsulation.None,
@@ -36,7 +37,7 @@ export class PostDetailDialogComponent implements OnDestroy {
   private bucketSubscription: Subscription;
   private itemSubscription: Subscription;
 
-  constructor(public dialogRef: MatDialogRef<PostDetailDialogComponent>, private store: Store, private title: AppTitleService) {
+  constructor(public dialogRef: MatDialogRef<PostDetailDialogComponent>, private store: Store, private title: AppTitleService, private clipboard: Clipboard) {
     dialogRef.afterOpened().pipe(first(), delay(0)).subscribe(() => this.open = true);
 
     this.dialogRef.keydownEvents().subscribe(event => {
@@ -130,5 +131,10 @@ export class PostDetailDialogComponent implements OnDestroy {
 
   castItemsToListing(items: SearchPostItem[]): Listing[] {
     return items as Listing[];
+  }
+
+  copyItemUrl(bucket: SelectedBucket, item: PostItem) {
+    let url = `${bucket.auth.base}/posts/${item.postId}/items/${item.position}/index.m3u8?token=${bucket.auth.shareToken}&include_token=true`
+    this.clipboard.copy(url);
   }
 }

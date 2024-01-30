@@ -1,13 +1,15 @@
-import {ChangeDetectionStrategy, Component, HostListener, OnDestroy} from '@angular/core';
-import {fromSearch, searchActions} from '@features/search/store';
-import {Store} from "@ngrx/store";
-import {Post, PostSearchQuery, SearchPost, SelectedBucket, Tag} from "@core/models";
-import {fromBucket} from '@features/bucket/store';
-import {MatDialog} from "@angular/material/dialog";
-import {ConfirmComponent} from "@core/services/confirm/confirm.guard";
-import {filter, first, Subscription, tap} from "rxjs";
-import {EditPostRequest} from "@features/search/components/post-detail-sidebar/post-detail-sidebar.component";
-import {Listing} from "@core/models/listing";
+import { ChangeDetectionStrategy, Component, HostListener, OnDestroy } from '@angular/core';
+import { fromSearch, searchActions } from '@features/search/store';
+import { Store } from "@ngrx/store";
+import { Post, PostSearchQuery, SearchPost, SelectedBucket, Tag } from "@core/models";
+import { fromBucket } from '@features/bucket/store';
+import { MatDialog } from "@angular/material/dialog";
+import { ConfirmComponent } from "@core/services/confirm/confirm.guard";
+import { filter, first, Subscription, tap } from "rxjs";
+import { EditPostRequest } from "@features/search/components/post-detail-sidebar/post-detail-sidebar.component";
+import { Listing } from "@core/models/listing";
+import { ApiService } from '@core/services';
+import { Clipboard } from '@angular/cdk/clipboard';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -31,7 +33,7 @@ export class SearchPageComponent implements OnDestroy, ConfirmComponent {
   private unsavedInputSub: Subscription;
   private leaveMessage = 'You have unsaved progress on this page, are you sure you want to leave?';
 
-  constructor(private store: Store, private dialog: MatDialog) {
+  constructor(private store: Store, private dialog: MatDialog, private clipboard: Clipboard, private api: ApiService) {
 
     this.unsavedInputSub = this.activeJobs$.subscribe(activeJobs => {
       this.hasUnsavedInput = activeJobs > 0;
@@ -49,7 +51,7 @@ export class SearchPageComponent implements OnDestroy, ConfirmComponent {
   }
 
   loadNext(bucket: SelectedBucket) {
-    this.store.dispatch(searchActions.loadNext({bucket}));
+    this.store.dispatch(searchActions.loadNext({ bucket }));
   }
 
   toggleInfo() {
@@ -66,11 +68,11 @@ export class SearchPageComponent implements OnDestroy, ConfirmComponent {
   }
 
   showSidebar(bucket: SelectedBucket, post: SearchPost) {
-    this.store.dispatch(searchActions.showPostSidebar({bucket, postId: post.id}));
+    this.store.dispatch(searchActions.showPostSidebar({ bucket, postId: post.id }));
   }
 
   showPost(bucket: SelectedBucket, post: SearchPost) {
-    this.store.dispatch(searchActions.showPost({bucket, postId: post.id, showPopup: true}));
+    this.store.dispatch(searchActions.showPost({ bucket, postId: post.id, showPopup: true }));
   }
 
   showUploadDialog() {
@@ -82,7 +84,7 @@ export class SearchPageComponent implements OnDestroy, ConfirmComponent {
   }
 
   deletePost(bucket: SelectedBucket, post: Post) {
-    this.store.dispatch(searchActions.requestPostDelete({post, bucket}));
+    this.store.dispatch(searchActions.requestPostDelete({ post, bucket }));
   }
 
   showNavigationWarning(): boolean | string {
@@ -97,19 +99,19 @@ export class SearchPageComponent implements OnDestroy, ConfirmComponent {
   }
 
   openManageTags(bucket: SelectedBucket) {
-    this.store.dispatch(searchActions.openManageTags({bucket}));
+    this.store.dispatch(searchActions.openManageTags({ bucket }));
   }
 
   searchTextChange(bucket: SelectedBucket, query: string | null) {
-    this.store.dispatch(searchActions.searchTextChange({bucket, query}));
+    this.store.dispatch(searchActions.searchTextChange({ bucket, query }));
   }
 
   queryChange(bucket: SelectedBucket, query: PostSearchQuery) {
-    this.store.dispatch(searchActions.searchQueryChange({bucket, query}));
+    this.store.dispatch(searchActions.searchQueryChange({ bucket, query }));
   }
 
   addTagToSearchQuery(bucket: SelectedBucket, tag: Tag) {
-    this.store.dispatch(searchActions.addTagToSearchQuery({bucket, tag}));
+    this.store.dispatch(searchActions.addTagToSearchQuery({ bucket, tag }));
   }
 
   editPost(bucket: SelectedBucket, req: EditPostRequest) {
@@ -121,5 +123,10 @@ export class SearchPageComponent implements OnDestroy, ConfirmComponent {
       postId: req.postId,
       tags: req.tags
     }))
+  }
+
+  copyQuery(bucket: SelectedBucket, query: PostSearchQuery) {
+    let str = this.api.searchQueryToPlaylistUrl(bucket.auth, query);
+    this.clipboard.copy(str);
   }
 }

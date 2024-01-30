@@ -152,7 +152,12 @@ export class ApiService {
     )
   }
 
-  public searchPosts(auth: Auth, query: PostSearchQuery, pageParams: PageParams): Observable<{ posts: SearchPost[], page: Page }> {
+  public searchQueryToPlaylistUrl(auth: Auth, query: PostSearchQuery): string {
+    let queryParams = this.searchPostsToQueryString(auth, query, null, true);
+    return `${auth.base}/posts/index.m3u?${queryParams}`;
+  }
+
+  private searchPostsToQueryString(auth: Auth, query: PostSearchQuery, pageParams: PageParams | null, share: boolean): string {
     let tagItems = query.items.filter(x => x.type == 'tag');
     let tagIds = '';
 
@@ -168,9 +173,28 @@ export class ApiService {
     }
 
 
-    let queryStr = `${tagIds}${text}&order=${query.order}&seed=${query.seed}`;
+    let queryStr = `${tagIds}${text}&order=${query.order}`;
+    let authStr = '';
+    if (share) {
+      authStr = `token=${auth.shareToken}&include_token=true&`;
+    }
 
-    return this.authenticatedGet(auth, `/posts?offset=${encodeURIComponent(pageParams.offset)}&size=${encodeURIComponent(pageParams.pageSize)}${queryStr}`).pipe(
+    let limitStr = '';
+    if (pageParams) {
+      limitStr = `&offset=${encodeURIComponent(pageParams.offset)}&size=${encodeURIComponent(pageParams.pageSize)}`;
+    }
+
+    let seedStr = '';
+    if (query.order == 'random') {
+      seedStr = `&seed=${query.seed}`;
+    }
+
+    return `${authStr}${seedStr}${queryStr}${limitStr}`;
+  }
+
+  public searchPosts(auth: Auth, query: PostSearchQuery, pageParams: PageParams): Observable<{ posts: SearchPost[], page: Page }> {
+    let queryStr = this.searchPostsToQueryString(auth, query, pageParams, false);
+    return this.authenticatedGet(auth, `/posts?${queryStr}`).pipe(
       map((json) => {
         return {
           posts: json.data.map((p: any) => this.mapSearchPost(auth, p)),

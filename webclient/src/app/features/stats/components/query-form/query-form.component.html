@@ -26,6 +26,7 @@
       title="Filter"
       [tags]="tags"
       (searchTextChange)="searchTextChange.emit($event)"
+      [showShareButton]="false"
       [(query)]="filter">
     </app-search-bar>
   </div>

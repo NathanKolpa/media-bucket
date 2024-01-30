@@ -29,6 +29,7 @@
 
       <div  class="ms-4 me-4 mt-4">
         <app-search-bar
+          (copyQuery)="copyQuery(bucket, $event)"
           (queryChange)="queryChange(bucket, $event)"
           (searchTextChange)="searchTextChange(bucket, $event)"
           [query]="(searchQuery$ | async) || null"

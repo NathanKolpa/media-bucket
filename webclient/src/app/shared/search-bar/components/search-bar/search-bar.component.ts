@@ -1,5 +1,5 @@
-import {ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, Output, ViewChild} from '@angular/core';
-import {PostSearchQuery, SearchQueryOrder, Tag} from "@core/models";
+import { ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
+import { PostSearchQuery, SearchQueryOrder, Tag } from "@core/models";
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -15,6 +15,9 @@ export class SearchBarComponent {
   @Output()
   public searchTextChange = new EventEmitter<string | null>();
 
+  @Output()
+  public copyQuery = new EventEmitter<PostSearchQuery>();
+
   @Input()
   public tags: Tag[] = [];
 
@@ -26,6 +29,9 @@ export class SearchBarComponent {
 
   @Input()
   public hideSearchButton = false;
+
+  @Input()
+  public showShareButton = true;
 
   @Input()
   public title: string = 'Search query';
@@ -83,6 +89,12 @@ export class SearchBarComponent {
   private queryChanged() {
     if (this.hideSearchButton && this._query) {
       this.queryChange.emit(this._query);
+    }
+  }
+
+  copyUrl() {
+    if (this._query) {
+      this.copyQuery.emit(this._query);
     }
   }
 }

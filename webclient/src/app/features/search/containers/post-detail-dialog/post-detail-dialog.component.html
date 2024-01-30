@@ -18,7 +18,14 @@
           <mat-icon>open_in_new</mat-icon>
         </a>
       </ng-container>
+    </ng-container>
 
+    <ng-container *ngIf="{ item: item$ | async,  mode: viewedPostMode$ | async  } as ctx">
+      <ng-container *ngIf="ctx.item !== null && ctx.mode == 'preview' && ctx.item.content.duration !== null">
+        <button mat-mini-fab target="_blank" matTooltip="Copy Item Streaming Url" (click)="copyItemUrl(bucket, ctx.item)">
+          <mat-icon>live_tv</mat-icon>
+        </button>
+      </ng-container>
     </ng-container>
 
     <button (click)="toggleViewMode()" *ngIf="{ mode: viewedPostMode$ | async } as ctx" color="primary" mat-mini-fab>
