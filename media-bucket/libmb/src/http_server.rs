@@ -114,7 +114,7 @@ impl ServerConfig {
         let mut base_url = self.public_url.clone();
 
         if self.static_files.is_some() {
-            base_url = base_url.map(|url| url.join("api").unwrap());
+            base_url = base_url.map(|url| url.join("api/").unwrap());
         }
 
         let base_url = base_url.map(|url| Arc::new(url));
