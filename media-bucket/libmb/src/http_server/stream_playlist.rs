@@ -1,5 +1,5 @@
 use crate::{
-    data_source::PageParams,
+    data_source::{DataSourceError, PageParams},
     model::{PostDetail, PostItem},
 };
 
@@ -16,6 +16,10 @@ use std::pin::Pin;
 use std::sync::Arc;
 use std::task::{Context, Poll};
 use url::Url;
+
+fn data_to_std_err(err: DataSourceError) -> Error {
+    Error::new(ErrorKind::Other, Box::new(err))
+}
 
 pub fn new_post_playlist(
     base_url: Option<Arc<Url>>,
@@ -67,7 +71,7 @@ async fn search_items(
         .cross()
         .search_items(post_id, params)
         .await
-        .map_err(|err| Error::new(ErrorKind::Other, Box::new(err)))?;
+        .map_err(data_to_std_err)?;
 
     buffer.extend(page.data.into_iter().map(|item| {
         let media = item
@@ -117,7 +121,7 @@ async fn get_content(item: PostItem, bucket: Arc<Bucket>) -> Result<MediaEntry, 
             .content()
             .get_by_content_id(id)
             .await
-            .map_err(|err| Error::new(ErrorKind::Other, Box::new(err)))?,
+            .map_err(data_to_std_err)?,
     };
 
     let Some(content) = content else {
@@ -131,7 +135,7 @@ async fn get_content(item: PostItem, bucket: Arc<Bucket>) -> Result<MediaEntry, 
             .media()
             .get_by_id(id)
             .await
-            .map_err(|err| Error::new(ErrorKind::Other, Box::new(err)))?,
+            .map_err(data_to_std_err)?,
     };
 
     let media = match content.content {
@@ -141,7 +145,7 @@ async fn get_content(item: PostItem, bucket: Arc<Bucket>) -> Result<MediaEntry, 
             .media()
             .get_by_id(id)
             .await
-            .map_err(|err| Error::new(ErrorKind::Other, Box::new(err)))?,
+            .map_err(data_to_std_err)?,
     };
 
     let Some(media) = media else {
@@ -203,7 +207,7 @@ async fn search_posts(
 
     let page = match results {
         Ok(p) => p,
-        Err(err) => return Err(Error::new(ErrorKind::Other, Box::new(err))),
+        Err(err) => return Err(data_to_std_err(err)),
     };
 
     buffer.extend(page.data.into_iter().map(|p| PlaylistEntry {
