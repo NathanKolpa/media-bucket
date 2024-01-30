@@ -49,11 +49,10 @@ encryption = [
     "pin-utils",
 ]
 
-full = [
+default = [
     "local",
     "encryption",
     "http-server",
-    "http-server-spec",
     "http-client",
 ]
 

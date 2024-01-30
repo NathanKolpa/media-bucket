@@ -15,12 +15,12 @@ COPY ./media-bucket/Cargo.lock .
 COPY ./media-bucket/cli/Cargo.toml cli/
 COPY ./media-bucket/libmb/Cargo.toml libmb/
 
-RUN RUSTFLAGS=-Ctarget-feature=-crt-static cargo build --release
+RUN RUSTFLAGS=-Ctarget-feature=-crt-static cargo build --release --all-features
 
 # Build
 COPY ./media-bucket .
 RUN touch cli/src/main.rs libmb/src/lib.rs
-RUN RUSTFLAGS=-Ctarget-feature=-crt-static cargo build --release -p cli
+RUN RUSTFLAGS=-Ctarget-feature=-crt-static cargo build --release -p cli --all-features
 
 # Install
 RUN install ./target/release/mb /usr/bin
