@@ -29,6 +29,7 @@ pub async fn index(buckets: Data<InstanceDataSource>) -> impl Responder {
     let instances: Vec<BucketInfo> = buckets
         .all_sorted()
         .into_iter()
+        .filter(|b| !b.hidden())
         .map(|i| BucketInfo::from(i.deref()))
         .collect();
 

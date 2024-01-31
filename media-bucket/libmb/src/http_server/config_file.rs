@@ -18,6 +18,9 @@ pub enum ConfigError {
 pub struct InstanceConfigSection {
     pub name: String,
     pub location: String,
+
+    #[serde(default = "bool::default")]
+    pub hidden: bool,
 }
 
 #[derive(Deserialize)]

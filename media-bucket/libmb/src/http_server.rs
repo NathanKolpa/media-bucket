@@ -25,6 +25,7 @@ struct InstanceConfig {
     id: u64,
     name: String,
     location: String,
+    hidden: bool,
 }
 
 struct StaticFilesConfig {
@@ -80,6 +81,7 @@ impl ServerConfig {
                     id: (i + 1) as u64,
                     location: instance.location,
                     name: instance.name,
+                    hidden: instance.hidden,
                 })
                 .collect(),
         })
@@ -117,7 +119,7 @@ impl ServerConfig {
             base_url = base_url.map(|url| url.join("api/").unwrap());
         }
 
-        let base_url = base_url.map(|url| Arc::new(url));
+        let base_url = base_url.map(Arc::new);
 
         for instance_config in self.instances.iter() {
             instances.push(Arc::new(
@@ -126,6 +128,7 @@ impl ServerConfig {
                     instance_config.name.clone(),
                     base_url.clone(),
                     instance_config.location.clone(),
+                    instance_config.hidden,
                 )
                 .await?,
             ))

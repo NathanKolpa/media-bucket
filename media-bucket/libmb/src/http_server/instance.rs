@@ -84,6 +84,7 @@ pub struct ServerBucketInstance {
     instance: RwLock<Option<Arc<Bucket>>>,
     sessions_created: AtomicU64,
     token_secret: RwLock<Option<[u8; 32]>>,
+    hidden: bool,
 }
 
 pub struct NewLogin {
@@ -99,6 +100,7 @@ impl ServerBucketInstance {
         name: String,
         base_url: Option<Arc<Url>>,
         location: String,
+        hidden: bool,
     ) -> std::io::Result<Self> {
         Ok(ServerBucketInstance {
             id,
@@ -109,11 +111,16 @@ impl ServerBucketInstance {
             sessions_created: AtomicU64::new(0),
             base_url,
             token_secret: Default::default(),
+            hidden,
         })
     }
 
     pub fn password_protected(&self) -> bool {
         self.password_protected
+    }
+
+    pub fn hidden(&self) -> bool {
+        self.hidden
     }
 
     pub fn base_url(&self) -> Option<Arc<Url>> {
