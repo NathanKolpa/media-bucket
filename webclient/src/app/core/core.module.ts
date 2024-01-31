@@ -1,7 +1,8 @@
-import {NgModule} from '@angular/core';
-import {CommonModule} from '@angular/common';
-import {ApiService, AppTitleService, AuthCacheService, ConfirmGuard} from "./services";
-import {AuthStoreModule} from "./store/auth";
+import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ApiService, AppTitleService, AuthCacheService, ConfirmGuard, ReloginInterceptor } from "./services";
+import { AuthStoreModule } from "./store/auth";
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
 
 
 @NgModule({
@@ -14,6 +15,9 @@ import {AuthStoreModule} from "./store/auth";
     AuthCacheService,
     AppTitleService,
     ConfirmGuard,
+    {
+      provide: HTTP_INTERCEPTORS, useClass: ReloginInterceptor, multi: true
+    }
   ]
 })
 export class CoreModule {

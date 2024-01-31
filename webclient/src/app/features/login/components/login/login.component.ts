@@ -1,11 +1,7 @@
-import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
-import {Auth, AuthenticatedBucket, LoadingState} from "@core/models";
-import {FormControl, FormGroup, Validators} from "@angular/forms";
-
-export interface Login {
-  bucketId: number;
-  password: string | null;
-}
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import { Auth, AuthenticatedBucket, LoadingState } from "@core/models";
+import { FormControl, FormGroup, Validators } from "@angular/forms";
+import { Login } from '@shared/login-form/components/login-form/login-form.component';
 
 export interface SelectBucket {
   bucketId: number;
@@ -17,11 +13,11 @@ export interface Logout {
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  selector: 'app-login-form',
-  templateUrl: './login-form.component.html',
-  styleUrls: ['./login-form.component.scss']
+  selector: 'app-login',
+  templateUrl: './login.component.html',
+  styleUrls: ['./login.component.scss']
 })
-export class LoginFormComponent {
+export class LoginComponent {
 
   @Output()
   public login = new EventEmitter<Login>();
@@ -100,14 +96,4 @@ export class LoginFormComponent {
     })
   }
 
-  public loginClick() {
-    if (this.form.valid) {
-      let password = this.form.controls.password.value;
-
-      this.login.emit({
-        bucketId: this.selectedId,
-        password: password == '' ? null : password
-      })
-    }
-  }
 }

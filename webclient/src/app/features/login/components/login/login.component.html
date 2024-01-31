@@ -1,0 +1,38 @@
+<div *ngIf="buckets as buckets" class="row h-100">
+  <app-bucket-select
+    (selectedIdChange)="setSelectedId($event)"
+    [buckets]="buckets"
+    [selectedId]="selectedId"
+    class="col-md-4 height">
+  </app-bucket-select>
+
+  <div class="col-md-8 height mt-4 mt-md-0">
+    <ng-container *ngIf="selectedBucket as bucket; else elseBlock">
+
+      <app-login-form *ngIf="!bucket.auth" (login)="login.emit($event)" [loadingState]="loginLoading" [bucket]="bucket.bucket"></app-login-form>
+
+      <ng-container *ngIf="bucket.auth">
+
+        <div class="w-100 d-flex justify-content-center h-100 align-items-center flex-column">
+          <div>
+            <button (click)="selectClick()" color="primary" mat-flat-button class="me-1">
+              Go
+            </button>
+
+            <button (click)="logoutClick()" mat-stroked-button class="ms-1">
+              Logout
+            </button>
+          </div>
+
+        </div>
+      </ng-container>
+
+    </ng-container>
+
+    <ng-template #elseBlock>
+      No bucket selected
+    </ng-template>
+
+  </div>
+</div>
+

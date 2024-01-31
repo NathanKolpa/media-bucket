@@ -1,24 +1,24 @@
-import {NgModule} from '@angular/core';
-import {BrowserModule} from '@angular/platform-browser';
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
 
-import {AppRoutingModule} from './app-routing.module';
-import {AppComponent} from './app.component';
-import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
-import {ActionReducer, MetaReducer, StoreModule} from '@ngrx/store';
-import {EffectsModule} from '@ngrx/effects';
-import {HttpClientModule} from "@angular/common/http";
-import {CoreModule} from "@core/core.module";
-import {environment} from "@src/environments/environment";
+import { AppRoutingModule } from './app-routing.module';
+import { AppComponent } from './app.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { ActionReducer, MetaReducer, StoreModule } from '@ngrx/store';
+import { EffectsModule } from '@ngrx/effects';
+import { HttpClientModule, } from "@angular/common/http";
+import { CoreModule } from "@core/core.module";
+import { environment } from "@src/environments/environment";
 
 let showEventsOverride = false;
 
-(window as any).showEvents = function () {
+(window as any).showEvents = function() {
   showEventsOverride = true;
   console.log('Enabled debug events!')
 }
 
 function debug(reducer: ActionReducer<any>): ActionReducer<any> {
-  return function (state, action) {
+  return function(state, action) {
     const result = reducer(state, action);
 
     if (!environment.production || showEventsOverride) {
@@ -48,7 +48,7 @@ const metaReducers: MetaReducer[] = [debug];
 
     CoreModule,
 
-    StoreModule.forRoot({}, {metaReducers}),
+    StoreModule.forRoot({}, { metaReducers }),
     EffectsModule.forRoot([]),
   ],
   providers: [],

@@ -1,0 +1,42 @@
+<form  [formGroup]="form" *ngIf="bucket as bucket">
+  <div class="row mb-3">
+    <mat-form-field appearance="outline">
+      <mat-label>Password</mat-label>
+
+      <input [type]="hidePassword ? 'password' : 'text'"
+             formControlName="password"
+             matInput
+             placeholder="Enter your password">
+
+      <mat-error *ngIf="form.controls.password.invalid">
+        This field is required
+      </mat-error>
+
+      <button (click)="togglePasswordVisibility()"
+              [attr.aria-label]="'Hide password'"
+              [attr.aria-pressed]="hidePassword"
+              [disabled]="!bucket.passwordProtected"
+              mat-icon-button
+              matSuffix
+              type="button">
+
+        <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+      </button>
+    </mat-form-field>
+
+    <mat-error *ngIf="loadingState?.failure as failure">
+      Failed to login: {{ failure.message }}
+    </mat-error>
+  </div>
+
+
+  <button (click)="loginClick()" [disabled]="form.invalid || loadingState?.isLoading"
+          color="primary"
+          mat-flat-button>
+    Login
+  </button>
+
+  <ng-content [select]="buttons"></ng-content>
+</form>
+
+

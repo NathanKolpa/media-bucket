@@ -1,0 +1,13 @@
+<div class="dialog-container" *ngIf="selectedBucket$ | async as bucket">
+  <h2 mat-dialog-title>Authentication failed</h2>
+  <mat-dialog-content>
+    <i>{{ data.failure.message }}.</i>
+
+    <p class="mt-4">You can <b>login again</b> for "{{ bucket.bucket.name }}": </p>
+    <div class="mt-1">
+      <app-login-form [bucket]="bucket.bucket" (login)="login(bucket, $event)" [loadingState]="loadingState$ | async">
+          <a class="float-end" buttons mat-stroked-button color="accent" routerLink="/" mat-dialog-close>Go back</a>
+      </app-login-form>
+    </div>
+  </mat-dialog-content>
+</div>

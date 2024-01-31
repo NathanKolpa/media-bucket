@@ -1,10 +1,11 @@
-import {ChangeDetectionStrategy, Component, OnDestroy, OnInit} from '@angular/core';
-import {fromLogin, loginActions} from '@features/login/store';
-import {Store} from "@ngrx/store";
-import {Login, Logout, SelectBucket} from "@features/login/components/login-form/login-form.component";
-import {Router} from "@angular/router";
-import {Actions, ofType} from "@ngrx/effects";
-import {Subscription} from "rxjs";
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit } from '@angular/core';
+import { fromLogin, loginActions } from '@features/login/store';
+import { Store } from "@ngrx/store";
+import { Logout, SelectBucket } from "@features/login/components/login/login.component";
+import { Router } from "@angular/router";
+import { Actions, ofType } from "@ngrx/effects";
+import { Subscription } from "rxjs";
+import { Login } from '@shared/login-form/components/login-form/login-form.component';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -21,7 +22,7 @@ export class LoginPageComponent implements OnInit, OnDestroy {
   loginLoadingState$ = this.store.select(fromLogin.selectLoginLoadingState);
 
   constructor(private store: Store, private actions: Actions, private router: Router) {
-    this.navigateOnLoginSubscription = this.actions.pipe(ofType(loginActions.loginSuccess)).subscribe(({auth}) => {
+    this.navigateOnLoginSubscription = this.actions.pipe(ofType(loginActions.loginSuccess)).subscribe(({ auth }) => {
       this.viewBucket(auth.bucketId);
     })
   }
@@ -39,11 +40,11 @@ export class LoginPageComponent implements OnInit, OnDestroy {
   }
 
   login(req: Login) {
-    this.store.dispatch(loginActions.login({bucketId: req.bucketId, password: req.password, privateSession: false}));
+    this.store.dispatch(loginActions.login({ bucketId: req.bucketId, password: req.password, privateSession: false }));
   }
 
   logout(req: Logout) {
-    this.store.dispatch(loginActions.logout({auth: req.auth}))
+    this.store.dispatch(loginActions.logout({ auth: req.auth }))
   }
 
   select(req: SelectBucket) {

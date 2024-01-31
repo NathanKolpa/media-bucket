@@ -5,13 +5,13 @@
       (loadAgain)="load()"
       [loadingState]="bucketsLoadingState$ | async">
 
-      <app-login-form
+      <app-login
         (login)="login($event)"
         (logout)="logout($event)"
         (selectBucket)="select($event)"
         [buckets]="buckets$ | async"
         [loginLoading]="loginLoadingState$ | async">
-      </app-login-form>
+      </app-login>
 
     </app-loadable-content>
 
