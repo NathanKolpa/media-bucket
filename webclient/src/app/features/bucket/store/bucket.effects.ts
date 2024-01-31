@@ -51,7 +51,7 @@ export class BucketEffects {
 
   relogin$ = createEffect(() => this.actions$.pipe(
     ofType(bucketActions.relogin),
-    switchMap(({ bucket, oldAuth, password }) => this.api.login(bucket.id, password, oldAuth.privateSession).pipe(
+    switchMap(({ bucket, oldAuth, password }) => this.api.login(bucket.id, password, oldAuth?.privateSession ?? true).pipe(
       map(auth => bucketActions.reloginSuccess({ bucket, auth })),
       catchError(async failure => bucketActions.reloginFailure({ failure })),
     ))

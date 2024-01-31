@@ -1,11 +1,12 @@
-import {ChangeDetectionStrategy, Component, OnDestroy} from '@angular/core';
-import {AppTitleService} from "@core/services";
-import {bucketActions, fromBucket} from '@features/bucket/store';
-import {Store} from "@ngrx/store";
-import {filter, Subscription} from "rxjs";
-import {ActivatedRoute, Router} from "@angular/router";
-import {Auth} from "@core/models";
-import {Actions, ofType} from "@ngrx/effects";
+import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
+import { AppTitleService } from "@core/services";
+import { bucketActions, fromBucket } from '@features/bucket/store';
+import { Store } from "@ngrx/store";
+import { filter, Subscription } from "rxjs";
+import { ActivatedRoute, Router } from "@angular/router";
+import { Auth, Bucket } from "@core/models";
+import { Actions, ofType } from "@ngrx/effects";
+import { Login } from '@shared/login-form/components/login-form/login-form.component';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -15,7 +16,8 @@ import {Actions, ofType} from "@ngrx/effects";
 })
 export class BucketPageComponent implements OnDestroy {
 
-  bucket$ = this.store.select(fromBucket.selectBucket);
+  selectedBucket$ = this.store.select(fromBucket.selectBucket);
+  bucket$ = this.store.select(fromBucket.selectShallowBucket);
   isAuthenticated$ = this.store.select(fromBucket.isAuthenticated);
   bucketLoadingState$ = this.store.select(fromBucket.selectBucketLoadingState);
 
@@ -25,11 +27,11 @@ export class BucketPageComponent implements OnDestroy {
   private logoutNavigateSubscription: Subscription;
 
   constructor(private title: AppTitleService,
-              private store: Store,
-              private route: ActivatedRoute,
-              private actions: Actions,
-              private router: Router) {
-    this.bucketTitleSubscription = this.bucket$.pipe(filter(x => x !== null)).subscribe(bucket => {
+    private store: Store,
+    private route: ActivatedRoute,
+    private actions: Actions,
+    private router: Router) {
+    this.bucketTitleSubscription = this.selectedBucket$.pipe(filter(x => x !== null)).subscribe(bucket => {
       if (!bucket) {
         return;
       }
@@ -55,7 +57,7 @@ export class BucketPageComponent implements OnDestroy {
   load(params: any) {
     let id = params['bucketId'];
     if (!!id && !isNaN(+id)) {
-      this.store.dispatch(bucketActions.loadBucket({id: +id}));
+      this.store.dispatch(bucketActions.loadBucket({ id: +id }));
     }
   }
 
@@ -70,10 +72,14 @@ export class BucketPageComponent implements OnDestroy {
   }
 
   logout(auth: Auth) {
-    this.store.dispatch(bucketActions.logout({auth}));
+    this.store.dispatch(bucketActions.logout({ auth }));
   }
 
   showGeneralInfo(auth: Auth) {
-    this.store.dispatch(bucketActions.showGeneralInfo({auth}));
+    this.store.dispatch(bucketActions.showGeneralInfo({ auth }));
+  }
+
+  login(bucket: Bucket, req: Login) {
+    this.store.dispatch(bucketActions.relogin({ bucket, oldAuth: null, password: req.password }));
   }
 }

@@ -2,10 +2,15 @@
   <app-loadable-content (loadAgain)="reload()" [loadingState]="bucketLoadingState$ | async">
 
     <app-not-authenticated *ngIf="!(isAuthenticated$ | async); else content">
+      <div class="mx-auto col-md-6 col-10 col-xl-4">
+        <app-login-form *ngIf="bucket$ | async as bucket" [bucket]="bucket" (login)="login(bucket, $event)">
+          <a mat-stroked-button color="accent" class="ms-3" routerLink="/">Go back</a>
+        </app-login-form>
+      </div>
     </app-not-authenticated>
 
     <ng-template #content>
-      <ng-container *ngIf="bucket$ | async as bucket">
+      <ng-container *ngIf="selectedBucket$ | async as bucket">
 
         <div class="d-flex flex-column h-100">
           <app-header

@@ -3,6 +3,8 @@ import { authSelectors, selectAuthState } from "@core/store/auth/auth.reducer";
 import { SelectedBucket } from "@core/models";
 import * as reducer from "./bucket.reducer";
 
+export const selectShallowBucket = reducer.selectBucket;
+
 export const selectBucket = createSelector(
   selectAuthState,
   reducer.selectBucket,
