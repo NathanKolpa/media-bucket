@@ -63,13 +63,19 @@ where
 
         write!(&mut buffer, "\r\n#EXTBYT:{}", media.size).unwrap();
 
-        if let Some(title) = media.title.as_deref() {
+        write!(&mut buffer, "\r\n#EXTINF:{}", media.runtime_seconds).unwrap();
+
+        if let Some(thumbnail_id) = media.thumbnail_id {
             write!(
                 &mut buffer,
-                "\r\n#EXTINF:{},{}",
-                media.runtime_seconds, title
+                " tvg-logo=\"{api_url}/media/{thumbnail_id}/file{}\"",
+                this.auth_params.without_include()
             )
             .unwrap();
+        }
+
+        if let Some(title) = media.title.as_deref() {
+            write!(&mut buffer, ", {title}").unwrap();
         }
 
         if let Some(thumbnail_id) = media.thumbnail_id {
