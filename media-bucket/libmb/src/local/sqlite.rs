@@ -1070,12 +1070,10 @@ impl CrossDataSource for SqliteIndex {
                 .execute(tx.deref_mut())
                 .await?
                 .last_insert_rowid() as u64,
-            Some(v) => v
+            Some(v) => v,
         };
 
-        let batch = ImportBatch {
-            id: batch_id,
-        };
+        let batch = ImportBatch { id: batch_id };
 
         let amount_of_posts_to_create = data.items.len().max(1);
         let mut posts = Vec::with_capacity(amount_of_posts_to_create);
