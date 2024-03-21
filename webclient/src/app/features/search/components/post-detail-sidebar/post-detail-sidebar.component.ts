@@ -1,6 +1,6 @@
-import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
-import {LoadingState, PostDetail, SelectedBucket, Tag} from "@core/models";
-import {FormControl, FormGroup} from "@angular/forms";
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import { LoadingState, PostDetail, SelectedBucket, Tag } from "@core/models";
+import { FormControl, FormGroup } from "@angular/forms";
 
 export interface EditPostRequest {
   postId: number
@@ -17,6 +17,8 @@ export interface EditPostRequest {
   styleUrls: ['./post-detail-sidebar.component.scss']
 })
 export class PostDetailSidebarComponent {
+  @Output()
+  public editTag = new EventEmitter<Tag>();
   @Input()
   public open = false;
   @Output()

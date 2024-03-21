@@ -27,12 +27,12 @@ import { MatSnackBar } from "@angular/material/snack-bar";
 import {
   UploadProgressDialogComponent
 } from "@features/search/containers/upload-progress-dialog/upload-progress-dialog.component";
-import {Page, PageParams} from "@core/models";
+import { Page, PageParams } from "@core/models";
 import {
   ConfirmDeletePostDialogComponent
 } from "@features/search/components/confirm-delete-post-dialog/confirm-delete-post-dialog.component";
 import { ManageTagsDialogComponent } from "@features/search/containers/manage-tags-dialog/manage-tags-dialog.component";
-import {loadNeighbourItemsSuccess} from "./search.actions";
+import { loadNeighbourItemsSuccess } from "./search.actions";
 
 @Injectable()
 export class SearchEffects {
@@ -163,8 +163,8 @@ export class SearchEffects {
     switchMap(({ postId, bucket, position }) => {
       let startPosition = Math.max(position - 1, 0);
       return this.api.searchPostItems(bucket.auth, postId, new PageParams(Math.min(position + 2, 3), startPosition)).pipe(
-        map(({items, page}) => searchActions.loadNeighbourItemsSuccess({items, startPosition, position, total: page.totalRows})),
-        catchError(async failure => searchActions.loadNeighbourItemsFailure({failure}))
+        map(({ items, page }) => searchActions.loadNeighbourItemsSuccess({ items, startPosition, position, total: page.totalRows })),
+        catchError(async failure => searchActions.loadNeighbourItemsFailure({ failure }))
       );
     })
   ));
@@ -317,6 +317,14 @@ export class SearchEffects {
     }),
     map(({ bucket }) => searchActions.refreshLoaded({ bucket }))
   ))
+
+  editTag$ = createEffect(() => this.actions$.pipe(
+    ofType(searchActions.editTag),
+    switchMap(({ bucket, tagId }) => [
+      searchActions.openManageTags({ bucket }),
+      searchActions.tagEditSelectTag({ bucket, tagId })
+    ])
+  ));
 
   public constructor(
     private snackBar: MatSnackBar,

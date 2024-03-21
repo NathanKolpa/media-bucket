@@ -15,5 +15,5 @@
   </mat-autocomplete>
 </mat-form-field>
 
-<app-tag-list (removeTag)="removeTag($event)" [showDelete]="true" [tags]="tags" class="mb-2 d-block">
+<app-tag-list (clickTag)="tagClick.emit($event)" (removeTag)="removeTag($event)" [showDelete]="true" [tags]="tags" class="mb-2 d-block">
 </app-tag-list>

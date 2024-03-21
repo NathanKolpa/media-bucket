@@ -17,6 +17,7 @@
     [loadingState]="sidebarPostLoadingState$ | async"
     [open]="(showSidebar$ | async) || false"
     [post]="sidebarPost$ | async"
+    (editTag)="editTag(bucket, $event)"
     class="flex-grow-1">
 
     <app-search-results (requestNextData)="loadNext(bucket)"

@@ -1,9 +1,9 @@
-import {Component, EventEmitter, Input, OnDestroy, Output} from '@angular/core';
-import {PageParams, SelectedBucket, Tag} from "@core/models";
-import {FormControl} from "@angular/forms";
-import {auditTime, combineLatest, debounceTime, map, startWith, Subject, Subscription, switchMap} from "rxjs";
-import {ApiService} from "@core/services";
-import {MatSnackBar} from "@angular/material/snack-bar";
+import { Component, EventEmitter, Input, OnDestroy, Output } from '@angular/core';
+import { PageParams, SelectedBucket, Tag } from "@core/models";
+import { FormControl } from "@angular/forms";
+import { auditTime, combineLatest, debounceTime, map, startWith, Subject, Subscription, switchMap } from "rxjs";
+import { ApiService } from "@core/services";
+import { MatSnackBar } from "@angular/material/snack-bar";
 
 // TODO: this components should make api requests through ngrx
 // for now its alright because it doesn't effect other parts of the system
@@ -16,6 +16,9 @@ import {MatSnackBar} from "@angular/material/snack-bar";
   styleUrls: ['./tag-edit.component.scss']
 })
 export class TagEditComponent implements OnDestroy {
+  @Output()
+  public tagClick = new EventEmitter<Tag>();
+
   public searchTags: Tag[] = [];
   @Input()
   public tags: Tag[] = [];

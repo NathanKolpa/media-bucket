@@ -22,7 +22,7 @@
               [title]="form.controls.title">
             </app-post-info-form-fields>
 
-            <app-tag-edit [(tags)]="postTags" [bucket]="bucket">
+            <app-tag-edit [(tags)]="postTags" (tagClick)="editTag.emit($event)" [bucket]="bucket">
 
             </app-tag-edit>
 

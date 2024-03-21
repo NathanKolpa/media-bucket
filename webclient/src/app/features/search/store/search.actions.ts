@@ -92,3 +92,5 @@ export const tagEditSelectTagSuccess = createAction('[Search] tag edit select ta
 export const tagEditSelectTagFailure = createAction('[Search] tag edit select tag failure', props<{ failure: Failure }>());
 
 export const tagEditClearSelected = createAction('[Search] tag edit clear selected tag', props<{ bucket: SelectedBucket }>())
+
+export const editTag = createAction('[Search] edit tag', props<{ bucket: SelectedBucket, tagId: number }>());

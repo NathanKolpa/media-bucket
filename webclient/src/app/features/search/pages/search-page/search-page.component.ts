@@ -114,6 +114,10 @@ export class SearchPageComponent implements OnDestroy, ConfirmComponent {
     this.store.dispatch(searchActions.addTagToSearchQuery({ bucket, tag }));
   }
 
+  editTag(bucket: SelectedBucket, tag: Tag) {
+    this.store.dispatch(searchActions.editTag({ bucket, tagId: tag.id }));
+  }
+
   editPost(bucket: SelectedBucket, req: EditPostRequest) {
     this.store.dispatch(searchActions.updatePost({
       bucket,
