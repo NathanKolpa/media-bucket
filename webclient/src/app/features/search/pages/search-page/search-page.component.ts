@@ -98,17 +98,17 @@ export class SearchPageComponent implements OnDestroy, ConfirmComponent {
         catch (e) {
           console.warn(e);
         }
+      }
 
-        let order = params.get('order');
+      let order = params.get('order');
 
-        switch (order) {
-          case 'random':
-          case 'newest':
-          case 'oldest':
-          case 'relevant':
-            query = query.setOrder(order);
-            break;
-        }
+      switch (order) {
+        case 'random':
+        case 'newest':
+        case 'oldest':
+        case 'relevant':
+          query = query.setOrder(order);
+          break;
       }
 
       this.store.dispatch(searchActions.searchQueryChange({ bucket, query }));
@@ -176,12 +176,8 @@ export class SearchPageComponent implements OnDestroy, ConfirmComponent {
     this.store.dispatch(searchActions.searchTextChange({ bucket, query }));
   }
 
-  queryChange(bucket: SelectedBucket, query: PostSearchQuery) {
+  queryChange(_bucket: SelectedBucket, query: PostSearchQuery) {
     let params = query.queryParams();
-
-    if (query.items.length == 0) {
-      this.store.dispatch(searchActions.searchQueryChange({ bucket, query }));
-    }
 
     this.router.navigate([], {
       relativeTo: this.route,

@@ -80,7 +80,8 @@ export class PostSearchQuery {
     }
 
     let textStr = JSON.stringify(this.items.filter(x => x.type == 'text').map((x: any) => x.str));
-    if (textStr != '') {
+
+    if (textStr != '[]') {
       params.text = textStr;
     }
 
