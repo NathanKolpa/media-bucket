@@ -6,6 +6,7 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, RwLock};
 
 use chrono::{DateTime, Duration, Utc};
+use rand::{thread_rng, Rng};
 use thiserror::Error;
 use url::Url;
 
@@ -85,6 +86,7 @@ pub struct ServerBucketInstance {
     sessions_created: AtomicU64,
     token_secret: RwLock<Option<[u8; 32]>>,
     hidden: bool,
+    randomize_secret: bool,
 }
 
 pub struct NewLogin {
@@ -101,6 +103,7 @@ impl ServerBucketInstance {
         base_url: Option<Arc<Url>>,
         location: String,
         hidden: bool,
+        randomize_secret: bool,
     ) -> std::io::Result<Self> {
         Ok(ServerBucketInstance {
             id,
@@ -112,6 +115,7 @@ impl ServerBucketInstance {
             base_url,
             token_secret: Default::default(),
             hidden,
+            randomize_secret,
         })
     }
 
@@ -157,11 +161,15 @@ impl ServerBucketInstance {
 
         if let Some(bucket) = &*instance {
             // the instance is loaded
-            token_secret = bucket
-                .data_source()
-                .passwords()
-                .validate_password(password)
-                .await?;
+            if !self.randomize_secret {
+                token_secret = bucket
+                    .data_source()
+                    .passwords()
+                    .validate_password(password)
+                    .await?;
+            } else {
+                token_secret = *self.token_secret.read().unwrap();
+            }
         } else {
             // load the instance
             drop(instance);
@@ -169,11 +177,15 @@ impl ServerBucketInstance {
             let bucket = Bucket::open(self.location.as_str(), password).await?;
             bucket.data_source().cross().gc().await?;
 
-            token_secret = bucket
-                .data_source()
-                .passwords()
-                .validate_password(password)
-                .await?;
+            if !self.randomize_secret {
+                token_secret = bucket
+                    .data_source()
+                    .passwords()
+                    .validate_password(password)
+                    .await?;
+            } else {
+                token_secret = Some(thread_rng().gen());
+            }
 
             let mut instance = self.instance.write().unwrap();
             *instance = Some(Arc::new(bucket));
@@ -223,7 +235,7 @@ impl ServerBucketInstance {
     }
 
     pub fn is_bfu(&self) -> bool {
-        self.token_secret.read().unwrap().is_none()
+        self.token_secret.read().unwrap().is_none() && !self.randomize_secret
     }
 }
 

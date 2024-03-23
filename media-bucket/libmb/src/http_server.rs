@@ -26,6 +26,7 @@ struct InstanceConfig {
     name: String,
     location: String,
     hidden: bool,
+    randomize_secret: bool,
 }
 
 struct StaticFilesConfig {
@@ -82,6 +83,7 @@ impl ServerConfig {
                     location: instance.location,
                     name: instance.name,
                     hidden: instance.hidden,
+                    randomize_secret: instance.randomize_secret,
                 })
                 .collect(),
         })
@@ -129,6 +131,7 @@ impl ServerConfig {
                     base_url.clone(),
                     instance_config.location.clone(),
                     instance_config.hidden,
+                    instance_config.randomize_secret,
                 )
                 .await?,
             ))

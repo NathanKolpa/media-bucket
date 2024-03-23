@@ -21,6 +21,9 @@ pub struct InstanceConfigSection {
 
     #[serde(default = "bool::default")]
     pub hidden: bool,
+
+    #[serde(default = "bool::default")]
+    pub randomize_secret: bool,
 }
 
 #[derive(Deserialize)]
