@@ -5,11 +5,12 @@ import { Post, PostSearchQuery, SearchPost, SelectedBucket, Tag } from "@core/mo
 import { fromBucket } from '@features/bucket/store';
 import { MatDialog } from "@angular/material/dialog";
 import { ConfirmComponent } from "@core/services/confirm/confirm.guard";
-import { filter, first, Subscription, tap } from "rxjs";
+import { filter, first, forkJoin, map, Observable, Subscription, switchMap, tap, withLatestFrom } from "rxjs";
 import { EditPostRequest } from "@features/search/components/post-detail-sidebar/post-detail-sidebar.component";
 import { Listing } from "@core/models/listing";
 import { ApiService } from '@core/services';
 import { Clipboard } from '@angular/cdk/clipboard';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -31,9 +32,10 @@ export class SearchPageComponent implements OnDestroy, ConfirmComponent {
   searchQuery$ = this.store.select(fromSearch.selectSearchQuery);
   private hasUnsavedInput = false;
   private unsavedInputSub: Subscription;
+  private queryParamsSub: Subscription;
   private leaveMessage = 'You have unsaved progress on this page, are you sure you want to leave?';
 
-  constructor(private store: Store, private dialog: MatDialog, private clipboard: Clipboard, private api: ApiService) {
+  constructor(private store: Store, private dialog: MatDialog, private clipboard: Clipboard, private api: ApiService, private route: ActivatedRoute, private router: Router) {
 
     this.unsavedInputSub = this.activeJobs$.subscribe(activeJobs => {
       this.hasUnsavedInput = activeJobs > 0;
@@ -43,6 +45,70 @@ export class SearchPageComponent implements OnDestroy, ConfirmComponent {
       if (bucket !== null) {
         this.loadNext(bucket);
       }
+    });
+
+    this.queryParamsSub = this.route.queryParamMap.pipe(withLatestFrom(this.bucket$)).pipe(switchMap(([params, bucket]) => {
+      if (bucket === null) {
+        return [];
+      }
+
+      let tagSubs: Observable<Tag>[] = [];
+
+      let tags = params.get('tags');
+      if (tags !== null) {
+        let tagsSplit = tags.split(',');
+
+        tagSubs = tagsSplit
+          .filter(x => typeof +x == 'number' && !isNaN(+x))
+          .map(x => this.api.getTagById(bucket.auth, +x));
+      }
+
+      return forkJoin(tagSubs).pipe(map(tags => ({ tags, bucket, params })));
+    })).subscribe(({ tags, bucket, params }) => {
+
+
+      let seed = Math.random();
+      let seedStr = params.get('seed');
+      if (seedStr !== null && !isNaN(+seedStr)) {
+        seed = +seedStr;
+      }
+
+      let query = new PostSearchQuery([], 'newest', seed);
+
+      for (let tag of tags) {
+        query = query.addTag(tag);
+      }
+
+      let textsStr = params.get('text');
+      if (textsStr !== null) {
+        try {
+          let parsedTexts = JSON.parse(textsStr);
+          if (Array.isArray(parsedTexts)) {
+            for (let text of parsedTexts) {
+              if (typeof text == 'string') {
+                query = query.addText(text);
+              }
+            }
+          }
+        }
+        catch (e) {
+          console.warn(e);
+        }
+
+        let order = params.get('order');
+
+        switch (order) {
+          case 'random':
+          case 'newest':
+          case 'oldest':
+          case 'relevant':
+            query.setOrder(order);
+            break;
+        }
+      }
+
+
+      this.store.dispatch(searchActions.searchQueryChange({ bucket, query }));
     });
   }
 
@@ -65,6 +131,7 @@ export class SearchPageComponent implements OnDestroy, ConfirmComponent {
   ngOnDestroy(): void {
     this.store.dispatch(searchActions.reset());
     this.unsavedInputSub.unsubscribe();
+    this.queryParamsSub.unsubscribe();
   }
 
   showSidebar(bucket: SelectedBucket, post: SearchPost) {
@@ -106,8 +173,30 @@ export class SearchPageComponent implements OnDestroy, ConfirmComponent {
     this.store.dispatch(searchActions.searchTextChange({ bucket, query }));
   }
 
-  queryChange(bucket: SelectedBucket, query: PostSearchQuery) {
-    this.store.dispatch(searchActions.searchQueryChange({ bucket, query }));
+  queryChange(_bucket: SelectedBucket, query: PostSearchQuery) {
+    let params: any = {
+      order: query.order,
+    };
+
+    if (query.order == 'random') {
+      params.seed = query.seed;
+    }
+
+    let tagStr = query.items.filter(x => x.type == 'tag').map((x: any) => x.tag.id).join(',');
+    if (tagStr != '') {
+      params.tags = tagStr;
+    }
+
+    let textStr = JSON.stringify(query.items.filter(x => x.type == 'text').map((x: any) => x.str));
+    if (textStr != '') {
+      params.text = textStr;
+    }
+
+    this.router.navigate([], {
+      relativeTo: this.route,
+      skipLocationChange: false,
+      queryParams: params
+    })
   }
 
   addTagToSearchQuery(bucket: SelectedBucket, tag: Tag) {

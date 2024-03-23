@@ -7,7 +7,7 @@
     <i>Results: {{ resultCount }}</i>
   </small>
 
-  <mat-selection-list #list [multiple]="false"
+  <mat-selection-list #list color="primary" [multiple]="false"
                       (selectionChange)="list.selectedOptions.hasValue() ? selectTag.emit(list.selectedOptions.selected[0].value) : selectTag.emit(null)">
 
     <ng-container
