@@ -1,4 +1,4 @@
-import {createFeature, createReducer, on} from "@ngrx/store";
+import { createFeature, createReducer, on } from "@ngrx/store";
 import {
   LoadingState,
   PostDetail,
@@ -9,9 +9,9 @@ import {
   TagDetail,
   UploadJob
 } from "@core/models";
-import {createEntityAdapter, EntityState} from "@ngrx/entity";
+import { createEntityAdapter, EntityState } from "@ngrx/entity";
 import * as searchActions from "./search.actions";
-import {PostSearchQuery} from "@core/models/searchQuery";
+import { PostSearchQuery } from "@core/models/searchQuery";
 
 interface State {
   searchText: string | null,
@@ -55,7 +55,7 @@ const initialState: State = {
   searchQuery: PostSearchQuery.empty(),
   searchTags: tagAdapter.getInitialState(),
   nextPageLoadingState: LoadingState.initial(),
-  pageSize: 30,
+  pageSize: 50,
   posts: [],
   postCount: null,
 
@@ -91,17 +91,17 @@ const feature = createFeature({
       ...state,
       nextPageLoadingState: state.nextPageLoadingState.loading()
     })),
-    on(searchActions.loadNextSuccess, (state, {posts, page}) => ({
+    on(searchActions.loadNextSuccess, (state, { posts, page }) => ({
       ...state,
       nextPageLoadingState: state.nextPageLoadingState.success(),
       posts: [...state.posts, ...posts],
       postCount: page.totalRows
     })),
-    on(searchActions.loadNextFailure, (state, {failure}) => ({
+    on(searchActions.loadNextFailure, (state, { failure }) => ({
       ...state,
       nextPageLoadingState: state.nextPageLoadingState.fail(failure)
     })),
-    on(searchActions.refreshLoadedSuccess, (state, {posts}) => ({
+    on(searchActions.refreshLoadedSuccess, (state, { posts }) => ({
       ...state,
       posts,
     })),
@@ -116,7 +116,7 @@ const feature = createFeature({
       showSidebar: false
     })),
 
-    on(searchActions.showPost, (state, {postId}) => {
+    on(searchActions.showPost, (state, { postId }) => {
       if (postId == state.viewedPost?.id) {
         return state;
       }
@@ -131,13 +131,13 @@ const feature = createFeature({
         itemList: [],
       });
     }),
-    on(searchActions.showPostSuccess, (state, {post}) => ({
+    on(searchActions.showPostSuccess, (state, { post }) => ({
       ...state,
       viewedPostLoadingState: state.viewedPostLoadingState.success(),
       viewedPost: post,
       viewedPostMode: post.itemCount == 1 ? 'preview' : state.viewedPostMode
     })),
-    on(searchActions.showPostFailure, (state, {failure}) => ({
+    on(searchActions.showPostFailure, (state, { failure }) => ({
       ...state,
       viewedPostLoadingState: state.viewedPostLoadingState.fail(failure)
     })),
@@ -147,12 +147,12 @@ const feature = createFeature({
       sidebarPostLoadingState: state.sidebarPostLoadingState.loading(),
       showSidebar: true,
     })),
-    on(searchActions.showPostSidebarSuccess, (state, {post}) => ({
+    on(searchActions.showPostSidebarSuccess, (state, { post }) => ({
       ...state,
       sidebarPostLoadingState: state.sidebarPostLoadingState.success(),
       sidebarPost: post
     })),
-    on(searchActions.showPostSidebarFailure, (state, {failure}) => ({
+    on(searchActions.showPostSidebarFailure, (state, { failure }) => ({
       ...state,
       sidebarPostLoadingState: state.sidebarPostLoadingState.fail(failure)
     })),
@@ -161,17 +161,17 @@ const feature = createFeature({
       ...state,
       currentItemLoadingState: state.currentItemLoadingState.loading()
     })),
-    on(searchActions.loadPostItemSuccess, (state, {item}) => ({
+    on(searchActions.loadPostItemSuccess, (state, { item }) => ({
       ...state,
       currentItemLoadingState: state.currentItemLoadingState.success(),
       currentItem: item
     })),
-    on(searchActions.loadPostItemFailure, (state, {failure}) => ({
+    on(searchActions.loadPostItemFailure, (state, { failure }) => ({
       ...state,
       currentItemLoadingState: state.currentItemLoadingState.fail(failure)
     })),
 
-    on(searchActions.loadNeighbourItemsSuccess, (state, {items, startPosition, position, total}) => {
+    on(searchActions.loadNeighbourItemsSuccess, (state, { items, startPosition, position, total }) => {
       if (items.length == 0) {
         return state;
       }
@@ -206,11 +206,11 @@ const feature = createFeature({
     on(searchActions.reset, () => initialState),
 
 
-    on(searchActions.startUploadJob, (state, {job}) => ({
+    on(searchActions.startUploadJob, (state, { job }) => ({
       ...state,
       uploadJobs: uploadJobAdapter.addOne(job, state.uploadJobs)
     })),
-    on(searchActions.uploadJobFailure, (state, {jobId, failure}) => {
+    on(searchActions.uploadJobFailure, (state, { jobId, failure }) => {
       let job = state.uploadJobs.entities[jobId]?.error(failure)
 
       if (!job) {
@@ -222,7 +222,7 @@ const feature = createFeature({
         uploadJobs: uploadJobAdapter.setOne(job, state.uploadJobs)
       };
     }),
-    on(searchActions.uploadJobPostCreatedSuccess, (state, {jobId}) => {
+    on(searchActions.uploadJobPostCreatedSuccess, (state, { jobId }) => {
       let job = state.uploadJobs.entities[jobId]?.postCreated()
 
       if (!job) {
@@ -235,7 +235,7 @@ const feature = createFeature({
       };
     }),
 
-    on(searchActions.uploadProgress, (state, {jobId, index, uploadedBytes}) => {
+    on(searchActions.uploadProgress, (state, { jobId, index, uploadedBytes }) => {
       let job = state.uploadJobs.entities[jobId]?.mapUpload(index, (u) => u.setProgress(uploadedBytes))
 
       if (!job) {
@@ -247,7 +247,7 @@ const feature = createFeature({
         uploadJobs: uploadJobAdapter.setOne(job, state.uploadJobs)
       };
     }),
-    on(searchActions.uploadFailure, (state, {jobId, index, failure}) => {
+    on(searchActions.uploadFailure, (state, { jobId, index, failure }) => {
       let job = state.uploadJobs.entities[jobId]?.mapUpload(index, (u) => u.error(failure))
 
       if (!job) {
@@ -259,7 +259,7 @@ const feature = createFeature({
         uploadJobs: uploadJobAdapter.setOne(job, state.uploadJobs)
       };
     }),
-    on(searchActions.uploadDone, (state, {jobId, index, content, thumbnail}) => {
+    on(searchActions.uploadDone, (state, { jobId, index, content, thumbnail }) => {
       let job = state.uploadJobs.entities[jobId]?.mapUpload(index, (u) => u.done(content, thumbnail));
 
       if (!job) {
@@ -271,7 +271,7 @@ const feature = createFeature({
         uploadJobs: uploadJobAdapter.setOne(job, state.uploadJobs)
       };
     }),
-    on(searchActions.swapUpload, (state, {jobId, aIndex, bIndex}) => {
+    on(searchActions.swapUpload, (state, { jobId, aIndex, bIndex }) => {
       let job = state.uploadJobs.entities[jobId]?.moveUploadToIndex(aIndex, bIndex);
 
       if (!job) {
@@ -283,7 +283,7 @@ const feature = createFeature({
         uploadJobs: uploadJobAdapter.setOne(job, state.uploadJobs)
       };
     }),
-    on(searchActions.deleteUploads, (state, {jobId, indexes}) => {
+    on(searchActions.deleteUploads, (state, { jobId, indexes }) => {
       let job = state.uploadJobs.entities[jobId]?.deleteUploads(indexes)
 
       if (!job) {
@@ -296,7 +296,7 @@ const feature = createFeature({
       };
     }),
 
-    on(searchActions.deletePostSuccess, (state, {postId}) => {
+    on(searchActions.deletePostSuccess, (state, { postId }) => {
       let posts = state.posts.filter(x => x.id !== postId);
       let showSidebar = state.showSidebar;
       let sidebarPost = state.sidebarPost;
@@ -314,21 +314,21 @@ const feature = createFeature({
       };
     }),
 
-    on(searchActions.searchTagSuccess, (state, {tags}) => ({
+    on(searchActions.searchTagSuccess, (state, { tags }) => ({
       ...state,
       searchTags: tagAdapter.setAll(tags, state.searchTags)
     })),
-    on(searchActions.searchQueryChange, (state, {query}) => ({
+    on(searchActions.searchQueryChange, (state, { query }) => ({
       ...state,
       searchQuery: query,
       posts: []
     })),
-    on(searchActions.addTagToSearchQuery, (state, {tag}) => ({
+    on(searchActions.addTagToSearchQuery, (state, { tag }) => ({
       ...state,
       searchQuery: state.searchQuery.addTag(tag),
       posts: []
     })),
-    on(searchActions.viewTagLinkedPosts, (state, {tag}) => ({
+    on(searchActions.viewTagLinkedPosts, (state, { tag }) => ({
       ...state,
       searchQuery: state.searchQuery.setTag(tag),
       posts: []
@@ -345,7 +345,7 @@ const feature = createFeature({
       ...state,
       itemListLoadingState: state.itemListLoadingState.loading()
     })),
-    on(searchActions.loadNextPostItemListSuccess, (state, {items}) => {
+    on(searchActions.loadNextPostItemListSuccess, (state, { items }) => {
       let itemList = [...state.itemList];
 
       for (let i = 0; i < items.length; i++) {
@@ -359,12 +359,12 @@ const feature = createFeature({
         itemList
       });
     }),
-    on(searchActions.loadNextPostItemListFailure, (state, {failure}) => ({
+    on(searchActions.loadNextPostItemListFailure, (state, { failure }) => ({
       ...state,
       itemListLoadingState: state.itemListLoadingState.fail(failure)
     })),
 
-    on(searchActions.updatePostSuccess, (state, {post, detail}) => ({
+    on(searchActions.updatePostSuccess, (state, { post, detail }) => ({
       ...state,
       sidebarPost: state.sidebarPost?.id == post.id ?
         detail : state.sidebarPost,
@@ -382,19 +382,19 @@ const feature = createFeature({
       tagEditSearchLoadingState: state.tagEditSearchLoadingState.loading()
     })),
 
-    on(searchActions.loadTagEditNextSearchTagsSuccess, (state, {tags, page}) => ({
+    on(searchActions.loadTagEditNextSearchTagsSuccess, (state, { tags, page }) => ({
       ...state,
       tagEditSearchLoadingState: state.tagEditSearchLoadingState.success(),
       tagEditSearchTags: [...state.tagEditSearchTags, ...tags],
       tagEditSearchTagCount: page.totalRows
     })),
 
-    on(searchActions.loadTagEditNextSearchTagsFailure, (state, {failure}) => ({
+    on(searchActions.loadTagEditNextSearchTagsFailure, (state, { failure }) => ({
       ...state,
       tagEditSearchLoadingState: state.tagEditSearchLoadingState.fail(failure)
     })),
 
-    on(searchActions.tagEditSearchQueryChange, (state, {query}) => ({
+    on(searchActions.tagEditSearchQueryChange, (state, { query }) => ({
       ...state,
       tagEditSearchTags: [],
       tagEditSearchText: query,
@@ -412,13 +412,13 @@ const feature = createFeature({
       tagEditSelectedTagLoadingState: state.tagEditSelectedTagLoadingState.loading()
     })),
 
-    on(searchActions.tagEditSelectTagSuccess, (state, {tag}) => ({
+    on(searchActions.tagEditSelectTagSuccess, (state, { tag }) => ({
       ...state,
       tagEditSelectedTagLoadingState: state.tagEditSelectedTagLoadingState.success(),
       tagEditSelectedTag: tag
     })),
 
-    on(searchActions.tagEditSelectTagFailure, (state, {failure}) => ({
+    on(searchActions.tagEditSelectTagFailure, (state, { failure }) => ({
       ...state,
       tagEditSelectedTagLoadingState: state.tagEditSelectedTagLoadingState.fail(failure),
     })),

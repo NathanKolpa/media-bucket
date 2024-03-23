@@ -167,6 +167,7 @@ impl ServerBucketInstance {
             drop(instance);
 
             let bucket = Bucket::open(self.location.as_str(), password).await?;
+            bucket.data_source().cross().gc().await?;
 
             token_secret = bucket
                 .data_source()

@@ -88,7 +88,7 @@ enum Commands {
 
     /// Run garbage collection on a bucket
     Gc {
-        /// The bucket location where to copy from.
+        /// The bucket location.
         #[clap(value_parser, value_name = "LOCAITON")]
         location: String,
     },

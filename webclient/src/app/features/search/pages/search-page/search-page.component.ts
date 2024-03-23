@@ -43,7 +43,7 @@ export class SearchPageComponent implements OnDestroy, ConfirmComponent {
       if (bucket !== null) {
         this.loadNext(bucket);
       }
-    })
+    });
   }
 
   castPostToListing(posts: SearchPost[]): Listing[] {

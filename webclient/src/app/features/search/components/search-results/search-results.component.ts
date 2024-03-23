@@ -1,9 +1,9 @@
-import {ChangeDetectionStrategy, Component, EventEmitter, Input, OnDestroy, Output, ViewChild} from '@angular/core';
-import {LoadingState} from "@core/models";
-import {BreakpointObserver, Breakpoints} from "@angular/cdk/layout";
-import {Subscription} from "rxjs";
-import {CdkVirtualScrollViewport} from "@angular/cdk/scrolling";
-import {Listing} from "@core/models/listing";
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnDestroy, Output, ViewChild } from '@angular/core';
+import { LoadingState } from "@core/models";
+import { BreakpointObserver, Breakpoints } from "@angular/cdk/layout";
+import { Subscription } from "rxjs";
+import { CdkVirtualScrollViewport } from "@angular/cdk/scrolling";
+import { Listing } from "@core/models/listing";
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -14,7 +14,7 @@ import {Listing} from "@core/models/listing";
 export class SearchResultsComponent implements OnDestroy {
   private _startingIndex: number | null = null;
 
-  @ViewChild('viewport', {static: true})
+  @ViewChild('viewport', { static: true })
   viewport!: CdkVirtualScrollViewport;
 
   @Output()
@@ -118,7 +118,7 @@ export class SearchResultsComponent implements OnDestroy {
 
     let end = this.viewport.getRenderedRange().end;
 
-    if (end >= this.rows.length - 1 && this._items.length > 0) {
+    if (end >= this.rows.length - 1 - this._rowsSize * 4 && this._items.length > 0) {
       this.requestNextData.emit();
       this.requestedData = true;
     }
