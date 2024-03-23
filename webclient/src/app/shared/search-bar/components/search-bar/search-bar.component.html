@@ -24,7 +24,6 @@
           #input
           (focus)="searchTextChange.emit(input.value == '' ? null : input.value)"
           (input)="searchTextChange.emit(input.value == '' ? null : input.value)"
-          (keydown.enter)="auto.closed && submit()"
           [matAutocomplete]="auto"
           [matChipInputFor]="chips" autocomplete="off"
           matInput

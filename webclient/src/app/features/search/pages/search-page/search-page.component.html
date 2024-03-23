@@ -15,6 +15,7 @@
     (searchForTag)="addTagToSearchQuery(bucket, $event)"
     [bucket]="bucket"
     [loadingState]="sidebarPostLoadingState$ | async"
+    [searchQuery]="(searchQuery$ | async) || null"
     [open]="(showSidebar$ | async) || false"
     [post]="sidebarPost$ | async"
     (editTag)="editTag(bucket, $event)"

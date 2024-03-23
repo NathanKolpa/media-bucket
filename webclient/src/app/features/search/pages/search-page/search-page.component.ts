@@ -5,7 +5,7 @@ import { Post, PostSearchQuery, SearchPost, SelectedBucket, Tag } from "@core/mo
 import { fromBucket } from '@features/bucket/store';
 import { MatDialog } from "@angular/material/dialog";
 import { ConfirmComponent } from "@core/services/confirm/confirm.guard";
-import { filter, first, forkJoin, map, Observable, Subscription, switchMap, tap, withLatestFrom } from "rxjs";
+import { combineLatest, combineLatestAll, filter, first, forkJoin, from, map, Observable, of, Subscription, switchMap, tap, withLatestFrom } from "rxjs";
 import { EditPostRequest } from "@features/search/components/post-detail-sidebar/post-detail-sidebar.component";
 import { Listing } from "@core/models/listing";
 import { ApiService } from '@core/services';
@@ -47,7 +47,7 @@ export class SearchPageComponent implements OnDestroy, ConfirmComponent {
       }
     });
 
-    this.queryParamsSub = this.route.queryParamMap.pipe(withLatestFrom(this.bucket$)).pipe(switchMap(([params, bucket]) => {
+    this.queryParamsSub = combineLatest([this.route.queryParamMap, this.bucket$.pipe(filter(x => x !== null))]).pipe(switchMap(([params, bucket]) => {
       if (bucket === null) {
         return [];
       }
@@ -61,6 +61,10 @@ export class SearchPageComponent implements OnDestroy, ConfirmComponent {
         tagSubs = tagsSplit
           .filter(x => typeof +x == 'number' && !isNaN(+x))
           .map(x => this.api.getTagById(bucket.auth, +x));
+      }
+
+      if (tagSubs.length == 0) {
+        return of({ tags: [], bucket, params });
       }
 
       return forkJoin(tagSubs).pipe(map(tags => ({ tags, bucket, params })));
@@ -106,7 +110,6 @@ export class SearchPageComponent implements OnDestroy, ConfirmComponent {
             break;
         }
       }
-
 
       this.store.dispatch(searchActions.searchQueryChange({ bucket, query }));
     });
@@ -173,30 +176,18 @@ export class SearchPageComponent implements OnDestroy, ConfirmComponent {
     this.store.dispatch(searchActions.searchTextChange({ bucket, query }));
   }
 
-  queryChange(_bucket: SelectedBucket, query: PostSearchQuery) {
-    let params: any = {
-      order: query.order,
-    };
+  queryChange(bucket: SelectedBucket, query: PostSearchQuery) {
+    let params = query.queryParams();
 
-    if (query.order == 'random') {
-      params.seed = query.seed;
-    }
-
-    let tagStr = query.items.filter(x => x.type == 'tag').map((x: any) => x.tag.id).join(',');
-    if (tagStr != '') {
-      params.tags = tagStr;
-    }
-
-    let textStr = JSON.stringify(query.items.filter(x => x.type == 'text').map((x: any) => x.str));
-    if (textStr != '') {
-      params.text = textStr;
+    if (query.items.length == 0) {
+      this.store.dispatch(searchActions.searchQueryChange({ bucket, query }));
     }
 
     this.router.navigate([], {
       relativeTo: this.route,
-      skipLocationChange: false,
-      queryParams: params
-    })
+      queryParams: params,
+      onSameUrlNavigation: 'reload'
+    });
   }
 
   addTagToSearchQuery(bucket: SelectedBucket, tag: Tag) {

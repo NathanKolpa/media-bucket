@@ -13,6 +13,7 @@
 
   <app-tag (clicked)="clickTag.emit(tag)"
            (removeTag)="removeTag.emit(tag)"
+           [searchQuery]="searchQuery" [searchOnClick]="searchOnClick"
            *ngFor="let tag of group.tags" [showDelete]="showDelete"
            [tag]="tag">
   </app-tag>

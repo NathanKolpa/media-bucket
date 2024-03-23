@@ -6,7 +6,7 @@
         <ng-template matTabContent>
 
           <app-loadable-content [loadingState]="loadingState">
-            <app-post-info (searchForTag)="searchForTag.emit($event)" [post]="post">
+            <app-post-info (searchForTag)="searchForTag.emit($event)" [post]="post" [searchQuery]="searchQuery">
             </app-post-info>
           </app-loadable-content>
 

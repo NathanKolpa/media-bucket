@@ -1,11 +1,19 @@
-<mat-chip-row (click)="clicked.emit()" (removed)="removeTag.emit()" *ngIf="tag as tag">
-  {{ tag.name }}
+<ng-template #content>
+  <mat-chip-row (click)="clicked.emit()" (removed)="removeTag.emit()" *ngIf="tag as tag">
+      {{ tag.name }}
 
-  <small *ngIf="tag.linkedPosts as linkedPosts">
-    ({{ linkedPosts }})
-  </small>
+      <small *ngIf="tag.linkedPosts as linkedPosts">
+        ({{ linkedPosts }})
+      </small>
 
-  <button *ngIf="showDelete" matChipRemove>
-    <mat-icon>cancel</mat-icon>
-  </button>
-</mat-chip-row>
+      <button *ngIf="showDelete" matChipRemove>
+        <mat-icon>cancel</mat-icon>
+      </button>
+
+
+  </mat-chip-row>
+</ng-template>
+
+<a *ngIf="searchOnClick; else content" [routerLink]="['.']" [queryParams]="searchParams">
+    <ng-container *ngTemplateOutlet="content"></ng-container>
+</a>

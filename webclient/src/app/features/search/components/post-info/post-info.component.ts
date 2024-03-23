@@ -1,5 +1,5 @@
-import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
-import {PostDetail, Tag} from "@core/models";
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import { PostDetail, PostSearchQuery, Tag } from "@core/models";
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -11,6 +11,10 @@ export class PostInfoComponent {
 
   @Input()
   public post: PostDetail | null = null;
+
+
+  @Input()
+  public searchQuery: PostSearchQuery | null = null;
 
   @Output()
   public searchForTag = new EventEmitter<Tag>();

@@ -64,4 +64,26 @@ export class PostSearchQuery {
     copy.splice(index, 1);
     return new PostSearchQuery(copy, this._order, this._seed);
   }
+
+  public queryParams(): any {
+    let params: any = {
+      order: this.order,
+    };
+
+    if (this.order == 'random') {
+      params.seed = this.seed;
+    }
+
+    let tagStr = this.items.filter(x => x.type == 'tag').map((x: any) => x.tag.id).join(',');
+    if (tagStr != '') {
+      params.tags = tagStr;
+    }
+
+    let textStr = JSON.stringify(this.items.filter(x => x.type == 'text').map((x: any) => x.str));
+    if (textStr != '') {
+      params.text = textStr;
+    }
+
+    return params;
+  }
 }

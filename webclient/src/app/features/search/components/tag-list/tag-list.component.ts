@@ -1,5 +1,5 @@
-import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
-import {Tag, TagGroup} from "@core/models";
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import { PostSearchQuery, Tag, TagGroup } from "@core/models";
 
 interface ReverseTagGroup {
   group: TagGroup | null,
@@ -15,6 +15,12 @@ interface ReverseTagGroup {
 export class TagListComponent {
 
   tagGroups: ReverseTagGroup[] = [];
+
+  @Input()
+  public searchQuery: PostSearchQuery | null = null;
+
+  @Input()
+  public searchOnClick = false;
 
   @Input()
   public showDelete = false;
@@ -62,7 +68,7 @@ export class TagListComponent {
     }
 
 
-    groups.sort((a,b) => {
+    groups.sort((a, b) => {
       if (a.group == null && b.group == null) {
         return 0;
       }
@@ -75,10 +81,10 @@ export class TagListComponent {
         return -1;
       }
 
-      if ( a.group.name < b.group?.name ){
+      if (a.group.name < b.group?.name) {
         return -1;
       }
-      if (a.group.name > b.group?.name){
+      if (a.group.name > b.group?.name) {
         return 1;
       }
       return 0;
