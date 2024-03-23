@@ -6,6 +6,7 @@
       <input [type]="hidePassword ? 'password' : 'text'"
              formControlName="password"
              matInput
+             autofocus
              placeholder="Enter your password">
 
       <mat-error *ngIf="form.controls.password.invalid">

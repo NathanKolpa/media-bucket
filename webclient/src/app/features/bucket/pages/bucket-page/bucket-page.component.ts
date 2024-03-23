@@ -20,6 +20,7 @@ export class BucketPageComponent implements OnDestroy {
   bucket$ = this.store.select(fromBucket.selectShallowBucket);
   isAuthenticated$ = this.store.select(fromBucket.isAuthenticated);
   bucketLoadingState$ = this.store.select(fromBucket.selectBucketLoadingState);
+  loginLoadingState$ = this.store.select(fromBucket.selectReloginLoadingState);
 
   private titleIndex: number | null = null;
   private bucketTitleSubscription: Subscription;
