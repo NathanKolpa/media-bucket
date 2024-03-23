@@ -48,7 +48,7 @@ export class SearchPageComponent implements OnDestroy, ConfirmComponent {
     });
 
     this.queryParamsSub = combineLatest([this.route.queryParamMap, this.bucket$.pipe(filter(x => x !== null))]).pipe(switchMap(([params, bucket]) => {
-      if (bucket === null) {
+      if (bucket === null || params.keys.length == 0) {
         return [];
       }
 
@@ -77,7 +77,7 @@ export class SearchPageComponent implements OnDestroy, ConfirmComponent {
         seed = +seedStr;
       }
 
-      let query = new PostSearchQuery([], 'newest', seed);
+      let query = new PostSearchQuery([], 'relevant', seed);
 
       for (let tag of tags) {
         query = query.addTag(tag);
