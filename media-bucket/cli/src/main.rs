@@ -1,15 +1,55 @@
-mod repl;
-
-use std::path::PathBuf;
-use std::{error::Error, sync::atomic::AtomicUsize};
+use std::fmt::Debug;
+use std::sync::atomic::AtomicUsize;
 use std::{net::IpAddr, sync::atomic::Ordering};
+use std::{path::PathBuf, process::ExitCode};
 
 use clap::{Parser, Subcommand, ValueEnum};
-use libmb::{model::Post, Bucket, SyncMatchStategy};
+use libmb::{http_server::ConfigError, model::Post, Bucket, BucketError, SyncMatchStategy};
 
 use libmb::http_server::{start_server, ServerConfig};
 
-use crate::repl::start_repl;
+enum CliError {
+    ConfigError(ConfigError),
+    StartServerError(std::io::Error),
+    CreateDirectoryError(std::io::Error),
+    PasswordsDoNotMatch,
+    CreateBucketError(BucketError),
+
+    OpenSourceError(BucketError),
+    OpenDestError(BucketError),
+    SyncBucketError(BucketError),
+}
+
+impl Debug for CliError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            CliError::ConfigError(err) => match err {
+                ConfigError::ReadError(e) => write!(f, "Error while opening config file: {e}"),
+                ConfigError::ParseError(e) => {
+                    write!(
+                        f,
+                        "Cannot read config file because it contains syntax errors: {e}"
+                    )
+                }
+            },
+            CliError::StartServerError(err) => write!(f, "Error while starting HTTP server: {err}"),
+            CliError::CreateDirectoryError(err) => {
+                write!(f, "Error while creating bucket directory: {err}")
+            }
+            CliError::PasswordsDoNotMatch => write!(f, "Passwords do not match"),
+            CliError::CreateBucketError(err) => {
+                write!(f, "Error while creating bucket: {err:?}")
+            }
+            CliError::OpenSourceError(err) => {
+                write!(f, "Error while opening source bucket: {err:?}")
+            }
+            CliError::OpenDestError(err) => {
+                write!(f, "Error while opening destination bucket: {err:?}")
+            }
+            CliError::SyncBucketError(err) => write!(f, "Error while syncing: {err:?}"),
+        }
+    }
+}
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Debug)]
 enum CliSyncMatchStrat {
@@ -94,9 +134,6 @@ enum Commands {
         #[clap(value_parser, long, default_value = None)]
         index_file: Option<String>,
     },
-
-    /// Read and write from a bucket interactively.
-    Open { location: String },
 }
 
 #[derive(Parser)]
@@ -107,10 +144,7 @@ struct Cli {
     command: Commands,
 }
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn Error>> {
-    let cli: Cli = Cli::parse();
-
+async fn run(cli: Cli) -> Result<(), CliError> {
     match cli.command {
         Commands::Server {
             config,
@@ -120,7 +154,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
             static_files,
             index_file,
         } => {
-            let mut config = ServerConfig::from_file(&config).await?;
+            let mut config = ServerConfig::from_file(&config)
+                .await
+                .map_err(CliError::ConfigError)?;
 
             if let Some(addr) = address {
                 config.address(addr);
@@ -134,25 +170,27 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 config.static_files(static_files, index_file);
             }
 
-            start_server(config).await?;
+            start_server(config)
+                .await
+                .map_err(CliError::StartServerError)?;
         }
         Commands::Init { path } => {
             if !path.exists() {
-                tokio::fs::create_dir(&path).await?;
+                tokio::fs::create_dir(&path)
+                    .await
+                    .map_err(CliError::CreateDirectoryError)?;
             }
 
             let password = rpassword::prompt_password("Enter your password: ").unwrap();
             if rpassword::prompt_password("Enter your password again: ").unwrap() != password {
-                return Err("Passwords do not match".into());
+                return Err(CliError::PasswordsDoNotMatch);
             }
 
-            Bucket::create_encrypted(&path, &password).await?;
+            Bucket::create_encrypted(&path, &password)
+                .await
+                .map_err(CliError::CreateBucketError)?;
 
             println!("Successfully created bucket at {}", path.display());
-        }
-        Commands::Open { location } => {
-            let bucket = open_bucket(None, &location, None).await?;
-            start_repl(bucket).await?;
         }
         Commands::Sync {
             source,
@@ -165,13 +203,16 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 &source,
                 Some(&format!("Enter your password for \"{source}\": ")),
             )
-            .await?;
+            .await
+            .map_err(CliError::OpenSourceError)?;
+
             let dest = open_bucket(
                 None,
                 &destination,
                 Some(&format!("Enter your password for \"{destination}\": ")),
             )
-            .await?;
+            .await
+            .map_err(CliError::OpenDestError)?;
 
             let total = AtomicUsize::new(0);
             let on_sync = |post: &Post| {
@@ -180,7 +221,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
             };
 
             dest.sync_from(&src, strategy.into(), remove, &on_sync)
-                .await?;
+                .await
+                .map_err(CliError::SyncBucketError)?;
 
             println!("Synced a total of {} post(s)", total.load(Ordering::SeqCst));
         }
@@ -189,12 +231,28 @@ async fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
+#[tokio::main]
+async fn main() -> ExitCode {
+    let cli: Cli = Cli::parse();
+
+    match run(cli).await {
+        Ok(_) => ExitCode::SUCCESS,
+        Err(err) => {
+            eprintln!("{err:?}");
+            ExitCode::FAILURE
+        }
+    }
+}
+
 async fn open_bucket(
     password: Option<String>,
     location: &str,
     prompt_override: Option<&str>,
-) -> Result<Bucket, Box<dyn Error>> {
-    let password = if Bucket::password_protected(location).await? {
+) -> Result<Bucket, BucketError> {
+    let password = if Bucket::password_protected(location)
+        .await
+        .map_err(|_| BucketError::InvalidLocation)?
+    {
         password.or_else(|| {
             Some(
                 rpassword::prompt_password(prompt_override.unwrap_or("Enter your password: "))
