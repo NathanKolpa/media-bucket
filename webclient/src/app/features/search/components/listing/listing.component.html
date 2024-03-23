@@ -35,18 +35,18 @@
     <div *ngIf="post.containsDocument || post.containsVideos || post.containsMovingImages || post.containsImages || post.itemCount > 1 || post.duration != null"
          class="overlay p-4">
       <p class="contrast mat-elevation-z6 d-inline-block">
-        <mat-icon *ngIf="post.containsVideos; else document" color="accent">movie</mat-icon>
+        <mat-icon *ngIf="post.containsVideos; else document" color="">movie</mat-icon>
 
         <ng-template #document>
-          <mat-icon *ngIf="post.containsDocument; else movingImage" color="accent">description</mat-icon>
+          <mat-icon *ngIf="post.containsDocument; else movingImage" color="">description</mat-icon>
         </ng-template>
 
         <ng-template #movingImage>
-          <mat-icon *ngIf="post.containsMovingImages; else image" color="accent">gif_box</mat-icon>
+          <mat-icon *ngIf="post.containsMovingImages; else image" color="">gif_box</mat-icon>
         </ng-template>
 
         <ng-template #image>
-          <mat-icon *ngIf="post.containsImages" color="accent">image</mat-icon>
+          <mat-icon *ngIf="post.containsImages" color="">image</mat-icon>
         </ng-template>
       </p>
 

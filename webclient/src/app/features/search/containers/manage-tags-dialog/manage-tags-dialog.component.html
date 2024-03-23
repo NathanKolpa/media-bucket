@@ -1,39 +1,45 @@
 <div *ngIf="(bucket$ | async) || null as bucket" class="dialog-container d-flex flex-column">
   <h2 mat-dialog-title class="">Manage Tags</h2>
-  <mat-dialog-content class="p-3 flex-grow-1">
+  <mat-dialog-content class="flex-grow-1">
 
-    <div class="row h-100">
+    <mat-tab-group class="h-100">
+      <mat-tab label="Tags">
 
-      <div class="col-xl-7 order-xl-0 order-1">
+          <div class="h-100 row pt-3">
+            <div class="col-xl-7 order-xl-0 order-1">
+              <app-manage-tags-search-results [nextLoadingState]="searchLoadingState$ | async"
+                                              [tags]="(searchResults$ | async) || []"
+                                              (requestNextData)="loadNext(bucket)"
+                                              [selectedTag]="selectedTag$ | async"
+                                              (selectTag)="changeSelectedTag(bucket, $event)"
+                                              [resultCount]="searchResultCount$ | async">
+                <mat-form-field appearance="fill" class="w-100">
+                  <mat-label>Search</mat-label>
+                  <input
+                    #input
+                    (input)="changeSearchQuery(bucket, input.value)"
+                    matInput
+                    autocomplete="off"
+                    placeholder="Search for tags">
+                </mat-form-field>
+              </app-manage-tags-search-results>
 
-        <app-manage-tags-search-results [nextLoadingState]="searchLoadingState$ | async"
-                                        [tags]="(searchResults$ | async) || []"
-                                        (requestNextData)="loadNext(bucket)"
-                                        [selectedTag]="selectedTag$ | async"
-                                        (selectTag)="changeSelectedTag(bucket, $event)"
-                                        [resultCount]="searchResultCount$ | async">
-          <mat-form-field appearance="fill" class="w-100">
-            <mat-label>Search</mat-label>
-            <input
-              #input
-              (input)="changeSearchQuery(bucket, input.value)"
-              matInput
-              autocomplete="off"
-              placeholder="Search for tags">
-          </mat-form-field>
-        </app-manage-tags-search-results>
+            </div>
 
-      </div>
+            <div class="col-xl-5 order-xl-1 order-0">
+              <app-manage-tags-tag-edit (reload)="reloadSelectedTag(bucket)"
+                                        [tag]="selectedTag$ | async"
+                                        (viewLinkedPosts)="viewLinkedPosts(bucket, $event)"
+                                        [detailLoadingState]="selectedTagLoadingState$ | async">
+              </app-manage-tags-tag-edit>
+            </div>
+          </div>
 
-      <div class="col-xl-5 order-xl-1 order-0">
-        <app-manage-tags-tag-edit (reload)="reloadSelectedTag(bucket)"
-                                  [tag]="selectedTag$ | async"
-                                  (viewLinkedPosts)="viewLinkedPosts(bucket, $event)"
-                                  [detailLoadingState]="selectedTagLoadingState$ | async">
-        </app-manage-tags-tag-edit>
-      </div>
+      </mat-tab>
+      <mat-tab label="Groups">
+      </mat-tab>
+    </mat-tab-group>
 
-    </div>
 
   </mat-dialog-content>
 

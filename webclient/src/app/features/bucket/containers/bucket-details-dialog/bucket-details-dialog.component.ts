@@ -31,6 +31,6 @@ export class BucketDetailsDialogComponent {
       return this.apiUrlStr;
     }
 
-    return (new URL(document.baseURI)).toString() + this.apiUrlStr;
+    return (new URL(document.baseURI)).toString().replace(/\/+$/, "") + this.apiUrlStr;
   }
 }

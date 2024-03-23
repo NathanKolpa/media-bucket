@@ -9,6 +9,7 @@ import { EffectsModule } from '@ngrx/effects';
 import { HttpClientModule, } from "@angular/common/http";
 import { CoreModule } from "@core/core.module";
 import { environment } from "@src/environments/environment";
+import { MAT_TABS_CONFIG } from '@angular/material/tabs';
 
 let showEventsOverride = false;
 
@@ -51,7 +52,9 @@ const metaReducers: MetaReducer[] = [debug];
     StoreModule.forRoot({}, { metaReducers }),
     EffectsModule.forRoot([]),
   ],
-  providers: [],
+  providers: [
+    { provide: MAT_TABS_CONFIG, useValue: { animationDuration: '0ms' } }
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule {
