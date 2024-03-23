@@ -157,12 +157,17 @@ pub async fn start_server(config: ServerConfig) -> std::io::Result<()> {
             routes()
         };
 
-        let cors = Cors::default()
-            .allow_any_origin()
-            .allow_any_method()
-            .allow_any_header()
-            .supports_credentials()
-            .max_age(3600);
+        let mut cors = Cors::default();
+
+        // use a lax cors policy in debug mode
+        if cfg!(debug_assertions) {
+            cors = cors
+                .allow_any_origin()
+                .allow_any_method()
+                .allow_any_header()
+                .supports_credentials()
+                .max_age(3600);
+        }
 
         App::new()
             .app_data(instance_data_source.clone())
