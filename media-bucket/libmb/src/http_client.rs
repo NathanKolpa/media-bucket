@@ -422,7 +422,10 @@ impl TagGroupDataSource for HttpDataSource {
 
 #[async_trait]
 impl PasswordDataSource for HttpDataSource {
-    async fn validate_password(&self, password: Option<&str>) -> Result<Option<[u8; 32]>, DataSourceError> {
+    async fn validate_password(
+        &self,
+        password: Option<&str>,
+    ) -> Result<Option<[u8; 32]>, DataSourceError> {
         todo!()
     }
 }
@@ -571,5 +574,12 @@ impl CrossDataSource for HttpDataSource {
 
     async fn get_tag_detail(&self, tag_id: u64) -> Result<Option<TagDetail>, DataSourceError> {
         todo!()
+    }
+
+    async fn gc(&self) -> Result<u64, DataSourceError> {
+        let res =
+            HttpDataSource::send_request(self.client.post(format!("{}/gc", self.base))).await?;
+
+        Ok(res)
     }
 }

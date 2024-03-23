@@ -4,7 +4,10 @@ use std::{net::IpAddr, sync::atomic::Ordering};
 use std::{path::PathBuf, process::ExitCode};
 
 use clap::{Parser, Subcommand, ValueEnum};
-use libmb::{http_server::ConfigError, model::Post, Bucket, BucketError, SyncMatchStategy};
+use libmb::{
+    data_source::DataSourceError, http_server::ConfigError, model::Post, Bucket, BucketError,
+    SyncMatchStategy,
+};
 
 use libmb::http_server::{start_server, ServerConfig};
 
@@ -15,6 +18,8 @@ enum CliError {
     PasswordsDoNotMatch,
     CreateBucketError(BucketError),
 
+    OpenError(BucketError),
+    GcError(DataSourceError),
     OpenSourceError(BucketError),
     OpenDestError(BucketError),
     SyncBucketError(BucketError),
@@ -47,6 +52,8 @@ impl Debug for CliError {
                 write!(f, "Error while opening destination bucket: {err:?}")
             }
             CliError::SyncBucketError(err) => write!(f, "Error while syncing: {err:?}"),
+            CliError::OpenError(err) => write!(f, "Error while opening bucket: {err:?}"),
+            CliError::GcError(err) => write!(f, "Error while running garbage collection: {err:?}"),
         }
     }
 }
@@ -77,6 +84,13 @@ enum Commands {
         /// The file path where to create the new bucket.
         #[clap(value_parser, value_name = "PATH")]
         path: PathBuf,
+    },
+
+    /// Run garbage collection on a bucket
+    Gc {
+        /// The bucket location where to copy from.
+        #[clap(value_parser, value_name = "LOCAITON")]
+        location: String,
     },
 
     /// Move data from one bucket across another in bulk.
@@ -225,6 +239,20 @@ async fn run(cli: Cli) -> Result<(), CliError> {
                 .map_err(CliError::SyncBucketError)?;
 
             println!("Synced a total of {} post(s)", total.load(Ordering::SeqCst));
+        }
+        Commands::Gc { location } => {
+            let bucket = open_bucket(None, &location, None)
+                .await
+                .map_err(CliError::OpenError)?;
+
+            let rows_affected = bucket
+                .data_source()
+                .cross()
+                .gc()
+                .await
+                .map_err(CliError::GcError)?;
+
+            println!("{rows_affected} row(s) affected");
         }
     }
 

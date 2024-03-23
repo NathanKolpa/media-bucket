@@ -48,6 +48,16 @@ pub async fn show(
 }
 
 #[cfg_attr(feature = "http-server-spec", utoipa::path)]
+#[post("/gc")]
+pub async fn gc(session: Session) -> Result<impl Responder, WebError> {
+    info!("Running manual gc");
+    let rows_affected = session.bucket().data_source().cross().gc().await?;
+    info!("Gc affected {rows_affected} row(s)");
+
+    Ok(web::Json(rows_affected))
+}
+
+#[cfg_attr(feature = "http-server-spec", utoipa::path)]
 #[get("/details")]
 pub async fn bucket_details(session: Session) -> Result<impl Responder, WebError> {
     let total_file_size = session

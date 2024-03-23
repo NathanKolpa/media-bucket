@@ -311,4 +311,6 @@ pub trait CrossDataSource: Sync + Send {
     async fn get_tags_from_post(&self, post_id: u64) -> Result<Vec<SearchTag>, DataSourceError>;
 
     async fn get_tag_detail(&self, tag_id: u64) -> Result<Option<TagDetail>, DataSourceError>;
+
+    async fn gc(&self) -> Result<u64, DataSourceError>;
 }

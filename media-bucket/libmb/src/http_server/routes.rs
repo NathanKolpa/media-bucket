@@ -68,6 +68,7 @@ pub fn routes() -> Scope {
                 .service(
                     web::scope("/{bucket_id}")
                         .service(buckets::bucket_details)
+                        .service(buckets::gc)
                         .service(
                             web::scope("/media")
                                 .service(media::file)

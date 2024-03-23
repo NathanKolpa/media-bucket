@@ -108,7 +108,7 @@ impl SqliteIndex {
                 .create_if_missing(create)
                 .pragma("key", key)
                 .journal_mode(SqliteJournalMode::Wal)
-                .synchronous(SqliteSynchronous::Full)
+                .synchronous(SqliteSynchronous::Normal)
                 .read_only(readonly)
                 .busy_timeout(Duration::from_secs(10));
 
@@ -1379,5 +1379,28 @@ impl CrossDataSource for SqliteIndex {
         } else {
             Ok(None)
         }
+    }
+
+    async fn gc(&self) -> Result<u64, DataSourceError> {
+        let mut conn = self.write_pool.acquire().await?;
+
+        let mut rows_affected = 0;
+
+        rows_affected += sqlx::query("pragma wal_checkpoint(truncate)")
+            .execute(&mut *conn)
+            .await?
+            .rows_affected();
+
+        rows_affected += sqlx::query("pragma vacuum")
+            .execute(&mut *conn)
+            .await?
+            .rows_affected();
+
+        rows_affected += sqlx::query("pragma optimize")
+            .execute(&mut *conn)
+            .await?
+            .rows_affected();
+
+        Ok(rows_affected)
     }
 }
