@@ -3,7 +3,10 @@
     <mat-card (click)="showDetail.emit(post)" [matRippleDisabled]="disableCardRipple" appearance="outlined" class="h-100"
               matRipple>
 
-      <img *ngIf="!hasThumbnailError; else loadError" (error)="handleThumbnailError()" [src]="post.thumbnail?.url" alt="Thumbnail" class="thumbnail">
+      <div *ngIf="!hasThumbnailError; else loadError" class="d-img thumbnail">
+        <img (error)="handleThumbnailError()" [src]="post.thumbnail?.url" alt="Thumbnail" class="thumbnail thumb-front">
+      </div>
+
       <ng-template #loadError>
         <div class="thumbnail d-flex justify-content-center align-items-center flex-column bg-white">
           <mat-icon class="text-warning-emphasis">broken_image</mat-icon>
