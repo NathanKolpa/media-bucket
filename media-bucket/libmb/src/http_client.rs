@@ -505,6 +505,7 @@ impl CrossDataSource for HttpDataSource {
     async fn search_items(
         &self,
         post_id: u64,
+        query: &PostItemSearchQuery,
         page: PageParams,
     ) -> Result<Page<SearchPostItem>, DataSourceError> {
         todo!()

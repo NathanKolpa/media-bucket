@@ -4,7 +4,7 @@ mod playlist_stream;
 
 use crate::{
     data_source::{DataSourceError, PageParams},
-    model::{PostDetail, PostItem},
+    model::{PostDetail, PostItem, PostItemSearchQuery},
 };
 
 use api_urls::*;
@@ -29,12 +29,16 @@ fn data_to_std_err(err: DataSourceError) -> Error {
 pub fn new_post_playlist(
     base: Option<Arc<Url>>,
     bucket_id: u64,
+    mut query: PostItemSearchQuery,
     token: Option<String>,
     bucket: Arc<Bucket>,
     post: PostDetail,
     chunk_size: usize,
 ) -> impl Stream<Item = Result<Bytes, Error>> {
+    query.require_playable = true;
     let post_rc = Arc::new(post);
+    let query_rc = Arc::new(query);
+
     PlaylistStream {
         playlist_title: post_rc.post.title.clone(),
         api_url: ApiUrl { bucket_id, base },
@@ -44,13 +48,20 @@ pub fn new_post_playlist(
         next_page: PageParams::new(chunk_size, 0),
         state: StreamPlaylistState::PreRead,
         next_page_callback: move |params, buffer| {
-            search_items(post_rc.clone(), bucket.clone(), params, buffer)
+            search_items(
+                query_rc.clone(),
+                post_rc.clone(),
+                bucket.clone(),
+                params,
+                buffer,
+            )
         },
         buffer: String::new(),
     }
 }
 
 async fn search_items(
+    query: Arc<PostItemSearchQuery>,
     post: Arc<PostDetail>,
     bucket: Arc<Bucket>,
     params: PageParams,
@@ -64,7 +75,7 @@ async fn search_items(
     let page = bucket
         .data_source()
         .cross()
-        .search_items(post.post.id, params)
+        .search_items(post.post.id, &query, params)
         .await
         .map_err(data_to_std_err)?;
 
@@ -169,9 +180,10 @@ pub fn new_search_playlist(
     bucket_id: u64,
     token: Option<String>,
     bucket: Arc<Bucket>,
-    query: PostSearchQuery,
+    mut query: PostSearchQuery,
     chunk_size: usize,
 ) -> impl Stream<Item = Result<Bytes, Error>> {
+    query.require_playable = true;
     let query = Arc::new(query);
 
     PlaylistStream {

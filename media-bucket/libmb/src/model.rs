@@ -349,6 +349,7 @@ pub struct PostSearchQuery {
     pub text: Option<String>,
     pub source: Option<String>,
     pub order: Option<PostSearchQueryOrder>,
+    pub require_playable: bool,
 }
 
 impl PostSearchQuery {
@@ -356,6 +357,13 @@ impl PostSearchQuery {
         self.tags.is_some() || self.text.is_some() || self.source.is_some()
     }
 }
+
+#[derive(Debug, Default, Serialize, Deserialize, Clone)]
+#[cfg_attr(feature = "http-server-spec", derive(utoipa::ToSchema))]
+pub struct PostItemSearchQuery {
+    pub require_playable: bool,
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 #[cfg_attr(feature = "http-server-spec", derive(utoipa::ToSchema))]
 pub enum GraphValue {

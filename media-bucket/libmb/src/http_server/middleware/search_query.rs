@@ -16,6 +16,7 @@ struct PostSearchParams {
     order: Option<String>,
     source: Option<String>,
     seed: Option<f32>,
+    require_playable: Option<bool>,
 }
 
 impl FromRequest for PostSearchQuery {
@@ -43,6 +44,7 @@ impl FromRequest for PostSearchQuery {
             }
 
             let seed = query.seed.ok_or(WebError::ParseError);
+            let require_playable = query.require_playable.unwrap_or_default();
 
             let order = match query.order.as_deref() {
                 Some("newest") | None => Ok(PostSearchQueryOrder::Newest),
@@ -57,6 +59,7 @@ impl FromRequest for PostSearchQuery {
                 text: query.text.clone(),
                 source: query.source.clone(),
                 order: Some(order),
+                require_playable,
             })
         })
     }

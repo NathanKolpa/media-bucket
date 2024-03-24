@@ -3,7 +3,6 @@ use actix_web::{delete, get, post, put, web, HttpResponse, Responder};
 use log::info;
 use serde::Deserialize;
 
-use crate::http_server::instance::Session;
 use crate::http_server::stream_playlist::new_search_playlist;
 use crate::http_server::web_error::WebError;
 use crate::model::{CreateFullPost, PostGraphQuery, PostSearchQuery};
@@ -12,6 +11,7 @@ use crate::{
     http_models::{CreateFullPostResponse, UpdatePostRequest},
     http_server::stream_playlist::new_content_playlist,
 };
+use crate::{http_server::instance::Session, model::PostItemSearchQuery};
 
 #[cfg_attr(feature = "http-server-spec", utoipa::path)]
 #[post("graph")]
@@ -49,13 +49,14 @@ pub async fn index(
 #[derive(Deserialize)]
 pub struct PlaylistParams {
     include_token: Option<bool>,
+    require_playable: Option<bool>,
 }
 
 #[cfg_attr(feature = "http-server-spec", utoipa::path)]
 #[get("index.m3u")]
 pub async fn index_playlist(
     session: Session,
-    query: PostSearchQuery,
+    mut query: PostSearchQuery,
     params: web::Query<PlaylistParams>,
 ) -> Result<impl Responder, WebError> {
     let token = if params.include_token.unwrap_or(false) && session.read_only() {
@@ -63,6 +64,8 @@ pub async fn index_playlist(
     } else {
         None
     };
+
+    query.require_playable = params.require_playable.unwrap_or_default();
 
     let response = HttpResponse::Ok().body(BodyStream::new(new_search_playlist(
         session.instance().base_url(),
@@ -115,9 +118,14 @@ pub async fn show_playlist(
         .await?
         .ok_or(WebError::ResourceNotFound)?;
 
+    let query = PostItemSearchQuery {
+        require_playable: params.require_playable.unwrap_or_default(),
+    };
+
     let response = HttpResponse::Ok().body(BodyStream::new(new_post_playlist(
         session.instance().base_url(),
         session.instance().id(),
+        query,
         token,
         session.bucket_arc(),
         post,
@@ -234,11 +242,17 @@ pub async fn show_item_playlist(
     Ok(response)
 }
 
+#[derive(Deserialize)]
+pub struct PostItemsQueryParams {
+    require_playable: Option<bool>,
+}
+
 #[cfg_attr(feature = "http-server-spec", utoipa::path)]
 #[get("/{id}/items")]
 pub async fn index_items(
     session: Session,
     id: web::Path<(u64, u64)>,
+    query: web::Query<PostItemsQueryParams>,
     page: PageParams,
 ) -> Result<impl Responder, WebError> {
     let id = id.into_inner().1;
@@ -251,11 +265,15 @@ pub async fn index_items(
         .await?
         .ok_or(WebError::ResourceNotFound)?;
 
+    let query = PostItemSearchQuery {
+        require_playable: query.require_playable.unwrap_or_default(),
+    };
+
     let items = session
         .bucket()
         .data_source()
         .cross()
-        .search_items(post.id, page)
+        .search_items(post.id, &query, page)
         .await?;
 
     Ok(web::Json(items))

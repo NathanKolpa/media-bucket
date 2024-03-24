@@ -283,6 +283,7 @@ pub trait CrossDataSource: Sync + Send {
     async fn search_items(
         &self,
         post_id: u64,
+        query: &PostItemSearchQuery,
         page: PageParams,
     ) -> Result<Page<SearchPostItem>, DataSourceError>;
     async fn get_full_post_item(

@@ -132,7 +132,7 @@ impl ServerBucketInstance {
     }
 
     pub fn authorize_token(self: Arc<Self>, token: String, ip: IpAddr) -> Option<Session> {
-        let token_secret = self.token_secret.read().unwrap().clone()?;
+        let token_secret = (*self.token_secret.read().unwrap())?;
 
         let auth_token = AuthToken::from_token(&token, &token_secret, &ip)?;
 

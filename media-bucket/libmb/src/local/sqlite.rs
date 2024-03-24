@@ -376,6 +376,18 @@ impl SqliteIndex {
                 }
             }
 
+            if query.require_playable {
+                if !is_first {
+                    where_clause.push_str(" AND")
+                }
+
+                //SELECT SUM(c.duration) FROM post_items pi JOIN media c ON pi.content_id = c.media_id WHERE pi.post_id = p.post_id
+
+                where_clause.push_str(" total_duration > 0");
+
+                is_first = false;
+            }
+
             if let Some(source) = query.source.as_ref() {
                 if !is_first {
                     where_clause.push_str(" AND")
@@ -999,6 +1011,7 @@ impl CrossDataSource for SqliteIndex {
     async fn search_items(
         &self,
         post_id: u64,
+        query: &PostItemSearchQuery,
         page: PageParams,
     ) -> Result<Page<SearchPostItem>, DataSourceError> {
         let mut conn = self.read_pool.acquire().await?;
@@ -1014,11 +1027,12 @@ impl CrossDataSource for SqliteIndex {
         LEFT JOIN content c ON pi.content_id = c.content_id
         LEFT JOIN media cm ON pi.content_id = cm.media_id
         LEFT JOIN media m ON c.thumbnail_id = m.media_id
-        WHERE pi.post_id = ?
+        WHERE pi.post_id = ? AND (? != 0 OR content_duration > 0)
         ORDER BY pi.item_order ASC
         LIMIT ? OFFSET ?",
         )
             .bind(post_id as i64)
+            .bind(!query.require_playable)
             .bind(page.page_size() as i64)
             .bind(page.offset() as i64)
             .map(|r| Self::map_search_post_item(&r))
