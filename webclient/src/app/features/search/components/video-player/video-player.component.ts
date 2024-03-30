@@ -9,8 +9,8 @@ import {
   Output,
   ViewChild
 } from '@angular/core';
-import {Media} from "@core/models";
-import {Subject} from "rxjs";
+import { Media } from "@core/models";
+import { Subject } from "rxjs";
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -20,7 +20,7 @@ import {Subject} from "rxjs";
 })
 export class VideoPlayerComponent implements AfterViewInit, OnDestroy {
 
-  @ViewChild('video', {static: false})
+  @ViewChild('video', { static: false })
   public videoPlayer?: ElementRef<HTMLVideoElement>;
   @Input()
   public className: string | null = null;
@@ -58,7 +58,7 @@ export class VideoPlayerComponent implements AfterViewInit, OnDestroy {
     let volumeStr = localStorage.getItem('video_volume');
     let volume = 0.25;
 
-    if(volumeStr != null && !isNaN(+volumeStr)) {
+    if (volumeStr != null && !isNaN(+volumeStr)) {
       volume = +volumeStr;
     }
 

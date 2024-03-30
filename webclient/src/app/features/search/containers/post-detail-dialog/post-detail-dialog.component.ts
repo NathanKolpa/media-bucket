@@ -1,13 +1,14 @@
 import { Component, OnDestroy, ViewEncapsulation } from '@angular/core';
 import { MatDialogRef } from "@angular/material/dialog";
-import { delay, first, map, Subscription } from "rxjs";
+import { delay, first, map, Subscription, withLatestFrom } from "rxjs";
 import { Store } from "@ngrx/store";
 import { fromSearch, searchActions } from '@features/search/store';
 import { fromBucket } from '@features/bucket/store';
-import { PostItem, SearchPostItem, SelectedBucket } from "@core/models";
+import { Post, PostItem, PostSearchQuery, SearchPostItem, SelectedBucket } from "@core/models";
 import { AppTitleService } from "@core/services";
 import { Listing } from "@core/models/listing";
 import { Clipboard } from '@angular/cdk/clipboard';
+import { Router } from '@angular/router';
 
 @Component({
   encapsulation: ViewEncapsulation.None,
@@ -19,7 +20,9 @@ export class PostDetailDialogComponent implements OnDestroy {
   public open = false;
 
   bucket$ = this.store.select(fromBucket.selectBucket);
+  searchQuery$ = this.store.select(fromSearch.selectSearchQuery);
   post$ = this.store.select(fromSearch.selectViewedPost);
+  currentOffset$ = this.store.select(fromSearch.selectViewOffset);
   itemLoadingState$ = this.store.select(fromSearch.selectCurrentItemLoadingState);
   postLoadingState$ = this.store.select(fromSearch.selectViewedPostLoadingState);
   item$ = this.store.select(fromSearch.selectCurrentItem);
@@ -31,21 +34,44 @@ export class PostDetailDialogComponent implements OnDestroy {
   public originalSize = true;
   private currentBucket: SelectedBucket | null = null;
   private currentPostId: number | null = null;
+  private currentOffset: number | null = null;
   private currentPosition: number = 0;
   private titleIndex: number | null = null;
   private postSubscription: Subscription;
   private bucketSubscription: Subscription;
   private itemSubscription: Subscription;
+  private offsetSubscription: Subscription;
 
-  constructor(public dialogRef: MatDialogRef<PostDetailDialogComponent>, private store: Store, private title: AppTitleService, private clipboard: Clipboard) {
+  public transformParams(query: PostSearchQuery, offset: number): any {
+    return { ...query.queryParams(), focus_post: offset };
+  }
+
+  constructor(public dialogRef: MatDialogRef<PostDetailDialogComponent>, private store: Store, private title: AppTitleService, private clipboard: Clipboard, private router: Router) {
     dialogRef.afterOpened().pipe(first(), delay(0)).subscribe(() => this.open = true);
 
-    this.dialogRef.keydownEvents().subscribe(event => {
-      if (event.key === "Escape") {
-        this.dialogRef.close();
+    this.dialogRef.keydownEvents()
+      .pipe(withLatestFrom(this.bucket$))
+      .pipe(withLatestFrom(this.currentOffset$))
+      .pipe(withLatestFrom(this.searchQuery$))
+      .subscribe(([[[event, bucket], offset], query]) => {
+        if (bucket === null || offset === null || query == null) {
+          return;
+        }
+
+        if (event.key === "Escape") {
+          this.dialogRef.close();
+
+          this.router.navigate(['buckets', bucket.bucket.id], {
+            queryParams: this.transformParams(query, offset),
+          });
+        }
+      });
+
+    this.offsetSubscription = this.currentOffset$.subscribe(offset => {
+      if (offset !== null) {
+        this.currentOffset = offset;
       }
     });
-
 
     this.postSubscription = this.post$.subscribe(post => {
       if (post) {
@@ -92,10 +118,11 @@ export class PostDetailDialogComponent implements OnDestroy {
   }
 
   reloadPost() {
-    if (this.currentBucket && this.currentPostId) {
+    if (this.currentBucket && this.currentPostId && this.currentOffset) {
       this.store.dispatch(searchActions.showPost({
         bucket: this.currentBucket,
-        postId: this.currentPostId
+        postId: this.currentPostId,
+        offset: this.currentOffset
       }));
     }
   }

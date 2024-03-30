@@ -22,10 +22,13 @@
     class="flex-grow-1">
 
     <app-search-results (requestNextData)="loadNext(bucket)"
-                        (showDetail)="showPost(bucket, posts[$event])"
+                        (showDetail)="showPost(bucket, posts[$event], $event)"
                         (showInfo)="showSidebar(bucket, posts[$event])"
                         *ngIf="(posts$ | async) || null as posts"
                         [items]="castPostToListing(posts)"
+                        [queryParams]="queryParams$ | async"
+                        [queryName]="'view_post'"
+                        [startingIndex]="startIndex"
                         [nextLoadingState]="postsLoadingState$ | async"
                         [resultCount]="postCount$ | async">
 

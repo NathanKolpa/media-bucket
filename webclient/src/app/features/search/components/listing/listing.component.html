@@ -1,63 +1,73 @@
 <div *ngIf="item as post" [ngStyle]="{ height: height + 'px', 'max-height': height + 'px' }">
   <div class="wrapper h-100 p-4">
-    <mat-card (click)="showDetail.emit(post)" [matRippleDisabled]="disableCardRipple" appearance="outlined" class="h-100"
-              matRipple>
 
-      <div *ngIf="!hasThumbnailError; else loadError" class="d-img thumbnail">
-        <img (error)="handleThumbnailError()" [src]="post.thumbnail?.url" alt="Thumbnail" class="thumbnail thumb-front">
-      </div>
+    <ng-template #content>
 
-      <ng-template #loadError>
-        <div class="thumbnail d-flex justify-content-center align-items-center flex-column bg-white">
-          <mat-icon class="text-warning-emphasis">broken_image</mat-icon>
-          <span class="text-warning-emphasis mt-2">Error while loading file</span>
-        </div>
-      </ng-template>
+      <mat-card (click)="showDetail.emit(post)" [matRippleDisabled]="disableCardRipple" appearance="outlined" class="h-100"
+                matRipple>
 
-      <mat-card-footer *ngIf="!disableFooter" class="p-2 d-flex align-items-center user-select-none">
-
-        <div class="ms-3" style="word-break: break-all">
-              <span *ngIf="post.title as title; else altTitle"
-                    [title]="post.title">{{ title | slice:0:100 }}</span>
-          <ng-template #altTitle><i [title]="post.altTitle">{{ post.altTitle | slice:0:100 }}</i></ng-template>
+        <div *ngIf="!hasThumbnailError; else loadError" class="d-img thumbnail">
+          <img (error)="handleThumbnailError()" [src]="post.thumbnail?.url" alt="Thumbnail" class="thumbnail thumb-front">
         </div>
 
-
-        <div class="spacer"></div>
-
-        <button (click)="$event.stopImmediatePropagation(); showInfo.emit(post)"
-                (mouseenter)="disableCardRipple=true"
-                (mouseleave)="disableCardRipple=false"
-                mat-icon-button>
-          <mat-icon>info</mat-icon>
-        </button>
-
-      </mat-card-footer>
-    </mat-card>
-
-    <div *ngIf="post.containsDocument || post.containsVideos || post.containsMovingImages || post.containsImages || post.itemCount > 1 || post.duration != null"
-         class="overlay p-4">
-      <p class="contrast mat-elevation-z6 d-inline-block">
-        <mat-icon *ngIf="post.containsVideos; else document" color="">movie</mat-icon>
-
-        <ng-template #document>
-          <mat-icon *ngIf="post.containsDocument; else movingImage" color="">description</mat-icon>
+        <ng-template #loadError>
+          <div class="thumbnail d-flex justify-content-center align-items-center flex-column bg-white">
+            <mat-icon class="text-warning-emphasis">broken_image</mat-icon>
+            <span class="text-warning-emphasis mt-2">Error while loading file</span>
+          </div>
         </ng-template>
 
-        <ng-template #movingImage>
-          <mat-icon *ngIf="post.containsMovingImages; else image" color="">gif_box</mat-icon>
-        </ng-template>
+        <mat-card-footer *ngIf="!disableFooter" class="p-2 d-flex align-items-center user-select-none">
 
-        <ng-template #image>
-          <mat-icon *ngIf="post.containsImages" color="">image</mat-icon>
-        </ng-template>
-      </p>
+          <div class="ms-3" style="word-break: break-all">
+                <span *ngIf="post.title as title; else altTitle"
+                      [title]="post.title">{{ title | slice:0:100 }}</span>
+            <ng-template #altTitle><i [title]="post.altTitle">{{ post.altTitle | slice:0:100 }}</i></ng-template>
+          </div>
 
-      <div class="float-end">
-        <p *ngIf="post.itemCount > 1" class="contrast mat-elevation-z6">{{ post.itemCount }} items</p>
-        <p *ngIf="post.duration as duration" class="contrast mat-elevation-z6">{{ duration | duration }}</p>
+
+          <div class="spacer"></div>
+
+          <button (click)="$event.stopImmediatePropagation(); showInfo.emit(post)"
+                  (mouseenter)="disableCardRipple=true"
+                  (mouseleave)="disableCardRipple=false"
+                  mat-icon-button>
+            <mat-icon>info</mat-icon>
+          </button>
+
+        </mat-card-footer>
+      </mat-card>
+
+      <div *ngIf="post.containsDocument || post.containsVideos || post.containsMovingImages || post.containsImages || post.itemCount > 1 || post.duration != null"
+           class="overlay p-4">
+        <p class="contrast mat-elevation-z6 d-inline-block">
+          <mat-icon *ngIf="post.containsVideos; else document" color="">movie</mat-icon>
+
+          <ng-template #document>
+            <mat-icon *ngIf="post.containsDocument; else movingImage" color="">description</mat-icon>
+          </ng-template>
+
+          <ng-template #movingImage>
+            <mat-icon *ngIf="post.containsMovingImages; else image" color="">gif_box</mat-icon>
+          </ng-template>
+
+          <ng-template #image>
+            <mat-icon *ngIf="post.containsImages" color="">image</mat-icon>
+          </ng-template>
+        </p>
+
+        <div class="float-end">
+          <p *ngIf="post.itemCount > 1" class="contrast mat-elevation-z6">{{ post.itemCount }} items</p>
+          <p *ngIf="post.duration as duration" class="contrast mat-elevation-z6">{{ duration | duration }}</p>
+        </div>
+
       </div>
+    </ng-template>
 
-    </div>
+    <a *ngIf="queryParams !== null && !disableCardRipple; else content" [routerLink]="['.']" [queryParams]="queryParams" >
+        <ng-container *ngTemplateOutlet="content"></ng-container>
+    </a>
+
   </div>
 </div>
+

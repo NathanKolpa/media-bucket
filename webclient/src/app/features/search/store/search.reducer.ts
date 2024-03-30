@@ -26,6 +26,7 @@ interface State {
   sidebarPostLoadingState: LoadingState,
   sidebarPost: PostDetail | null,
 
+  viewOffset: number | null,
   viewedPost: PostDetail | null,
   viewedPostLoadingState: LoadingState,
   currentItemLoadingState: LoadingState,
@@ -59,6 +60,7 @@ const initialState: State = {
   posts: [],
   postCount: null,
 
+  viewOffset: null,
   showSidebar: false,
   sidebarPostLoadingState: LoadingState.initial(),
   currentItemLoadingState: LoadingState.initial(),
@@ -116,7 +118,7 @@ const feature = createFeature({
       showSidebar: false
     })),
 
-    on(searchActions.showPost, (state, { postId }) => {
+    on(searchActions.showPost, (state, { postId, offset }) => {
       if (postId == state.viewedPost?.id) {
         return state;
       }
@@ -124,6 +126,7 @@ const feature = createFeature({
       return ({
         ...state,
         viewedPostLoadingState: state.viewedPostLoadingState.loading(),
+        viewOffset: offset,
         currentItem: null,
         viewedPost: null,
         nextItemPreview: null,
@@ -450,7 +453,8 @@ export const {
   selectTagEditSelectedTagLoadingState,
   selectTagEditSelectedTag,
   selectNextItemPreview,
-  selectPrevItemPreview
+  selectPrevItemPreview,
+  selectViewOffset
 } = feature;
 
 export const uploadJobSelectors = uploadJobAdapter.getSelectors();

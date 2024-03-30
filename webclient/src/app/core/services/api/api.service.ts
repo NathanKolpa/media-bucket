@@ -172,7 +172,6 @@ export class ApiService {
       text = '&text=' + encodeURIComponent(textItems.map(x => x.type == 'text' ? x.str.toLowerCase() : '').join(' OR ')); // to lower case prevents messing with OR
     }
 
-
     let queryStr = `${tagIds}${text}&order=${query.order}`;
     let authStr = '';
     if (share) {
@@ -181,7 +180,13 @@ export class ApiService {
 
     let limitStr = '';
     if (pageParams) {
-      limitStr = `&offset=${encodeURIComponent(pageParams.offset)}&size=${encodeURIComponent(pageParams.pageSize)}`;
+      let offset = pageParams.offset;
+      let size = pageParams.pageSize;
+      if (query.startPost !== null) {
+        size += Math.max(0, query.startPost - (offset + size));
+      }
+
+      limitStr = `&offset=${encodeURIComponent(offset)}&size=${encodeURIComponent(size)}`;
     }
 
     let seedStr = '';

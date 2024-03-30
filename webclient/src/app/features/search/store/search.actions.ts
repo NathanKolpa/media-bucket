@@ -29,7 +29,8 @@ export const loadNextFailure = createAction('[Search] load next failure', props<
 export const toggleInfo = createAction('[Search] toggle info');
 export const closeInfo = createAction('[Search] close info');
 
-export const showPost = createAction('[Search] show post', props<{ bucket: SelectedBucket, postId: number, showPopup?: boolean }>());
+export const showPostByOffset = createAction('[Search] show post by offset', props<{ bucket: SelectedBucket, offset: number, showPopup?: boolean }>());
+export const showPost = createAction('[Search] show post', props<{ bucket: SelectedBucket, postId: number, showPopup?: boolean, offset: number }>());
 export const showPostSuccess = createAction('[Search] show post success', props<{ post: PostDetail }>());
 export const showPostFailure = createAction('[Search] show post failure', props<{ failure: Failure }>());
 

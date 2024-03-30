@@ -8,7 +8,7 @@ export type SearchQueryOrder = 'newest' | 'oldest' | 'relevant' | 'random';
 
 export class PostSearchQuery {
 
-  constructor(private _items: SearchQueryItem[], private _order: SearchQueryOrder, private _seed: number) {
+  constructor(private _items: SearchQueryItem[], private _order: SearchQueryOrder, private _seed: number, private _startPost: number | null) {
   }
 
   get items(): SearchQueryItem[] {
@@ -23,16 +23,20 @@ export class PostSearchQuery {
     return this._seed;
   }
 
+  get startPost(): null | number {
+    return this._startPost;
+  }
+
   public static empty(): PostSearchQuery {
-    return new PostSearchQuery([], 'relevant', Math.random());
+    return new PostSearchQuery([], 'relevant', Math.random(), null);
   }
 
   public randomizeSeed(): PostSearchQuery {
-    return new PostSearchQuery(this._items, this._order, Math.random());
+    return new PostSearchQuery(this._items, this._order, Math.random(), this._startPost);
   }
 
   public setTag(tag: Tag): PostSearchQuery {
-    return new PostSearchQuery([{ tag, type: 'tag' }], this._order, this._seed);
+    return new PostSearchQuery([{ tag, type: 'tag' }], this._order, this._seed, this._startPost);
   }
 
   public addTag(tag: Tag): PostSearchQuery {
@@ -42,7 +46,7 @@ export class PostSearchQuery {
       }
 
       return x.tag.id != tag.id;
-    }), { type: 'tag', tag }], this._order, this._seed);
+    }), { type: 'tag', tag }], this._order, this._seed, this._startPost);
   }
 
   public addText(text: string): PostSearchQuery {
@@ -52,17 +56,17 @@ export class PostSearchQuery {
       }
 
       return x.str != text;
-    }), { type: 'text', str: text }], this._order, this._seed);
+    }), { type: 'text', str: text }], this._order, this._seed, this._startPost);
   }
 
   public setOrder(order: SearchQueryOrder): PostSearchQuery {
-    return new PostSearchQuery(this._items, order, this._seed);
+    return new PostSearchQuery(this._items, order, this._seed, this._startPost);
   }
 
   public removeItem(index: number): PostSearchQuery {
     let copy = [...this._items];
     copy.splice(index, 1);
-    return new PostSearchQuery(copy, this._order, this._seed);
+    return new PostSearchQuery(copy, this._order, this._seed, this._startPost);
   }
 
   public queryParams(): any {

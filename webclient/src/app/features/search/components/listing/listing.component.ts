@@ -1,5 +1,5 @@
-import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
-import {Listing} from "@core/models/listing";
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import { Listing } from "@core/models/listing";
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -23,6 +23,8 @@ export class ListingComponent {
 
   disableCardRipple = false;
 
+  @Input()
+  public queryParams: any | null = null;
 
   @Input()
   public height: number = 100;

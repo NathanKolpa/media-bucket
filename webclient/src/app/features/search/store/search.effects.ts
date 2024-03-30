@@ -47,6 +47,7 @@ export class SearchEffects {
     ))
   ));
 
+
   loadNextPostItems$ = createEffect(() => this.actions$.pipe(
     ofType(searchActions.loadNextPostItemList),
     withLatestFrom(this.store.select(fromSearch.selectNextItemPage)),
@@ -82,6 +83,22 @@ export class SearchEffects {
     switchMap(([{ bucket, postId }, currentItem]) => [
       searchActions.loadPostItem({ bucket, postId, position: currentItem?.position ?? 0 }),
     ])
+  ));
+
+
+  showPostByOffset$ = createEffect(() => this.actions$.pipe(
+    ofType(searchActions.showPostByOffset),
+    switchMap(action => {
+      return this.store.select(fromSearch.selectPosts).pipe(
+
+        filter(x => x.length > action.offset),
+        first(),
+        map(posts => {
+          return ({ posts, action });
+        })
+      )
+    }),
+    map(({ action, posts }) => searchActions.showPost({ bucket: action.bucket, postId: posts[action.offset].id, showPopup: action.showPopup, offset: action.offset }))
   ));
 
   showPost$ = createEffect(() => this.actions$.pipe(

@@ -27,6 +27,12 @@ export class SearchResultsComponent implements OnDestroy {
   public showDetail = new EventEmitter<number>();
 
   @Input()
+  public queryParams: any = {};
+
+  @Input()
+  public queryName: string | null = null;
+
+  @Input()
   public disableFooter = false;
 
   @Input()
@@ -39,6 +45,18 @@ export class SearchResultsComponent implements OnDestroy {
     this.moveToStartingPosition()
   }
 
+  public listingParams(offset: number): any | null {
+    if (this.queryName == null) {
+      return null;
+    }
+
+    let params = { ...this.queryParams };
+
+
+    params[this.queryName] = offset;
+
+    return params;
+  }
 
   public rows: number[][] = [];
   @Input()

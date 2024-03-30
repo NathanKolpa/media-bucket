@@ -1,6 +1,6 @@
-import {createSelector} from "@ngrx/store";
-import {selectSearchState, tagSelectors, uploadJobSelectors} from "./search.reducer";
-import {PageParams} from "@core/models";
+import { createSelector } from "@ngrx/store";
+import { selectSearchState, tagSelectors, uploadJobSelectors } from "./search.reducer";
+import { PageParams } from "@core/models";
 
 export const selectPosts = createSelector(
   selectSearchState,
@@ -105,5 +105,6 @@ export {
   selectTagEditSelectedTagLoadingState,
   selectTagEditSelectedTag,
   selectNextItemPreview,
-  selectPrevItemPreview
+  selectPrevItemPreview,
+  selectViewOffset,
 } from './search.reducer'

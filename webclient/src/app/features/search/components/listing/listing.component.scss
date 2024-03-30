@@ -37,4 +37,10 @@ mat-card {
 }
 .thumb-front {
   object-fit: scale-down;
+  order: 100010;
+}
+
+a {
+  color: inherit;
+  text-decoration: inherit;
 }

@@ -15,12 +15,13 @@
     <div [ngClass]="containerClass" class="row">
       <ng-container *cdkVirtualFor="let row of rows; trackBy: trackById">
         <app-listing
-          (showDetail)="showDetail.emit(index)"
           (showInfo)="showInfo.emit(index)"
+          (showDetail)="showDetail.emit(index)"
           *ngFor="let index of row"
           [disableFooter]="disableFooter"
           [height]="350"
           [item]="items[index]"
+          [queryParams]="listingParams(index)"
           class="d-block">
         </app-listing>
       </ng-container>
