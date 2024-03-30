@@ -1,8 +1,8 @@
 <div *ngIf="(bucket$ | async) || null as bucket" class="dialog-container">
 
   <div *ngIf="open" class="toolbar d-flex">
-    <ng-container *ngIf="(currentOffset$ | async) || null as offset">
-      <a *ngIf="(searchQuery$ | async) || null as query" mat-icon-button mat-dialog-close [routerLink]="['buckets', bucket.bucket.id]" [queryParams]="transformParams(query, offset)">
+    <ng-container *ngIf="{ offset: currentOffset$ | async, query: searchQuery$ | async } as ctx">
+      <a *ngIf="ctx.query !== null && ctx.offset !== null" mat-icon-button mat-dialog-close [routerLink]="['buckets', bucket.bucket.id]" [queryParams]="transformParams(ctx.query, ctx.offset)">
         <mat-icon>close</mat-icon>
       </a>
     </ng-container>
