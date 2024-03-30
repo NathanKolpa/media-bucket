@@ -61,10 +61,6 @@ export class SearchPageComponent implements OnDestroy, ConfirmComponent {
           || this.prevQuery['seed'] != params.get('seed')
           || this.prevQuery['order'] != params.get('order'));
 
-      let hasPostChanges = this.prevPost === null
-        || this.prevPost != params.get('view_post')
-        || this.prevPost != params.get('focus_post');
-
       if (bucket === null) {
         return [];
       }
@@ -215,6 +211,7 @@ export class SearchPageComponent implements OnDestroy, ConfirmComponent {
 
   showPost(bucket: SelectedBucket, post: SearchPost, offset: number) {
     this.store.dispatch(searchActions.showPost({ bucket, postId: post.id, showPopup: true, offset }));
+    this.prevPost = "-1";
   }
 
   showUploadDialog() {
