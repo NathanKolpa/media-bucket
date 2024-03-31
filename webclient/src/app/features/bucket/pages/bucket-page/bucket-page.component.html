@@ -16,6 +16,7 @@
           <app-header
             (showGeneralInfo)="showGeneralInfo(bucket.auth!)"
             (logout)="logout(bucket.auth!)"
+            [lastLogin]="bucket.auth.lastLogin"
             [bucket]="bucket.bucket">
           </app-header>
 

@@ -497,7 +497,12 @@ export class ApiService {
 
   private mapAuth(bucketId: number, privateSession: boolean, json: any): Auth {
     let url = new URL(environment.api + "/buckets/" + bucketId, document.location.toString());
-    return new Auth(bucketId, json.token, json.share_token, privateSession, url.hostname, url.pathname, url.protocol, url.port == '' ? null : url.port, json.lifetime, new Date(json.now));
+    let lastLogin = json.last_login;
+    if (typeof lastLogin == 'string') {
+      lastLogin = new Date(lastLogin);
+    }
+
+    return new Auth(bucketId, json.token, json.share_token, privateSession, url.hostname, url.pathname, url.protocol, url.port == '' ? null : url.port, json.lifetime, new Date(json.now), lastLogin);
   }
 
   private mapPage(json: any): Page {

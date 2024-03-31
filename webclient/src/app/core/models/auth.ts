@@ -1,5 +1,5 @@
 export class Auth {
-  public constructor(private _bucketId: number, private _token: string | null, private _shareToken: string, private _privateSession: boolean, private _domain: string, private _path: string, private _protocol: string, private _port: string | null, private _lifetime: number, private _createdAt: Date) {
+  public constructor(private _bucketId: number, private _token: string | null, private _shareToken: string, private _privateSession: boolean, private _domain: string, private _path: string, private _protocol: string, private _port: string | null, private _lifetime: number, private _createdAt: Date, private _lastLogin: Date | null) {
   }
 
   get shareToken(): string {
@@ -32,6 +32,10 @@ export class Auth {
 
   get port(): string | null {
     return this._port;
+  }
+
+  get lastLogin(): Date | null {
+    return this._lastLogin;
   }
 
   get base(): string {

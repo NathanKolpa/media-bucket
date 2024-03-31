@@ -113,6 +113,7 @@ pub async fn auth(
         active_tokens: instance.sessions_created(),
         now: new_login.now,
         lifetime: new_login.lifetime.num_seconds() as u64,
+        last_login: new_login.last_login,
     }))
 }
 

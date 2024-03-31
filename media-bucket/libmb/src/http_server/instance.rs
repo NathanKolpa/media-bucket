@@ -96,6 +96,7 @@ pub struct NewLogin {
     pub share_token: String,
     pub lifetime: Duration,
     pub now: DateTime<Utc>,
+    pub last_login: Option<DateTime<Utc>>,
 }
 
 impl ServerBucketInstance {
@@ -232,6 +233,8 @@ impl ServerBucketInstance {
 
         let new_token = self.new_session(ip, false, now).to_token(&token_secret);
         let ro_token = self.new_session(ip, true, now).to_token(&token_secret);
+
+        let last_login = self.last_login();
         self.update_last_login(now);
 
         Ok(NewLogin {
@@ -239,6 +242,7 @@ impl ServerBucketInstance {
             lifetime: self.session_lifetime,
             token: new_token,
             share_token: ro_token,
+            last_login,
         })
     }
 

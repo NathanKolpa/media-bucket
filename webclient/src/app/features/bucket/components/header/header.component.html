@@ -1,6 +1,6 @@
 <mat-toolbar *ngIf="bucket as bucket" class="mat-elevation-z6 position-relative" color="primary" style="z-index: 1000">
 
-  <a mat-button (click)="showGeneralInfo.emit()" matTooltip="More info">
+  <button mat-button (click)="showGeneralInfo.emit()" matTooltip="More info">
      <span>
       {{ bucket.name }}
     </span>
@@ -8,9 +8,13 @@
     <mat-icon *ngIf="bucket.encrypted" style="vertical-align: middle">
       shield
     </mat-icon>
-  </a>
+  </button>
 
   <div class="spacer"></div>
+
+  <i style="font-size: 12px" *ngIf="lastLogin as lastLogin" [title]="lastLogin.toLocaleString()" class="text-truncate">
+    Last login: {{ lastLogin | ago }}
+  </i>
 
   <button [matMenuTriggerFor]="menu" mat-icon-button>
     <mat-icon>menu</mat-icon>

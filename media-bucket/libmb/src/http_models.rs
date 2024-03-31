@@ -26,6 +26,7 @@ pub struct AuthResponse {
     pub share_token: String,
     pub active_tokens: u64,
     pub now: DateTime<Utc>,
+    pub last_login: Option<DateTime<Utc>>,
     pub lifetime: u64,
 }
 

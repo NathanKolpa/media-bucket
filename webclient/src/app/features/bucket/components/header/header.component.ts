@@ -1,5 +1,5 @@
-import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
-import {Bucket} from "@core/models";
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import { Bucket } from "@core/models";
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -11,6 +11,9 @@ export class HeaderComponent {
 
   @Input()
   public bucket: Bucket | null = null;
+
+  @Input()
+  public lastLogin: Date | null = null;
 
   @Output()
   public logout = new EventEmitter();

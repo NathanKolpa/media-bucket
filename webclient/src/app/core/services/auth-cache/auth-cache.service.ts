@@ -66,7 +66,7 @@ export class AuthCacheService {
     let stored: SavedAuth[] = JSON.parse(storedStr);
 
     return stored
-      .map(x => new Auth(x.id, null, x.shareToken, privateSession, x.domain, x.path, x.protocol, x.port, x.lifetime, new Date(x.createdAt)))
+      .map(x => new Auth(x.id, null, x.shareToken, privateSession, x.domain, x.path, x.protocol, x.port, x.lifetime, new Date(x.createdAt), null))
       .filter(x => !x.isExpired());
   }
 
