@@ -87,6 +87,8 @@ pub struct ServerBucketInstance {
     token_secret: RwLock<Option<[u8; 32]>>,
     hidden: bool,
     randomize_secret: bool,
+    last_login: AtomicU64,
+    session_lifetime: Duration,
 }
 
 pub struct NewLogin {
@@ -104,6 +106,7 @@ impl ServerBucketInstance {
         location: String,
         hidden: bool,
         randomize_secret: bool,
+        session_lifetime: Duration,
     ) -> std::io::Result<Self> {
         Ok(ServerBucketInstance {
             id,
@@ -116,6 +119,8 @@ impl ServerBucketInstance {
             token_secret: Default::default(),
             hidden,
             randomize_secret,
+            last_login: AtomicU64::new(0),
+            session_lifetime,
         })
     }
 
@@ -148,6 +153,31 @@ impl ServerBucketInstance {
     }
     pub fn id(&self) -> u64 {
         self.id
+    }
+
+    pub fn last_login(&self) -> Option<DateTime<Utc>> {
+        let timestamp = self.last_login.load(Ordering::Relaxed);
+
+        if timestamp == 0 {
+            return None;
+        }
+
+        DateTime::from_timestamp(timestamp as i64, 0)
+    }
+
+    pub fn unload(&self) {
+        let mut instance = self.instance.write().unwrap();
+        let mut secret = self.token_secret.write().unwrap();
+
+        self.last_login.store(0, Ordering::Release);
+        self.sessions_created.store(0, Ordering::Release);
+
+        *instance = None;
+        *secret = None;
+    }
+
+    pub fn should_unload_at(&self) -> Option<DateTime<Utc>> {
+        self.last_login().map(|date| date + self.session_lifetime)
     }
 
     pub fn name(&self) -> &str {
@@ -199,31 +229,37 @@ impl ServerBucketInstance {
         };
 
         let now = Utc::now();
-        let lifetime = Duration::days(14);
 
-        let new_token = self
-            .new_session(ip, false, now, lifetime)
-            .to_token(&token_secret);
-        let ro_token = self
-            .new_session(ip, true, now, lifetime)
-            .to_token(&token_secret);
+        let new_token = self.new_session(ip, false, now).to_token(&token_secret);
+        let ro_token = self.new_session(ip, true, now).to_token(&token_secret);
+        self.update_last_login(now);
 
         Ok(NewLogin {
             now,
-            lifetime,
+            lifetime: self.session_lifetime,
             token: new_token,
             share_token: ro_token,
         })
     }
 
-    fn new_session(
-        &self,
-        ip: IpAddr,
-        read_only: bool,
-        now: DateTime<Utc>,
-        lifetime: Duration,
-    ) -> AuthToken {
-        let token = AuthToken::new(ip, now, lifetime, read_only);
+    fn update_last_login(&self, now: DateTime<Utc>) {
+        let unix_now = now.timestamp() as u64;
+        let mut current_last_login = self.last_login.load(Ordering::Relaxed);
+        while unix_now > current_last_login {
+            match self.last_login.compare_exchange_weak(
+                current_last_login,
+                unix_now,
+                Ordering::Release,
+                Ordering::Relaxed,
+            ) {
+                Ok(_) => break,
+                Err(c) => current_last_login = c,
+            }
+        }
+    }
+
+    fn new_session(&self, ip: IpAddr, read_only: bool, now: DateTime<Utc>) -> AuthToken {
+        let token = AuthToken::new(ip, now, self.session_lifetime, read_only);
 
         self.sessions_created.fetch_add(1, Ordering::Relaxed);
 

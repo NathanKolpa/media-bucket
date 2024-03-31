@@ -24,6 +24,8 @@ pub struct InstanceConfigSection {
 
     #[serde(default = "bool::default")]
     pub randomize_secret: bool,
+
+    pub session_lifetime: Option<u64>,
 }
 
 #[derive(Deserialize)]
@@ -35,6 +37,7 @@ pub struct ServerConfigSection {
 
     pub serve_ui: Option<bool>,
     pub static_files: Option<PathBuf>,
+
     pub index_file: Option<String>,
 }
 

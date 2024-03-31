@@ -6,7 +6,10 @@ use actix_cors::Cors;
 use actix_web::middleware::NormalizePath;
 use actix_web::{web, App, HttpServer};
 
+use chrono::{Duration, Utc};
 pub use config_file::ConfigError;
+use log::info;
+use tokio::{select, time::sleep};
 use url::Url;
 
 use crate::http_server::instance::{InstanceDataSource, ServerBucketInstance};
@@ -27,6 +30,7 @@ struct InstanceConfig {
     location: String,
     hidden: bool,
     randomize_secret: bool,
+    session_lifetime: Duration,
 }
 
 struct StaticFilesConfig {
@@ -84,6 +88,10 @@ impl ServerConfig {
                     name: instance.name,
                     hidden: instance.hidden,
                     randomize_secret: instance.randomize_secret,
+                    session_lifetime: instance
+                        .session_lifetime
+                        .map(|seconds| Duration::seconds(seconds as i64))
+                        .unwrap_or(Duration::days(14)),
                 })
                 .collect(),
         })
@@ -132,6 +140,7 @@ impl ServerConfig {
                     instance_config.location.clone(),
                     instance_config.hidden,
                     instance_config.randomize_secret,
+                    instance_config.session_lifetime,
                 )
                 .await?,
             ))
@@ -150,7 +159,9 @@ pub async fn start_server(config: ServerConfig) -> std::io::Result<()> {
 
     let factory_config = config.clone();
 
-    HttpServer::new(move || {
+    let unload_future = watch_bucket_unload(instance_data_source.clone());
+
+    let server_future = HttpServer::new(move || {
         let app_routes = if let Some(files) = &factory_config.static_files {
             routes_with_static(
                 files.file_root().to_path_buf(),
@@ -179,6 +190,32 @@ pub async fn start_server(config: ServerConfig) -> std::io::Result<()> {
             .service(app_routes)
     })
     .bind((config.get_address(), config.get_port()))?
-    .run()
-    .await
+    .run();
+
+    select! {
+        result = server_future => {
+            result
+        },
+        _ = unload_future => {
+            Ok(())
+        }
+    }
+}
+
+async fn watch_bucket_unload(instances: web::Data<InstanceDataSource>) {
+    loop {
+        sleep(std::time::Duration::from_secs(20)).await;
+        let now = Utc::now();
+
+        for instance in instances.all() {
+            let Some(unload_time) = instance.should_unload_at() else {
+                continue;
+            };
+
+            if now >= unload_time {
+                info!("Unloading instance {instance}");
+                instance.unload();
+            }
+        }
+    }
 }
