@@ -51,6 +51,10 @@ const feature = createFeature({
       detailsLoadingState: state.detailsLoadingState.fail(failure)
     })),
 
+    on(bucketActions.reset, (state) => ({
+      ...state,
+      bucket: null
+    })),
     on(bucketActions.relogin, (state) => ({
       ...state,
       reloginLoadingState: state.reloginLoadingState.loading()

@@ -208,7 +208,6 @@ const feature = createFeature({
 
     on(searchActions.reset, () => initialState),
 
-
     on(searchActions.startUploadJob, (state, { job }) => ({
       ...state,
       uploadJobs: uploadJobAdapter.addOne(job, state.uploadJobs)

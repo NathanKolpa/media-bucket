@@ -70,6 +70,8 @@ export class BucketPageComponent implements OnDestroy {
     this.bucketTitleSubscription.unsubscribe();
     this.paramsSubscription.unsubscribe();
     this.logoutNavigateSubscription.unsubscribe();
+
+    this.store.dispatch(bucketActions.reset());
   }
 
   logout(auth: Auth) {
