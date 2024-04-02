@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
-import { LoadingState, TagDetail } from "@core/models";
+import { Bucket, LoadingState, PostSearchQuery, TagDetail } from "@core/models";
 import { FormControl, FormGroup, Validators } from "@angular/forms";
 
 @Component({
@@ -10,7 +10,10 @@ import { FormControl, FormGroup, Validators } from "@angular/forms";
 })
 export class ManageTagsTagEditComponent {
   @Output()
-  public viewLinkedPosts = new EventEmitter<TagDetail>();
+  public navigated = new EventEmitter();
+
+  @Output()
+  public delete = new EventEmitter<TagDetail>();
 
   get tag(): TagDetail | null {
     return this._tag;
@@ -28,6 +31,9 @@ export class ManageTagsTagEditComponent {
   }
 
   @Input()
+  public bucket: Bucket | null = null;
+
+  @Input()
   public detailLoadingState: LoadingState | null = null;
 
   private _tag: TagDetail | null = null;
@@ -38,4 +44,12 @@ export class ManageTagsTagEditComponent {
   form = new FormGroup({
     name: new FormControl('', [Validators.required])
   })
+
+  public get searchQuery(): PostSearchQuery | null {
+    if (this._tag == null) {
+      return null;
+    }
+
+    return new PostSearchQuery([{ type: 'tag', tag: this._tag }], 'relevant', Math.random(), null);
+  }
 }

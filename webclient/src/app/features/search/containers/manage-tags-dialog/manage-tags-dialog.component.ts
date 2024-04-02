@@ -47,8 +47,7 @@ export class ManageTagsDialogComponent {
     }
   }
 
-  viewLinkedPosts(bucket: SelectedBucket, tag: Tag) {
-    this.store.dispatch(searchActions.viewTagLinkedPosts({ bucket, tag }));
+  onNavigate() {
     this.dialogRef.close();
   }
 

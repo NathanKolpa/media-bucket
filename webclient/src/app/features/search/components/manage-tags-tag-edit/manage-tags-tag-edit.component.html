@@ -5,32 +5,35 @@
     <p class="justify-content-center align-self-center text-center w-100">Select or create a tag to edit it</p>
   </div>
 
-  <ng-container *ngIf="tag as tag">
-    <p>Tag name: {{ tag.name }}</p>
-    <p [title]="tag.createdAt.toLocaleString()">Created: {{ tag.createdAt | ago }}</p>
-    <p>
-      Group:
+  <ng-container *ngIf="bucket as bucket">
+    <ng-container *ngIf="tag as tag">
+      <p>Tag name: {{ tag.name }}</p>
+      <p [title]="tag.createdAt.toLocaleString()">Created: {{ tag.createdAt | ago }}</p>
+      <p>
+        Group:
 
-      <i *ngIf="tag.group == null">None</i>
-      <span *ngIf="tag.group as group">{{ group.name }} {{ group.color }}</span>
-    </p>
+        <i *ngIf="tag.group == null">None</i>
+        <span *ngIf="tag.group as group">{{ group.name }} {{ group.color }}</span>
+      </p>
 
-    <mat-divider class="mt-4 mb-4"></mat-divider>
+      <mat-divider class="mt-4 mb-4"></mat-divider>
 
-    <button role='button' class="mb-4" mat-flat-button color="primary" (click)="viewLinkedPosts.emit(tag)">View posts</button>
+      <a (click)="navigated.emit()" [routerLink]="['buckets', bucket.id]" [queryParams]="searchQuery?.queryParams()" class="mb-4" mat-stroked-button color="primary">View posts</a>
+      <button role='button' class="mb-4 ms-2" mat-stroked-button color="warn" (click)="delete.emit(tag)">Delete</button>
 
-    <form  [formGroup]="form">
-      <div class="row">
-        <mat-form-field appearance="outline" class="mb-2">
-          <mat-label>Name</mat-label>
-          <input formControlName="name" matInput>
-        </mat-form-field>
-      </div>
+      <form  [formGroup]="form">
+        <div class="row">
+          <mat-form-field appearance="outline" class="mb-2">
+            <mat-label>Name</mat-label>
+            <input formControlName="name" matInput>
+          </mat-form-field>
+        </div>
 
-      <button color="primary" [disabled]="form.invalid || !form.dirty" mat-flat-button>Save</button>
+        <button color="primary" [disabled]="form.invalid || !form.dirty" mat-flat-button>Save</button>
 
-    </form>
+      </form>
 
+    </ng-container>
   </ng-container>
 
 </app-loadable-content>

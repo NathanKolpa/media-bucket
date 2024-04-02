@@ -381,8 +381,6 @@ impl SqliteIndex {
                     where_clause.push_str(" AND")
                 }
 
-                //SELECT SUM(c.duration) FROM post_items pi JOIN media c ON pi.content_id = c.media_id WHERE pi.post_id = p.post_id
-
                 where_clause.push_str(" total_duration > 0");
 
                 is_first = false;
@@ -394,8 +392,6 @@ impl SqliteIndex {
                 }
 
                 where_clause.push_str(" p.source = ?");
-
-                // is_first = false;
             }
         }
 
