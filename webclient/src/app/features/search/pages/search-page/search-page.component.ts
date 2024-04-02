@@ -171,7 +171,6 @@ export class SearchPageComponent implements OnDestroy, ConfirmComponent {
       case 'random':
       case 'newest':
       case 'oldest':
-      case 'relevant':
         query = query.setOrder(order);
         break;
     }

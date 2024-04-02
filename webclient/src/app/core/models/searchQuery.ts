@@ -70,9 +70,11 @@ export class PostSearchQuery {
   }
 
   public queryParams(): any {
-    let params: any = {
-      order: this.order,
-    };
+    let params: any = {};
+
+    if (this.order !== 'relevant') {
+      params.order = this.order;
+    }
 
     if (this.order == 'random') {
       params.seed = this.seed;
